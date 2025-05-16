@@ -1,0 +1,69 @@
+@model Project_Creation.DTO.InventoryTransactionDto
+
+@{
+    ViewData["Title"] = "New Inventory1 Transaction";
+}
+
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header">
+            <h2>New Inventory1 Transaction</h2>
+        </div>
+        <div class="card-body">
+            <form asp-action="Transaction">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="ProductId" class="form-label">Product</label>
+                        <select asp-for="ProductId" class="form-select" asp-items="@(new SelectList(ViewBag.Products, "Id", "Name"))">
+                            <option value="">Select Product</option>
+                        </select>
+                        <span asp-validation-for="ProductId" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Type" class="form-label">Transaction Type</label>
+                        <select asp-for="Type" class="form-select">
+                            <option value="">Select Type</option>
+                            <option value="Purchase">Purchase</option>
+                            <option value="Sale">Sale</option>
+                            <option value="Adjustment">Adjustment</option>
+                            <option value="Return">Return</option>
+                        </select>
+                        <span asp-validation-for="Type" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Quantity" class="form-label">Quantity</label>
+                        <input asp-for="Quantity" class="form-control" type="number" min="1" />
+                        <span asp-validation-for="Quantity" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="ReferenceNumber" class="form-label">Reference Number</label>
+                        <input asp-for="ReferenceNumber" class="form-control" />
+                        <span asp-validation-for="ReferenceNumber" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Notes" class="form-label">Notes</label>
+                    <textarea asp-for="Notes" class="form-control" rows="3"></textarea>
+                    <span asp-validation-for="Notes" class="text-danger"></span>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+                    <button type="submit" class="btn btn-primary">Process Transaction</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+} 

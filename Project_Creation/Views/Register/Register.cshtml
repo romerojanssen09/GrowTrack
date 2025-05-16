@@ -1,0 +1,459 @@
+@model Project_Creation.DTO.UsersDto
+
+@{
+    ViewData["Title"] = "Business Owner Registration";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3>Business Owner Registration</h3>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Register" method="post" enctype="multipart/form-data" onsubmit="return verifyCode()">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" id="generatedCode" name="generatedCode" />
+
+                        <!-- Personal Information -->
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2">Personal Information</h5>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label asp-for="FirstName" class="form-label">First Name *</label>
+                                    <input asp-for="FirstName" id="firstnamexyz" class="form-control" required maxlength="50">
+                                    <span asp-validation-for="FirstName" class="text-danger"></span>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label asp-for="LastName" class="form-label">Last Name *</label>
+                                    <input asp-for="LastName" id="lastnamexyz" class="form-control" required maxlength="50">
+                                    <span asp-validation-for="LastName" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label asp-for="Email" class="form-label">Email *</label>
+                                    <input asp-for="Email" id="emailxyz" type="email" class="form-control" required>
+                                    <span asp-validation-for="Email" class="text-danger"></span>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label asp-for="PhoneNumber" class="form-label">Phone Number *</label>
+                                    <input asp-for="PhoneNumber" class="form-control" id="phoneNumber" type="text" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 11)" required />
+                                    <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Verification Code *</label>
+                                    <div class="d-flex gap-2">
+                                    <input type="number" id="number" class="form-control" placeholder="e.g 123456" required />
+                                    <button type="button" id="generate" class="btn btn-secondary">Generate</button>
+                                    </div>
+                                    <small class="text-muted">Click Generate and check your email for verification code</small>
+                                    <div id="permitError" class="text-danger small"></div>
+                                </div>
+                                <div class="col-md-6 mb-3"></div>
+                            </div>
+                        </div>
+
+                        <!-- Business Information -->
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2">Business Information</h5>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label asp-for="BusinessName" class="form-label">Business Name *</label>
+                                    <input asp-for="BusinessName" class="form-control" required maxlength="100">
+                                    <span asp-validation-for="BusinessName" class="text-danger"></span>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label asp-for="DTIReqistrationNumber" class="form-label">DTI Registration Number *</label>
+                                    <input asp-for="DTIReqistrationNumber" class="form-control" id="DTINumber" type="text" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 13)" min-length="9" required />
+                                    <span asp-validation-for="DTIReqistrationNumber" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-12 mb-3">
+                                    <label asp-for="BusinessAddress" class="form-label">Business Address *</label>
+                                    <input asp-for="BusinessAddress" class="form-control" required maxlength="100">
+                                    <span asp-validation-for="BusinessAddress" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label asp-for="NumberOfBusinessYearsOperation" class="form-label">Years in Operation *</label>
+                                    <input asp-for="NumberOfBusinessYearsOperation" class="form-control" required oninput="this.value = this.value.replace(/[^0-9]/g, '')" maxlength="100">
+                                    <span asp-validation-for="NumberOfBusinessYearsOperation" class="text-danger"></span>
+                                </div>
+                                <div class="col-md-6 mb-3 mb-3">
+                                    <label asp-for="NumberOfEmployees" class="form-label">Number of Employees *</label>
+                                    <input asp-for="NumberOfEmployees" class="form-control" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required maxlength="100">
+                                    <span asp-validation-for="NumberOfEmployees" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label asp-for="CategoryOfBusiness" class="form-label">Scope of Business *</label>
+                                    <select class="form-control" id="businessCategorySelect" required>
+                                        <option value=""selected disabled>-- Select Category --</option>
+                                        <option value="Retail">Retail</option>
+                                        <option value="Food & Beverage">Food & Beverage</option>
+                                        <option value="Manufacturing">Manufacturing</option>
+                                        <option value="Services">Services</option>
+                                        <option value="Technology">Technology</option>
+                                        <option value="Healthcare">Healthcare</option>
+                                        <option value="Education">Education</option>
+                                        <option value="Construction">Construction</option>
+                                        <option value="Transportation">Transportation</option>
+                                        <option value="Hospitality">Hospitality</option>
+                                        <option value="Other">Other (please specify)</option>
+                                    </select>
+                                </div>
+                                <input type="hidden" asp-for="CategoryOfBusiness" id="actualCategory" />
+                                <div class="col-md-6 mb-3 mb-3" id="otherCategoryContainer" style="display: none;">
+                                    <label asp-for="NumberOfEmployees" class="form-label">Specify Here! *</label>
+                                    <input type="text" id="otherCategoryInput" class="form-control" placeholder="Please specify your business category" maxlength="100">
+                                    <span asp-validation-for="NumberOfEmployees" class="text-danger"></span>
+                                </div>
+                                <span asp-validation-for="CategoryOfBusiness" class="text-danger"></span>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-12 mb-3">
+                                    <label asp-for="CompanyBackground" class="form-label">Company Background *</label>
+                                    <textarea asp-for="CompanyBackground" class="form-control" required maxlength="1000" rows="4"></textarea>
+                                    <span asp-validation-for="CompanyBackground" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Business Permit *</label>
+                                    <input type="file" name="businessPermitFile" id="businessPermitFile" class="form-control" required
+                                           accept=".pdf,.jpg,.jpeg,.png,.gif">
+                                    <small class="text-muted">Upload a scanned copy of your business permit (PDF, JPG, PNG)</small>
+                                    <div id="permitError" class="text-danger small"></div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Company Logo <small>(Optional)</small></label>
+                                    <input type="file" name="logoFile" id="logoFile" class="form-control"
+                                           accept=".jpg,.jpeg,.png,.gif">
+                                    <small class="text-muted">Optional: Upload your company logo (JPG, PNG)</small>
+                                    <div id="logoError" class="text-danger small"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-check mb-4">
+                            <input class="form-check-input" type="checkbox" required id="termsCheck">
+                            <label class="form-check-label" for="termsCheck">
+                                I agree to the terms and conditions
+                            </label>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">Register</button>
+                        </div>
+                    </form>
+                    <div class="mt-3 text-center">
+                        <a asp-action="Login" asp-controller="Login">Already have an account? Login</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@@emailjs/browser@3/dist/email.min.js"></script>
+
+    <script>
+        // Initialize EmailJS with your User ID
+        (function() {
+            emailjs.init('N8Q598z924uY-yuoh'); // Your EmailJS user ID
+        })();
+
+        // Configuration
+        const countdownDuration = 60;
+        let countdownInterval;
+        let currentCountdown = countdownDuration;
+        const generateButton = document.getElementById("generate");
+        let generatedCode = null;
+        let ifSendEmail = false;
+
+        // File validation
+        document.getElementById('businessPermitFile').addEventListener('change', function(e) {
+            validateFile(this, 'permitError', ['pdf', 'jpg', 'jpeg', 'png', 'gif']);
+        });
+
+        document.getElementById('logoFile').addEventListener('change', function(e) {
+            validateFile(this, 'logoError', ['jpg', 'jpeg', 'png', 'gif']);
+        });
+
+        function validateFile(input, errorElementId, allowedExtensions) {
+            const errorElement = document.getElementById(errorElementId);
+            errorElement.textContent = '';
+
+            if (input.files.length > 0) {
+                const file = input.files[0];
+                const extension = file.name.split('.').pop().toLowerCase();
+                const isValid = allowedExtensions.includes(extension);
+
+                if (!isValid) {
+                    errorElement.textContent = `Invalid file type. Only ${allowedExtensions.join(', ')} files are allowed.`;
+                    input.value = '';
+                }
+
+                // Additional size validation if needed
+                const maxSize = 5 * 1024 * 1024; // 5MB
+                if (file.size > maxSize) {
+                    errorElement.textContent = 'File size must be less than 5MB';
+                    input.value = '';
+                }
+            }
+        }
+
+        // Add this function to check email existence
+        async function checkEmailExists(email) {
+            try {
+                const response = await fetch(`/Register/CheckEmailExists?email=${encodeURIComponent(email)}`);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const data = await response.json();
+                console.log("is email exist? ",data.exists)
+                return data.exists;
+            } catch (error) {
+                console.error('Error checking email:', error);
+                // Show error to user but allow them to try again
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Unable to verify email availability. Please try again.',
+                    confirmButtonText: 'OK'
+                });
+                return false; // Return false to allow the process to continue
+            }
+        }
+
+        // Add this for real-time email validation
+        document.getElementById("emailxyz").addEventListener("blur", async function() {
+            const email = this.value;
+            if (!email) return;
+
+            const emailError = document.querySelector("[data-valmsg-for='Email']");
+            const emailExists = await checkEmailExists(email);
+
+            if (emailExists) {
+                emailError.textContent = "This email is already registered";
+                this.classList.add("is-invalid");
+                generateButton.disabled = true;
+            } else {
+                emailError.textContent = "";
+                this.classList.remove("is-invalid");
+                generateButton.disabled = false;
+            }
+        });
+
+        // Modify the generate button click handler
+        generateButton.addEventListener("click", async function(event) {
+            event.preventDefault();
+
+            const email = document.getElementById("emailxyz").value;
+            if (!email) {
+                Swal.fire('Error', 'Please enter your email address first!', 'error');
+                return;
+            }
+
+            // Check if email exists
+            const emailExists = await checkEmailExists(email);
+            if (emailExists) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Email Already Registered',
+                    text: 'This email address is already registered. Please use a different email or login.',
+                    confirmButtonText: 'OK'
+                });
+                return;
+            }
+
+            const firstName = document.getElementById("firstnamexyz").value;
+            const lastName = document.getElementById("lastnamexyz").value;
+            const name = `${firstName} ${lastName}`;
+            generatedCode = generateRandomNumber(6);
+            document.getElementById("generatedCode").value = generatedCode;
+
+            // UI updates
+            generateButton.disabled = true;
+            startCountdown();
+
+            try {
+                // Send email using EmailJS
+                const response = await emailjs.send(
+                    'service_3808aw8', // Your service ID
+                    'template_6j7ogl5', // Your template ID
+                    {
+                        to_email: email,
+                        verification_code: generatedCode,
+                        to_name: name,
+                        company_email: "likedjans98@gmail.com"
+                    }
+                );
+
+                console.log("Email sent successfully:", response);
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Verification Sent!',
+                    html: `A 6-digit code was sent to <b>${email}</b>`,
+                    confirmButtonText: 'OK'
+                });
+            } catch (err) {
+                console.error("Email sending failed:", err);
+                handleSendError();
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Failed to send verification code. Please try again.',
+                    footer: err.text || ''
+                });
+            }
+        });
+
+        function verifyCode() {
+            const enteredCode = document.getElementById("number").value;
+            const expectedCode = document.getElementById("generatedCode").value;
+            const phoneNumber = document.getElementById("phoneNumber").value.trim();
+            const dti = document.getElementById("DTINumber").value.trim();
+            const email = document.getElementById("emailxyz").value;
+            const permitFile = document.getElementById('businessPermitFile').files[0];
+            const termsChecked = document.getElementById('termsCheck').checked;
+
+            const isNumberValid = /^\d{11}$/.test(phoneNumber);
+            const isDtiValid = dti.length >= 9 && dti.length <= 13;
+
+            let errorMessages = [];
+
+            if (!email) {
+                errorMessages.push("Please enter your email address.");
+            }
+
+            if (!expectedCode) {
+                errorMessages.push("Please generate and enter the verification code.");
+            }
+
+            if (!isNumberValid) {
+                errorMessages.push("Phone number must be exactly 11 digits (e.g., 09123456789).");
+            }
+
+            if (!isDtiValid) {
+                errorMessages.push("DTI registration number must be between 9 and 13 characters.");
+            }
+
+            if (typeof ifSendEmail !== "undefined" && ifSendEmail) {
+                errorMessages.push("Please generate and enter the verification code.");
+            }
+
+            if (enteredCode !== expectedCode) {
+                errorMessages.push("Invalid verification code. Please check your email and try again.");
+            }
+
+            if (!permitFile) {
+                errorMessages.push("Please upload your business permit.");
+            }
+
+            if (!termsChecked) {
+                errorMessages.push("You must agree to the terms and conditions.");
+            }
+
+            if (errorMessages.length > 0) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Please fix the following:',
+                    html: `<ul style="text-align:left;">${errorMessages.map(msg => `<li>${msg}</li>`).join('')}</ul>`
+                });
+                return false;
+            }
+
+            return true;
+        }
+
+        // Helper functions
+        function startCountdown() {
+            currentCountdown = countdownDuration;
+            updateButtonText();
+
+            countdownInterval = setInterval(() => {
+                currentCountdown--;
+                updateButtonText();
+
+                if (currentCountdown <= 0) {
+                    clearInterval(countdownInterval);
+                    generateButton.disabled = false;
+                    generateButton.textContent = "Generate";
+                }
+            }, 1000);
+        }
+
+        function updateButtonText() {
+            generateButton.textContent = `Resend in ${currentCountdown}s`;
+        }
+
+        function handleSendError() {
+            clearInterval(countdownInterval);
+            generateButton.disabled = false;
+            generateButton.textContent = "Generate";
+        }
+
+        function generateRandomNumber(digits) {
+            const min = 10 ** (digits - 1);
+            const max = (10 ** digits) - 1;
+            return Math.floor(min + Math.random() * (max - min + 1));
+        }
+
+        // Enable generate button when page loads
+        document.addEventListener("DOMContentLoaded", () => {
+            generateButton.disabled = false;
+        });
+    </script>
+
+    @* select options *@
+    <script>
+        $(document).ready(function() {
+            const categorySelect = $('#businessCategorySelect');
+            const otherContainer = $('#otherCategoryContainer');
+            const otherInput = $('#otherCategoryInput');
+
+            categorySelect.change(function() {
+                if ($(this).val() === 'Other') {
+                    otherContainer.show();
+                    otherInput.prop('required', true);
+                } else {
+                    otherContainer.hide();
+                    otherInput.prop('required', false);
+                    otherInput.val('');
+                }
+            });
+
+            $('form').submit(function() {
+                const selectedCategory = categorySelect.val();
+                if (selectedCategory === 'Other') {
+                    const otherValue = otherInput.val().trim();
+                    if (!otherValue) {
+                        Swal.fire('Error', 'Please specify your business category.', 'error');
+                        return false;
+                    }
+                    $('#actualCategory').val(otherValue);
+                } else {
+                    $('#actualCategory').val(selectedCategory);
+                }
+                return true;
+            });
+        });
+    </script>
+}

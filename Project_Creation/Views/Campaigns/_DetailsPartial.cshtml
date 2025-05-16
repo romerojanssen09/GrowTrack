@@ -1,0 +1,61 @@
+﻿@model Project_Creation.Models.Entities.Campaign
+
+@{
+    @using Project_Creation.Models.Entities
+}
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="mb-3">
+            <label class="fw-bold">Campaign Name:</label>
+            <p>@Model.CampaignName</p>
+        </div>
+        <div class="mb-3">
+            <label class="fw-bold">Sender:</label>
+            <p>@Model.Sender?.FirstName @Model.Sender?.LastName</p>
+        </div>
+        <div class="mb-3">
+            <label class="fw-bold">Created At:</label>
+            <p>@Model.CampaignAt.ToString("MM/dd/yyyy HH:mm")</p>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="mb-3">
+            <label class="fw-bold">Status:</label>
+            <p>@(Model.IsSent ? "Sent" : "Draft")</p>
+        </div>
+        <div class="mb-3">
+            <label class="fw-bold">Target:</label>
+            @foreach (var product in ViewBag.Products as List<Product2>)
+            {
+                var isSelected = Model.TargetProducts?.Split(',').Contains(product.Id.ToString()) ?? false;
+                if (!isSelected) continue;
+                <div class="form-check product-item">
+                    <label class="form-check-label">@product.ProductName</label>
+                </div>
+            }
+            @* <p>@(Model.SendToAll ? "All Leads" : Model.TargetProducts)</p> *@
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="mb-3">
+            <label class="fw-bold">Message:</label>
+            <div class="border p-3">@Html.Raw(Model.Message)</div>
+        </div>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.Notes))
+{
+    <div class="row">
+        <div class="col-12">
+            <div class="mb-3">
+                <label class="fw-bold">Notes:</label>
+                <p>@Model.Notes</p>
+            </div>
+        </div>
+    </div>
+}

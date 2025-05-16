@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - SME CRM</title>
+
+    <!-- ✅ Bootstrap 5.3 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+    <!-- ✅ FullCalendar CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
+
+    <!-- ✅ Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <!-- ✅ SweetAlert2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet" />
+
+    <!-- ✅ Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- ✅ Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    
+    <!-- ✅ DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" />
+
+    <!-- ✅ Theme Styles -->
+    <link rel="stylesheet" href="~/css/theme.css" asp-append-version="true" />
+    
+    <!-- ✅ Your Site Styles -->
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    <style>
+        :root {
+            --primary-bg: #F7F5EF;
+            --secondary-bg: #E9F3F6;
+            --accent-color: #F3993E;
+            --dark-color: #304251;
+            --accent-hover: #e48a30;
+            --dark-hover: #263440;
+            --accent-light: rgba(243, 153, 62, 0.1);
+            --text-light: #ffffff;
+            --text-dark: #304251;
+        }
+
+        /* Override Bootstrap table styles */
+        .table thead th {
+            background-color: var(--secondary-bg) !important;
+            color: var(--text-dark) !important;
+            border-color: #dee2e6 !important;
+        }
+        
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current, 
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+            background: var(--secondary-bg) !important;
+            color: var(--text-dark) !important;
+            border-color: var(--border-light) !important;
+        }
+        
+        .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+            background: var(--accent-light) !important;
+            color: var(--accent-color) !important;
+            border-color: var(--accent-color) !important;
+        }
+        
+        /* Override SweetAlert colors */
+        .swal2-confirm {
+            background-color: var(--accent-color) !important;
+        }
+        
+        /* Override Select2 colors */
+        .select2-container--default .select2-results__option--highlighted[aria-selected] {
+            background-color: var(--accent-color) !important;
+        }
+        
+        /* Modern sticky navbar styles */
+        .navbar-modern {
+            background-color: #FFFFFF;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+            /* padding: 0.75rem 1rem; */
+            transition: all 0.3s ease;
+            z-index: 1030;
+        }
+        
+        .navbar-modern.scrolled {
+            /* padding: 0.5rem 1rem; */
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .navbar-modern .navbar-brand {
+            font-weight: 700;
+            color: var(--dark-color);
+        }
+        
+        .navbar-modern .nav-link {
+            font-weight: 500;
+            color: var(--dark-color) !important;
+            /* padding: 0.5rem 1rem; */
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .navbar-modern .nav-link:after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 0;
+            left: 50%;
+            background-color: var(--accent-color);
+            transition: all 0.3s ease;
+        }
+        
+        .navbar-modern .nav-link:hover:after,
+        .navbar-modern .nav-link.active:after {
+            width: 80%;
+            left: 10%;
+        }
+        
+        .navbar-modern .nav-link:hover,
+        .navbar-modern .nav-link.active {
+            color: var(--accent-color) !important;
+        }
+        
+        .navbar-auth-buttons .btn {
+            border-radius: 50px;
+            padding: 0.375rem 1.5rem;
+            font-weight: 500;
+        }
+        
+        .navbar-toggler {
+            border: none;
+            padding: 0;
+        }
+        
+        .navbar-toggler:focus {
+            box-shadow: none;
+        }
+        
+        /* Adjust top spacing for content */
+        body.has-navbar .content-area {
+            margin-top: 50px;
+        }
+        
+        /* Admin navbar styles */
+        .admin-navbar {
+            background-color: #304251 !important;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-top: 56px;
+            z-index: 1020;
+        }
+        
+        .admin-navbar .navbar-brand {
+            color: #fff;
+            font-weight: 600;
+        }
+        
+        .admin-navbar .nav-link {
+            color: rgba(255, 255, 255, 0.85) !important;
+            padding: 0.6rem 1rem;
+            transition: all 0.2s ease;
+        }
+        
+        .admin-navbar .nav-link:hover, 
+        .admin-navbar .nav-link.active {
+            color: #fff !important;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+        
+        .admin-navbar .navbar-toggler {
+            border: none;
+            padding: 0.25rem 0.5rem;
+        }
+        
+        .admin-navbar .navbar-toggler:focus {
+            box-shadow: none;
+        }
+        
+        .admin-navbar .btn-outline-danger {
+            border-color: rgba(255, 255, 255, 0.5);
+            color: white;
+        }
+        
+        .admin-navbar .btn-outline-danger:hover {
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+        
+        /* Full width content styles */
+        #wrapper {
+            display: block; /* Changed from flex to block since we removed the sidebar */
+        }
+        
+        #page-content-wrapper {
+            width: 100% !important;
+            margin-left: 0 !important;
+        }
+        
+        /* Dropdown styling for many navigation links */
+        .navbar-nav .dropdown-menu {
+            border: none;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        
+        /* Adjust spacing for top nav with many links */
+        @@media (min-width: 992px) {
+            .navbar-nav .nav-link {
+                padding: 0.5rem 0.75rem;
+            }
+            
+            .navbar-modern {
+                padding: 0.5rem 1rem;
+            }
+        }
+        
+        /* Adjust content padding for admin users */
+        body.user-authenticated .content-area {
+            padding-top: 20px;
+        }
+        
+        @@media (max-width: 991.98px) {
+            .admin-navbar {
+                margin-top: 48px;
+            }
+            
+            /* Improved mobile navigation */
+            .navbar-collapse {
+                max-height: 80vh;
+                overflow-y: auto;
+            }
+        }
+    </style>
+
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body class="has-navbar @(User.Identity.IsAuthenticated ? "user-authenticated" : "")">
+    <!-- Modern Sticky Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-modern fixed-top">
+        <div class="d-flex px-4 justify-content-between w-100">
+            <div>
+                <a class="navbar-brand d-flex align-items-center" asp-area="" asp-controller="Home" asp-action="Index">
+                    <i class="fas fa-building me-2" style="color: var(--accent-color);"></i>
+                    <span>GrowTrack</span>
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <i class="fas fa-bars" style="color: var(--accent-color); font-size: 1.4rem;"></i>
+                </button>
+            </div>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mx-auto d-flex align-items-lg-center justify-content-center">
+                    <li class="nav-item">
+                        <a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Dashboard" && ViewContext.RouteData.Values["Action"].ToString() == "Dashboard" ? "active" : "")" 
+                           asp-controller="Home" asp-action="Index">Home</a>
+                    </li>
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        @if(!User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Inventory1" ? "active" : "")" href="@Url.Action("Index", "Inventory1")">
+                                    <i class="fas fa-boxes me-1"></i>Inventory
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "MarketPlace" ? "active" : "")" href="@Url.Action("Index", "MarketPlace")">
+                                    <i class="fas fa-store me-1"></i>Marketplace
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Leads" ? "active" : "")" href="@Url.Action("Index", "Leads")">
+                                    <i class="fas fa-user-tag me-1"></i>Leads
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Campaigns" ? "active" : "")" href="@Url.Action("Index", "Campaigns")">
+                                    <i class="fas fa-bullhorn me-1"></i>Campaigns
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Reports" ? "active" : "")" href="@Url.Action("Index", "Reports")">
+                                    <i class="fas fa-chart-bar me-1"></i>Reports
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Calendar" ? "active" : "")" href="@Url.Action("Index","Calendar")">
+                                    <i class="bi bi-calendar-event me-1"></i> Calendar
+                                </a>
+                            </li>
+                        }
+                    }
+                </ul>
+                <div class="navbar-auth-buttons d-flex align-items-center gap-2">
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <div class="dropdown">
+                            <a class="btn btn-light dropdown-toggle d-flex align-items-center gap-2" href="#" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-user-circle"></i>
+                                <span>Account</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="@Url.Action("Index", "Profile")"><i class="fas fa-user me-2"></i>Profile</a></li>
+                                <li><a class="dropdown-item" href="@Url.Action("Settings", "Profile")"><i class="fas fa-cog me-2"></i>Settings</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form asp-controller="Home" asp-action="Logout" method="post" class="m-0">
+                                        <button type="submit" class="dropdown-item text-danger">
+                                            <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                        <a class="nav-link position-relative ms-2" href="#" title="Notifications">
+                            <i class="fas fa-bell fa-lg" style="color: var(--dark-color);"></i>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill" style="background-color: var(--accent-color); color: white; font-size: 0.5em;">!</span>
+                        </a>
+                        <a class="nav-link position-relative ms-2" href="@Url.Action("Index","Chat")" title="Chat">
+                            <i class="fas fa-message fa-lg" style="color: var(--dark-color);"></i>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill" style="background-color: var(--accent-color); color: white; font-size: 0.5em;">!</span>
+                        </a>
+                    }
+                    else
+                    {
+                        <a asp-controller="Login" asp-action="Login" class="btn btn-outline-primary">Login</a>
+                        <a asp-controller="Register" asp-action="Register" class="btn btn-primary">Sign Up</a>
+                    }
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="d-flex" id="wrapper">
+        <!-- Page Content -->
+        <div id="page-content-wrapper" class="@(!User.Identity.IsAuthenticated ? "w-100 ml-0" : "")">
+            <!-- Main Content - Scrollable Area -->
+            <div class="content-area" style="background-color: #F7F5EF;">
+                <div class="container-fluid px-4 py-3">
+                    @RenderBody()
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="border-top text-muted py-3 mt-auto" style="background-color: #F7F5EF; color: #304251; border-color: #E9F3F6;">
+        <div class="container">
+            &copy; 2025 - SME CRM - <a asp-area="" asp-controller="Home" asp-action="Privacy" style="color: #304251;">Privacy</a>
+        </div>
+    </footer>
+
+    <!-- ✅ jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+
+    <!-- ✅ Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- ✅ Select2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <!-- ✅ Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- ✅ SignalR -->
+    <script src="https://cdn.jsdelivr.net/npm/@@microsoft/signalr@8.0.7/dist/browser/signalr.min.js"></script>
+
+    <!-- ✅ SweetAlert2 -->
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- ✅ DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+
+    <!-- ✅ Your Site Scripts -->
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <script>
+        // Apply theme colors to any new elements added dynamically
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is authenticated
+            const isAuthenticated = document.body.classList.contains('user-authenticated');
+            
+            // Add active class to navbar links - more precise matching
+            const currentPath = window.location.pathname.toLowerCase();
+            const currentController = currentPath.split('/')[1] || '';
+            
+            // First, remove any JavaScript-added active classes
+            document.querySelectorAll('.navbar-nav .nav-link').forEach(link => {
+                // Only remove if not added by server-side code
+                if (!link.getAttribute('data-server-active')) {
+                    link.classList.remove('active');
+                }
+            });
+            
+            // Then add active class only to the exact matching link
+            document.querySelectorAll('.navbar-nav .nav-link').forEach(item => {
+                const href = item.getAttribute('href');
+                if (href) {
+                    const hrefParts = href.toLowerCase().split('/');
+                    const hrefController = hrefParts[1] || '';
+                    
+                    // Only match if controllers match exactly
+                    // Special case for home: only active if path is exactly / or /home
+                    if ((hrefController === 'pages' && (currentPath === '/' || currentPath === '/dashboard' || currentPath === '/pages/dashboard')) ||
+                        (hrefController !== 'pages' && hrefController !== '' && currentController === hrefController) ||
+                        (href === '/login/login')
+                        ) {
+                        item.classList.add('active');
+                    }
+                }
+            });
+            
+            // Highlight active nav item in admin navbar - more precise matching
+            document.querySelectorAll('.admin-navbar .nav-link').forEach(item => {
+                // First remove any JavaScript-added active classes
+                if (!item.getAttribute('data-server-active')) {
+                    item.classList.remove('active');
+                }
+                
+                const href = item.getAttribute('href');
+                if (href) {
+                    const hrefParts = href.toLowerCase().split('/');
+                    const hrefController = hrefParts[1] || '';
+                    
+                    // Only match if controllers match exactly
+                    if (hrefController !== '' && currentController === hrefController) {
+                        item.classList.add('active');
+                    }
+                }
+            });
+            
+            // Navbar scroll effect
+            window.addEventListener('scroll', function() {
+                const navbar = document.querySelector('.navbar-modern');
+                if (window.scrollY > 50) {
+                    navbar.classList.add('scrolled');
+                } else {
+                    navbar.classList.remove('scrolled');
+                }
+            });
+            
+            // File size validation for all file inputs - 5MB limit
+            document.querySelectorAll('input[type="file"]').forEach(fileInput => {
+                // Add a container for feedback if it doesn't exist
+                const parentElement = fileInput.parentElement;
+                let feedbackDiv = parentElement.querySelector('.custom-file-feedback');
+                let previewDiv = parentElement.querySelector('.file-preview');
+                
+                if (!feedbackDiv) {
+                    feedbackDiv = document.createElement('div');
+                    feedbackDiv.className = 'custom-file-feedback';
+                    parentElement.appendChild(feedbackDiv);
+                }
+                
+                if (!previewDiv) {
+                    previewDiv = document.createElement('div');
+                    previewDiv.className = 'file-preview';
+                    parentElement.appendChild(previewDiv);
+                }
+                
+                // Mark this input as having validation (for form submission check)
+                fileInput.setAttribute('data-file-validated', 'true');
+                
+                fileInput.addEventListener('change', function() {
+                    const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+                    let validFiles = true;
+                    let overSizeFiles = [];
+                    
+                    // Clear previous previews and feedback
+                    previewDiv.innerHTML = '';
+                    feedbackDiv.innerHTML = '';
+                    feedbackDiv.className = 'custom-file-feedback';
+                    
+                    if (this.files && this.files.length > 0) {
+                        // Check each file for size
+                        for (let i = 0; i < this.files.length; i++) {
+                            const file = this.files[i];
+                            if (file.size > maxSize) {
+                                validFiles = false;
+                                overSizeFiles.push(file.name);
+                            } else {
+                                // Valid file, create preview
+                                const fileInfo = document.createElement('div');
+                                fileInfo.className = 'file-info';
+                                
+                                // Create appropriate preview based on file type
+                                const fileType = file.type;
+                                if (fileType.startsWith('image/')) {
+                                    // Create image preview for image files
+                                    const imgPreview = document.createElement('img');
+                                    imgPreview.className = 'preview-img';
+                                    
+                                    // Read the file and set the preview
+                                    const reader = new FileReader();
+                                    reader.onload = function(e) {
+                                        imgPreview.src = e.target.result;
+                                    };
+                                    reader.readAsDataURL(file);
+                                    
+                                    fileInfo.appendChild(imgPreview);
+                                } else {
+                                    // For non-image files, show an icon
+                                    const iconSpan = document.createElement('span');
+                                    iconSpan.className = 'me-2';
+                                    
+                                    if (fileType.includes('pdf')) {
+                                        iconSpan.innerHTML = '<i class="fas fa-file-pdf fa-2x text-danger"></i>';
+                                    } else if (fileType.includes('word') || fileType.includes('doc')) {
+                                        iconSpan.innerHTML = '<i class="fas fa-file-word fa-2x text-primary"></i>';
+                                    } else if (fileType.includes('excel') || fileType.includes('sheet') || fileType.includes('csv')) {
+                                        iconSpan.innerHTML = '<i class="fas fa-file-excel fa-2x text-success"></i>';
+                                    } else {
+                                        iconSpan.innerHTML = '<i class="fas fa-file fa-2x text-secondary"></i>';
+                                    }
+                                    
+                                    fileInfo.appendChild(iconSpan);
+                                }
+                                
+                                // Add file name and size
+                                const nameSpan = document.createElement('span');
+                                nameSpan.className = 'file-name';
+                                nameSpan.textContent = file.name;
+                                
+                                const sizeSpan = document.createElement('span');
+                                sizeSpan.className = 'file-size ms-2';
+                                sizeSpan.textContent = formatFileSize(file.size);
+                                
+                                fileInfo.appendChild(nameSpan);
+                                fileInfo.appendChild(sizeSpan);
+                                previewDiv.appendChild(fileInfo);
+                            }
+                        }
+                        
+                        if (!validFiles) {
+                            // Reset the file input to completely clear the files
+                            this.value = '';
+                            
+                            // Create a clone of the input element
+                            const newInput = this.cloneNode(true);
+                            
+                            // Replace the old input with the new one
+                            this.parentNode.replaceChild(newInput, this);
+                            
+                            // Reattach the event listener to the new input
+                            newInput.addEventListener('change', arguments.callee);
+                            
+                            // Mark the new input
+                            newInput.setAttribute('data-file-validated', 'false');
+                            
+                            // Clear the preview
+                            previewDiv.innerHTML = '';
+                            
+                            // Show error message with SweetAlert2
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'File Too Large',
+                                html: `The following file(s) exceed the 5MB limit:<br><ul class="text-start"><li>${overSizeFiles.join('</li><li>')}</li></ul>Please select smaller files.`,
+                                confirmButtonColor: '#F3993E',
+                                confirmButtonText: 'OK'
+                            });
+                            
+                            // Show feedback
+                            feedbackDiv.innerHTML = '<i class="fas fa-exclamation-circle me-1"></i> One or more files exceed the 5MB limit.';
+                            feedbackDiv.className = 'custom-file-feedback invalid';
+                        } else {
+                            // Mark this input as valid
+                            this.setAttribute('data-file-validated', 'true');
+                            
+                            // Don't show success feedback, only show feedback for errors
+                            feedbackDiv.innerHTML = '';
+                            feedbackDiv.className = 'custom-file-feedback';
+                        }
+                    } else {
+                        // No files selected, hide preview and feedback
+                        previewDiv.innerHTML = '';
+                        feedbackDiv.className = 'custom-file-feedback';
+                        this.setAttribute('data-file-validated', 'true'); // Mark as valid (no files is valid)
+                    }
+                });
+            });
+            
+            // Prevent form submission if any file inputs have invalid files
+            document.querySelectorAll('form').forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    const fileInputs = this.querySelectorAll('input[type="file"]');
+                    let allValid = true;
+                    
+                    fileInputs.forEach(input => {
+                        if (input.getAttribute('data-file-validated') === 'false') {
+                            allValid = false;
+                        }
+                    });
+                    
+                    if (!allValid) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Invalid Files',
+                            text: 'Please remove or replace any files that exceed the size limit before submitting.',
+                            confirmButtonColor: '#F3993E',
+                            confirmButtonText: 'OK'
+                        });
+                        
+                        return false;
+                    }
+                    
+                    return true;
+                });
+            });
+            
+            // Helper function to format file size in KB, MB
+            function formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
+            
+            // Apply theme classes to tables that might be loaded dynamically
+            const applyThemeToTables = function() {
+                document.querySelectorAll('table.table:not(.themed)').forEach(table => {
+                    table.classList.add('themed');
+                    if (!table.classList.contains('table-striped')) {
+                        table.classList.add('table-striped');
+                    }
+                    if (!table.classList.contains('table-hover')) {
+                        table.classList.add('table-hover');
+                    }
+                });
+            };
+            
+            // Apply DataTables styling
+            if ($.fn.dataTable !== undefined) {
+                $.extend(true, $.fn.dataTable.defaults, {
+                    responsive: true,
+                    language: {
+                        search: "",
+                        searchPlaceholder: "Search...",
+                        lengthMenu: "_MENU_ records per page",
+                    },
+                    dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>' +
+                         '<"row"<"col-sm-12"tr>>' +
+                         '<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
+                    initComplete: function() {
+                        $('.dataTables_filter input').addClass('form-control');
+                        $('.dataTables_length select').addClass('form-select');
+                    }
+                });
+            }
+            
+            // Apply themes initially and whenever DOM changes
+            applyThemeToTables();
+            
+            // Monitor DOM for changes
+            const observer = new MutationObserver(function(mutations) {
+                applyThemeToTables();
+                
+                // Also check for new file inputs added to the DOM
+                mutations.forEach(mutation => {
+                    mutation.addedNodes.forEach(node => {
+                        if (node.nodeType === 1) { // Element node
+                            const fileInputs = node.querySelectorAll && node.querySelectorAll('input[type="file"]');
+                            if (fileInputs && fileInputs.length > 0) {
+                                fileInputs.forEach(input => {
+                                    // Skip if already processed
+                                    if (input.getAttribute('data-validator-applied')) return;
+                                    
+                                    // Mark as processed
+                                    input.setAttribute('data-validator-applied', 'true');
+                                    
+                                    // Initialize as valid
+                                    input.setAttribute('data-file-validated', 'true');
+                                    
+                                    // Add a container for feedback if it doesn't exist
+                                    const parentElement = input.parentElement;
+                                    let feedbackDiv = parentElement.querySelector('.custom-file-feedback');
+                                    let previewDiv = parentElement.querySelector('.file-preview');
+                                    
+                                    if (!feedbackDiv) {
+                                        feedbackDiv = document.createElement('div');
+                                        feedbackDiv.className = 'custom-file-feedback';
+                                        parentElement.appendChild(feedbackDiv);
+                                    }
+                                    
+                                    if (!previewDiv) {
+                                        previewDiv = document.createElement('div');
+                                        previewDiv.className = 'file-preview';
+                                        parentElement.appendChild(previewDiv);
+                                    }
+                                    
+                                    // Apply file size validation to dynamically added file inputs
+                                    input.addEventListener('change', function() {
+                                        const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+                                        let validFiles = true;
+                                        let overSizeFiles = [];
+                                        
+                                        // Clear previous previews and feedback
+                                        previewDiv.innerHTML = '';
+                                        feedbackDiv.innerHTML = '';
+                                        feedbackDiv.className = 'custom-file-feedback';
+                                        
+                                        if (this.files && this.files.length > 0) {
+                                            // Check each file for size
+                                            for (let i = 0; i < this.files.length; i++) {
+                                                const file = this.files[i];
+                                                if (file.size > maxSize) {
+                                                    validFiles = false;
+                                                    overSizeFiles.push(file.name);
+                                                } else {
+                                                    // Valid file, create preview
+                                                    const fileInfo = document.createElement('div');
+                                                    fileInfo.className = 'file-info';
+                                                    
+                                                    // Create appropriate preview based on file type
+                                                    const fileType = file.type;
+                                                    if (fileType.startsWith('image/')) {
+                                                        // Create image preview for image files
+                                                        const imgPreview = document.createElement('img');
+                                                        imgPreview.className = 'preview-img';
+                                                        
+                                                        // Read the file and set the preview
+                                                        const reader = new FileReader();
+                                                        reader.onload = function(e) {
+                                                            imgPreview.src = e.target.result;
+                                                        };
+                                                        reader.readAsDataURL(file);
+                                                        
+                                                        fileInfo.appendChild(imgPreview);
+                                                    } else {
+                                                        // For non-image files, show an icon
+                                                        const iconSpan = document.createElement('span');
+                                                        iconSpan.className = 'me-2';
+                                                        
+                                                        if (fileType.includes('pdf')) {
+                                                            iconSpan.innerHTML = '<i class="fas fa-file-pdf fa-2x text-danger"></i>';
+                                                        } else if (fileType.includes('word') || fileType.includes('doc')) {
+                                                            iconSpan.innerHTML = '<i class="fas fa-file-word fa-2x text-primary"></i>';
+                                                        } else if (fileType.includes('excel') || fileType.includes('sheet') || fileType.includes('csv')) {
+                                                            iconSpan.innerHTML = '<i class="fas fa-file-excel fa-2x text-success"></i>';
+                                                        } else {
+                                                            iconSpan.innerHTML = '<i class="fas fa-file fa-2x text-secondary"></i>';
+                                                        }
+                                                        
+                                                        fileInfo.appendChild(iconSpan);
+                                                    }
+                                                    
+                                                    // Add file name and size
+                                                    const nameSpan = document.createElement('span');
+                                                    nameSpan.className = 'file-name';
+                                                    nameSpan.textContent = file.name;
+                                                    
+                                                    const sizeSpan = document.createElement('span');
+                                                    sizeSpan.className = 'file-size ms-2';
+                                                    sizeSpan.textContent = formatFileSize(file.size);
+                                                    
+                                                    fileInfo.appendChild(nameSpan);
+                                                    fileInfo.appendChild(sizeSpan);
+                                                    previewDiv.appendChild(fileInfo);
+                                                }
+                                            }
+                                            
+                                            if (!validFiles) {
+                                                // Reset the file input to completely clear the files
+                                                this.value = '';
+                                                
+                                                // Create a clone of the input element
+                                                const newInput = this.cloneNode(true);
+                                                
+                                                // Replace the old input with the new one
+                                                this.parentNode.replaceChild(newInput, this);
+                                                
+                                                // Reattach the event listener to the new input
+                                                newInput.addEventListener('change', arguments.callee);
+                                                
+                                                // Mark the new input
+                                                newInput.setAttribute('data-file-validated', 'false');
+                                                newInput.setAttribute('data-validator-applied', 'true');
+                                                
+                                                // Clear the preview
+                                                previewDiv.innerHTML = '';
+                                                
+                                                // Show error message with SweetAlert2
+                                                Swal.fire({
+                                                    icon: 'error',
+                                                    title: 'File Too Large',
+                                                    html: `The following file(s) exceed the 5MB limit:<br><ul class="text-start"><li>${overSizeFiles.join('</li><li>')}</li></ul>Please select smaller files.`,
+                                                    confirmButtonColor: '#F3993E',
+                                                    confirmButtonText: 'OK'
+                                                });
+                                                
+                                                // Show feedback
+                                                feedbackDiv.innerHTML = '<i class="fas fa-exclamation-circle me-1"></i> One or more files exceed the 5MB limit.';
+                                                feedbackDiv.className = 'custom-file-feedback invalid';
+                                            } else {
+                                                // Mark this input as valid
+                                                this.setAttribute('data-file-validated', 'true');
+                                                
+                                                // Don't show success feedback, only show feedback for errors
+                                                feedbackDiv.innerHTML = '';
+                                                feedbackDiv.className = 'custom-file-feedback';
+                                            }
+                                        } else {
+                                            // No files selected, hide preview and feedback
+                                            previewDiv.innerHTML = '';
+                                            feedbackDiv.className = 'custom-file-feedback';
+                                            this.setAttribute('data-file-validated', 'true'); // Mark as valid (no files is valid)
+                                        }
+                                    });
+                                });
+                            }
+                        }
+                    });
+                });
+            });
+            
+            observer.observe(document.body, { 
+                childList: true,
+                subtree: true
+            });
+        });
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+
+    <!-- ✅ TempData Alerts -->
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: '@Html.Raw(TempData["ErrorMessage"])'
+            });
+        </script>
+    }
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: '@Html.Raw(TempData["SuccessMessage"])'
+            });
+        </script>
+    }
+    @if (TempData["WarningMessage"] != null)
+    {
+        <script>
+            Swal.fire({
+                icon: 'warning',
+                title: 'Warning',
+                text: '@Html.Raw(TempData["WarningMessage"])'
+            });
+        </script>
+    }
+</body>
+</html>

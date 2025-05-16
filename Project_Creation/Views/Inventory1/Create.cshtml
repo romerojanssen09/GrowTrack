@@ -1,0 +1,298 @@
+@model Project_Creation.DTO.ProductDto
+
+@{
+    ViewData["Title"] = "Create Product";
+}
+
+<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h2>Add New Product</h2>
+            <a class="btn btn-secondary" asp-action="Index" asp-controller="Supplier2">Add New Supplier</a>
+        </div>
+        <div class="card-body">
+            <form asp-action="Create" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="ProductName" class="form-label">Product Name *</label>
+                        <input asp-for="ProductName" class="form-control" id="productName" required/>
+                        <span asp-validation-for="ProductName" class="text-danger"></span>
+                    </div>
+
+                    <!-- Supplier Dropdown -->
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="SupplierId" class="form-label">Supplier (Optional)</label>
+                        <select asp-for="SupplierId" class="form-select">
+                            <option value="">-- Select Supplier --</option>
+                            @if (Model.Suppliers != null)
+                            {
+                                foreach (var supplier in Model.Suppliers)
+                                {
+                                    <option value="@supplier.SupplierID">
+                                        @supplier.SupplierName - @supplier.ContactPerson
+                                    </option>
+                                }
+                            }
+                        </select>
+                        <span asp-validation-for="SupplierId" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <!-- Combined Category Selection -->
+                    <div class="col-md-6 mb-3">
+                        <label class="control-label">Category *</label>
+                        <!-- Category Dropdown (select only) -->
+                        <select id="categorySelect" class="form-control select2-with-tags" name="Category2">
+                            <option value="">-- Select or Type New Category --</option>
+                            @foreach (var category in Model.Category)
+                            {
+                                <option value="@category.CategoryName">@category.CategoryName</option>
+                            }
+                        </select>
+                        <small class="form-text text-muted">Select an existing category or type a new one</small>
+
+                        @* <!-- Delete Buttons for each category --> *@
+                        @* <div class="mt-2"> *@
+                        @*     <strong>Delete Existing Categories:</strong> *@
+                        @*     <ul class="list-group"> *@
+                        @*         @foreach (var category in Model.Category) *@
+                        @*         { *@
+                        @*             <li class="list-group-item d-flex justify-content-between align-items-center"> *@
+                        @*                 @category.CategoryName *@
+                        @*                 <button type="button" class="btn btn-sm btn-danger delete-category-btn" data-id="@category.Id" data-category-name2="@category.CategoryName"> *@
+                        @*                     <i class="bi bi-trash3"></i> Delete *@
+                        @*                 </button> *@
+                        @*             </li> *@
+                        @*         } *@
+                        @*     </ul> *@
+                        @* </div> *@
+                        
+                        <!-- Hidden field for new category value -->
+                        <input type="hidden" asp-for="NewCategoryName" id="newCategoryInput" />
+                        <span asp-validation-for="Category2" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6 mb-3 d-flex gap-2">
+                        <div class="col-md-6">
+                            <label asp-for="SKU" class="form-label">Stock Keeping Unit (SKU)</label>
+                            <input asp-for="SKU" class="form-control" id="skuField" readonly />
+                            <span asp-validation-for="SKU" class="text-danger"></span>
+                        </div>
+                        <!-- Change this in your form -->
+                        <div class="col-md-6">
+                            <label class="form-label">Barcode</label>
+                            <div id="barcodeContainer">
+                                @if (!string.IsNullOrEmpty(Model.Barcode))
+                                {
+                                    <img src="@Model.Barcode" alt="Product Barcode" style="max-height: 50px;" />
+                                }
+                            </div>
+                            <input type="hidden" asp-for="Barcode" id="barcodeImageData" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="PurchasePrice" class="form-label">Unit Price *</label>
+                        <input asp-for="PurchasePrice" class="form-control" type="number" step="0.01" required />
+                        <span asp-validation-for="PurchasePrice" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="SellingPrice" class="form-label">Selling Price *</label>
+                        <input asp-for="SellingPrice" class="form-control" type="number" step="0.01" required />
+                        <span asp-validation-for="SellingPrice" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="QuantityInStock" class="form-label">Initial Stock *</label>
+                        <input asp-for="QuantityInStock" class="form-control" type="number" required />
+                        <span asp-validation-for="QuantityInStock" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="ReorderLevel" class="form-label">Reorder Level *</label>
+                        <input asp-for="ReorderLevel" class="form-control" type="number" required />
+                        <span asp-validation-for="ReorderLevel" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Description" class="form-label">Description</label>
+                    <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+                    <button type="submit" class="btn btn-primary">Create Product</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <!-- Add Select2 CSS and JS files -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    
+    <script>
+        $(document).ready(function () {
+            // Initialize Select2 for categories with tags
+            $('.select2-with-tags').select2({
+                tags: true,
+                placeholder: "Select or type a new category",
+                allowClear: true,
+                createTag: function(params) {
+                    // Check if the term matches any existing option
+                    var term = $.trim(params.term);
+                    if (term === '') {
+                        return null;
+                    }
+                    
+                    // Check if it exists as an option already
+                    var exists = false;
+                    $('option', $('#categorySelect')).each(function() {
+                        if ($(this).val().toLowerCase() === term.toLowerCase()) {
+                            exists = true;
+                            return false; // break the loop
+                        }
+                    });
+                    
+                    // Create a new option if it doesn't exist
+                    if (!exists) {
+                        return {
+                            id: term,
+                            text: term + ' (new)',
+                            isNew: true
+                        };
+                    }
+                    
+                    return null;
+                }
+            }).on('select2:select', function(e) {
+                var selectedValue = e.params.data.id;
+                var isNewValue = e.params.data.isNew;
+                
+                if (isNewValue) {
+                    // It's a new category, set the NewCategoryName
+                    $('#newCategoryInput').val(selectedValue);
+                } else {
+                    // It's an existing category, clear NewCategoryName
+                    $('#newCategoryInput').val('');
+                }
+                
+                // Update SKU and barcode when category changes
+                generateSKUAndBarcode();
+            });
+
+            // Handle category delete with confirmation
+            $(document).on('click', '.delete-category-btn', function () {
+                var id = $(this).data('id');
+                var categoryName = $(this).data('category-name2');
+
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: `You are about to delete the category: "${categoryName}"`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: '/Inventory1/DeleteCategory',
+                            type: 'POST',
+                            data: { id: parseInt(id) },
+                            success: function (response) {
+                                Swal.fire('Deleted!', 'Category has been deleted.', 'success').then(() => {
+                                    location.reload(); // reload to reflect changes
+                                });
+                            },
+                            error: function () {
+                                Swal.fire('Error', 'Failed to delete category.', 'error');
+                            }
+                        });
+                    }
+                });
+            });
+
+            // Generate SKU and barcode when product name or category changes
+            $('#productName').on('input', function() {
+                generateSKUAndBarcode();
+            });
+            
+            // Validate form to ensure a category is selected
+            $('form').on('submit', function(e) {
+                var categoryValue = $('#categorySelect').val();
+                if (!categoryValue) {
+                    e.preventDefault();
+                    alert('Please select or enter a category');
+                    return false;
+                }
+                return true;
+            });
+        });
+
+        // Replace dollar sign with P in price formatting
+        function formatCurrency(amount) {
+            return '₱' + parseFloat(amount).toFixed(2);
+        }
+
+        function generateSKUAndBarcode() {
+            const name = $('#productName').val().trim();
+            const category = $('#categorySelect').val().trim();
+
+            if (name && category) {
+                // Generate SKU
+                const namePart = name.substring(0, 3).toUpperCase();
+                const categoryPart = category.substring(0, 3).toUpperCase();
+                // Generate a random 4-5 digit number
+                const randomNum = Math.floor(1000 + Math.random() * 90000).toString();
+                const sku = `${namePart}-${categoryPart}-${randomNum}`;
+
+                $('#skuField').val(sku);
+
+                // Generate and store barcode
+                generateBarcode(sku);
+            }
+        }
+
+        function generateBarcode(sku) {
+            $('#barcodeContainer').empty();
+            const canvas = document.createElement("canvas");
+            $('#barcodeContainer').append(canvas);
+
+            JsBarcode(canvas, sku, {
+                format: "CODE128",
+                lineColor: "#000",
+                width: 2,
+                height: 50,
+                displayValue: true
+            });
+
+            // Convert to data URL and update hidden field
+            const dataUrl = canvas.toDataURL("image/png");
+            $('#barcodeImageData').val(dataUrl);
+
+            // Update display
+            const img = new Image();
+            img.src = dataUrl;
+            img.alt = "Product Barcode";
+            img.style.maxHeight = "50px";
+            $('#barcodeContainer').empty().append(img);
+        }
+    </script>
+}

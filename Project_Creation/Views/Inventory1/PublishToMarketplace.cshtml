@@ -1,0 +1,202 @@
+﻿@model Project_Creation.Models.ViewModels.PublishToMarketplaceViewModel
+
+@{
+    ViewData["Title"] = "Publish to Marketplace";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-globe me-2"></i>
+                        Publish Product to Marketplace
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="PublishToMarketplace" method="post" enctype="multipart/form-data">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <input type="hidden" asp-for="ProductId" />
+                        <input type="hidden" asp-for="Description" value="@Model.MarketplaceDescription" id="description" />
+                        <input type="hidden" asp-for="ProductName" value="@Model.ProductName" />
+
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            You are managing marketplace settings for <strong>@Model.ProductName</strong>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" asp-for="IsPublished" id="isPublished">
+                                <label class="form-check-label" asp-for="IsPublished">Publish to Marketplace</label>
+                            </div>
+                            <small class="text-muted">When enabled, this product will be visible to customers in the marketplace.</small>
+                        </div>
+
+                        <div id="marketplaceOptions">
+                            <div class="form-group mb-3">
+                                <label asp-for="MarketplaceDescription" class="control-label"></label>
+                                <textarea asp-for="MarketplaceDescription" id="description2" class="form-control" rows="5"></textarea>
+                                <span asp-validation-for="MarketplaceDescription" class="text-danger"></span>
+                                <small class="text-muted">Provide a detailed description that will appear in the marketplace. Good descriptions help customers make purchasing decisions.</small>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label asp-for="MarketplacePrice" class="control-label"></label>
+                                <input asp-for="MarketplacePrice" class="form-control" />
+                                <span asp-validation-for="MarketplacePrice" class="text-danger"></span>
+                                <small class="text-muted">You can set a different price for the marketplace than your inventory price.</small>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" asp-for="DisplayFeatured" id="displayFeatured">
+                                    <label class="form-check-label" asp-for="DisplayFeatured">Featured Product</label>
+                                </div>
+                                <small class="text-muted">Featured products receive prominent placement in the marketplace.</small>
+                            </div>
+
+                            <!-- Product Images Section -->
+                            <div class="form-group mb-3">
+                                <label class="control-label">Product Images</label>
+
+                                @if (Model.ExistingImages != null && Model.ExistingImages.Any())
+                                {
+                                    <div class="mb-3">
+                                        <h6>Current Images</h6>
+                                        <div class="d-flex flex-wrap">
+                                            @foreach (var image in Model.ExistingImages)
+                                            {
+                                                <div class="me-3 mb-3 position-relative">
+                                                    <img src="@image.ImagePath" alt="@image.Title" class="img-thumbnail" style="width: 150px; height: 150px; object-fit: cover;" />
+                                                    @if (image.IsMainImage)
+                                                    {
+                                                        <span class="badge bg-primary position-absolute top-0 start-0">Main</span>
+                                                    }
+                                                    <div class="d-flex justify-content-between mt-1">
+                                                        <button type="button" class="btn btn-sm btn-outline-primary set-main-btn"
+                                                                data-image-id="@image.Id" data-product-id="@Model.ProductId">
+                                                            <i class="fas fa-star"></i> Set Main
+                                                        </button>
+                                                        <button type="button" class="btn btn-sm btn-outline-danger delete-image-btn"
+                                                                data-image-id="@image.Id">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="alert alert-warning">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>
+                                        No images have been uploaded for this product. Adding high-quality images will increase sales.
+                                    </div>
+                                }
+
+                                <div class="mt-2">
+                                    <label asp-for="ImageFiles" class="control-label"></label>
+                                    <input asp-for="ImageFiles" type="file" multiple class="form-control" accept="image/*" required/>
+                                    <span asp-validation-for="ImageFiles" class="text-danger"></span>
+                                    <small class="text-muted">Upload multiple high-quality images (JPG, PNG, GIF). Maximum 5MB per file.</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group mt-4 d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-1"></i> Back to List
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save me-1"></i> Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        $(document).ready(function () {
+            function toggleMarketplaceOptions() {
+                if ($('#isPublished').is(':checked')) {
+                    $('#marketplaceOptions').slideDown();
+                } else {
+                    $('#marketplaceOptions').slideUp();
+                }
+            }
+
+            document.getElementById("description2").addEventListener("input", function () {
+                const description = this.value;
+                document.getElementById("description").value = description;
+            });
+
+            toggleMarketplaceOptions();
+            $('#isPublished').change(toggleMarketplaceOptions);
+
+            $(document).on('click', '.set-main-btn', function () {
+                const imageId = $(this).data('image-id');
+                const productId = $(this).data('product-id');
+
+                $.post('@Url.Action("SetMainImage", "Inventory1")', {
+                    imageId: imageId,
+                    productId: productId
+                }, function (response) {
+                    if (response.success) {
+                        location.reload();
+                    } else {
+                        alert(response.message || 'Failed to set main image');
+                    }
+                }).fail(function () {
+                    alert('An error occurred');
+                });
+            });
+
+            $(document).on('click', '.delete-image-btn', function () {
+                const imageId = $(this).data('image-id');
+
+                if (confirm('Are you sure you want to delete this image?')) {
+                    $.post('@Url.Action("DeleteImage", "Inventory1")', {
+                        imageId: imageId
+                    }, function (response) {
+                        if (response.success) {
+                            location.reload();
+                        } else {
+                            alert(response.message || 'Failed to delete image');
+                        }
+                    }).fail(function () {
+                        alert('An error occurred');
+                    });
+                }
+            });
+
+            // Trigger alert immediately on file selection if any file exceeds 5MB
+            $('input[type="file"]').on('change', function () {
+                const maxSize = 5 * 1024 * 1024; // 5MB
+                const files = this.files;
+                let oversizedFiles = [];
+
+                for (let i = 0; i < files.length; i++) {
+                    if (files[i].size > maxSize) {
+                        oversizedFiles.push(files[i].name);
+                    }
+                }
+
+                if (oversizedFiles.length > 0) {
+                    alert("The following file(s) exceed the 5MB limit:\n" + oversizedFiles.join("\n"));
+                    // Clear the input
+                    $(this).val('');
+                }
+            });
+
+        });
+    </script>
+}

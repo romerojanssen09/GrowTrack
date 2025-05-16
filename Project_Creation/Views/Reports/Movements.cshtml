@@ -1,0 +1,274 @@
+﻿@using Microsoft.AspNetCore.Html
+@model List<Project_Creation.Models.Entities.InventoryLog>
+@{
+    ViewData["Title"] = "Inventory Movements";
+}
+
+<div class="container mt-4">
+    <h2>Inventory Movements Report</h2>
+
+    <!-- Filter Form -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" asp-action="Movements" asp-controller="Reports" class="row g-3">
+                <!-- Date Range -->
+                <div class="col-md-3">
+                    <label for="startDate" class="form-label">Start Date</label>
+                    <input type="date" class="form-control" id="startDate" name="startDate" 
+                           value="@ViewBag.StartDate">
+                </div>
+                <div class="col-md-3">
+                    <label for="endDate" class="form-label">End Date</label>
+                    <input type="date" class="form-control" id="endDate" name="endDate" 
+                           value="@ViewBag.EndDate">
+                </div>
+                
+                <!-- Product Filter -->
+                <div class="col-md-3">
+                    <label for="productName" class="form-label">Product</label>
+                    <select class="form-select" id="productName" name="productName">
+                        <option value="">All Products</option>
+                        @foreach (var product in ViewBag.Products)
+                        {
+                            var isSelected = ViewBag.ProductName == product;
+                            <option value="@product" selected="@isSelected">@product</option>
+                        }
+                    </select>
+                </div>
+                
+                <!-- Movement Type Filter -->
+                <div class="col-md-3">
+                    <label for="movementType" class="form-label">Movement Type</label>
+                    <select class="form-select" id="movementType" name="movementType">
+                        <option value="">All Types</option>
+                        @foreach (var type in ViewBag.MovementTypes)
+                        {
+                            var isSelected = ViewBag.MovementType == type;
+                            <option value="@type" selected="@isSelected">@type</option>
+                        }
+                    </select>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-filter me-1"></i> Apply Filters
+                    </button>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <a href="@Url.Action("Movements")" class="btn btn-outline-secondary w-100">
+                        <i class="fas fa-times me-1"></i> Clear
+                    </a>
+                </div>
+            </form>
+            
+            <!-- Export Options -->
+            <div class="d-flex justify-content-end gap-2 mt-3">
+                <a href="@Url.Action("ExportMovements", new { 
+                    format = "csv", 
+                    startDate = ViewBag.StartDate, 
+                    endDate = ViewBag.EndDate, 
+                    productName = ViewBag.ProductName, 
+                    movementType = ViewBag.MovementType
+                })" class="btn btn-outline-success">
+                    <i class="fas fa-file-csv me-1"></i> Export CSV
+                </a>
+                <a href="@Url.Action("ExportMovements", new { 
+                    format = "excel", 
+                    startDate = ViewBag.StartDate, 
+                    endDate = ViewBag.EndDate, 
+                    productName = ViewBag.ProductName, 
+                    movementType = ViewBag.MovementType
+                })" class="btn btn-outline-success">
+                    <i class="fas fa-file-excel me-1"></i> Export Excel
+                </a>
+            </div>
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info mt-4">
+            No inventory movements found for the selected criteria.
+        </div>
+    }
+    else
+    {
+        <!-- Summary Section -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 text-center">
+                        <h5>Total Movements</h5>
+                        <h3 id="movementCount">@Model.Count</h3>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <h5>Total In</h5>
+                        <h3 class="text-success" id="totalIn">@Model.Where(m => (m.QuantityAfter - m.QuantityBefore) > 0).Sum(m => m.QuantityAfter - m.QuantityBefore)</h3>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <h5>Total Out</h5>
+                        <h3 class="text-danger" id="totalOut">@Math.Abs(Model.Where(m => (m.QuantityAfter - m.QuantityBefore) < 0).Sum(m => m.QuantityAfter - m.QuantityBefore))</h3>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <h5>Net Change</h5>
+                        <h3 class="@(Model.Sum(m => m.QuantityAfter - m.QuantityBefore) >= 0 ? "text-success" : "text-danger")"
+                            id="netChange">
+                            @Model.Sum(m => m.QuantityAfter - m.QuantityBefore)
+                        </h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Movements Table -->
+        <div class="card">
+            <div class="card-body">
+                <!-- Table Search Box -->
+                <div class="mb-3">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" id="tableSearch" class="form-control" placeholder="Search across all columns...">
+                        <button id="clearSearch" class="btn btn-outline-secondary" type="button">Clear</button>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table id="movementsTable" class="table table-hover shadow-sm">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Date & Time</th>
+                                <th>Product</th>
+                                <th>Type</th>
+                                <th class="text-end">Before</th>
+                                <th class="text-end">Change</th>
+                                <th class="text-end">After</th>
+                                <th>Reference</th>
+                                <th>Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white">
+                            @foreach (var movement in Model)
+                            {
+                                var change = movement.QuantityAfter - movement.QuantityBefore;
+                                <tr class="movement-row">
+                                    <td>@movement.Timestamp.ToString("yyyy-MM-dd HH:mm")</td>
+                                    <td>@movement.ProductName</td>
+                                    <td>@GetMovementTypeBadge(movement.MovementType)</td>
+                                    <td class="text-end">@movement.QuantityBefore.ToString("N0")</td>
+                                    <td class="text-end @(change >= 0 ? "text-success" : "text-danger") change-value">
+                                        @(change >= 0 ? "+" : "")@change.ToString("N0")
+                                    </td>
+                                    <td class="text-end">@movement.QuantityAfter.ToString("N0")</td>
+                                    <td>
+                                        <span class="badge bg-light text-dark">@movement.ReferenceId</span>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">@movement.Notes</small>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@functions {
+    public IHtmlContent GetMovementTypeBadge(string movementType)
+    {
+        var badgeClass = movementType switch
+        {
+            "Purchase" => "bg-primary",
+            "Sale" => "bg-danger",
+            "Stock In" => "bg-success",
+            "Adjustment" => "bg-warning text-dark",
+            "New Product" => "bg-info",
+            "Edit Product" => "bg-secondary",
+            "Delete Product" => "bg-dark",
+            _ => "bg-secondary"
+        };
+
+        return new HtmlString($"<span class='badge {badgeClass}'>{movementType}</span>");
+    }
+}
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const searchInput = document.getElementById('tableSearch');
+            const clearButton = document.getElementById('clearSearch');
+            const movementRows = document.querySelectorAll('.movement-row');
+            
+            // Search functionality
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                
+                let visibleCount = 0;
+                let totalIn = 0;
+                let totalOut = 0;
+                
+                movementRows.forEach(row => {
+                    const rowText = row.textContent.toLowerCase();
+                    const isVisible = rowText.includes(searchTerm);
+                    row.style.display = isVisible ? '' : 'none';
+                    
+                    if (isVisible) {
+                        visibleCount++;
+                        
+                        // Calculate totals for visible rows
+                        const changeText = row.querySelector('.change-value').textContent;
+                        const change = parseInt(changeText.replace(/[^0-9-]/g, ''));
+                        
+                        if (change > 0) {
+                            totalIn += change;
+                        } else if (change < 0) {
+                            totalOut += Math.abs(change);
+                        }
+                    }
+                });
+                
+                // Update summary stats
+                document.getElementById('movementCount').textContent = visibleCount;
+                document.getElementById('totalIn').textContent = totalIn;
+                document.getElementById('totalOut').textContent = totalOut;
+                
+                const netChange = totalIn - totalOut;
+                const netChangeElement = document.getElementById('netChange');
+                netChangeElement.textContent = netChange;
+                
+                if (netChange >= 0) {
+                    netChangeElement.classList.remove('text-danger');
+                    netChangeElement.classList.add('text-success');
+                } else {
+                    netChangeElement.classList.remove('text-success');
+                    netChangeElement.classList.add('text-danger');
+                }
+            });
+            
+            // Clear search
+            clearButton.addEventListener('click', function() {
+                searchInput.value = '';
+                movementRows.forEach(row => row.style.display = '');
+                
+                // Reset summary stats to original values
+                document.getElementById('movementCount').textContent = @Model.Count;
+                document.getElementById('totalIn').textContent = @Model.Where(m => (m.QuantityAfter - m.QuantityBefore) > 0).Sum(m => m.QuantityAfter - m.QuantityBefore);
+                document.getElementById('totalOut').textContent = @Math.Abs(Model.Where(m => (m.QuantityAfter - m.QuantityBefore) < 0).Sum(m => m.QuantityAfter - m.QuantityBefore));
+                
+                const netChangeElement = document.getElementById('netChange');
+                netChangeElement.textContent = @Model.Sum(m => m.QuantityAfter - m.QuantityBefore);
+                
+                if (@Model.Sum(m => m.QuantityAfter - m.QuantityBefore) >= 0) {
+                    netChangeElement.classList.remove('text-danger');
+                    netChangeElement.classList.add('text-success');
+                } else {
+                    netChangeElement.classList.remove('text-success');
+                    netChangeElement.classList.add('text-danger');
+                }
+            });
+        });
+    </script>
+}

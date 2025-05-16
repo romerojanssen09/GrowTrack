@@ -1,0 +1,318 @@
+@model Project_Creation.Models.ViewModels.DashboardViewModel
+
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<!-- Include Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div class="container-fluid mt-4">
+    <h2 class="mb-4">Business Dashboard</h2>
+
+    <!-- Stats Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Total Products</h5>
+                    <h2 class="display-4">@Model.TotalProducts</h2>
+                </div>
+                <div class="card-footer d-flex">
+                    <a href="@Url.Action("Index", "Inventory1")" class="text-white text-decoration-none">
+                        View Inventory1 <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Total Sales</h5>
+                    <h2 class="display-4">@Model.TotalSales</h2>
+                </div>
+                <div class="card-footer d-flex">
+                    <a href="@Url.Action("Sales", "Reports")" class="text-white text-decoration-none">
+                        View Sales Report <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Total Revenue</h5>
+                    <h2 class="display-4">@Model.TotalRevenue.ToString("C")</h2>
+                </div>
+                <div class="card-footer d-flex">
+                    <a href="@Url.Action("Sales", "Reports")" class="text-white text-decoration-none">
+                        View Reports <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Low Stock Items</h5>
+                    <h2 class="display-4">@Model.LowStockCount</h2>
+                </div>
+                <div class="card-footer d-flex">
+                    <a href="@Url.Action("Index", "Inventory1")" class="text-white text-decoration-none">
+                        Restock Now <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Sales Trend (Last 7 Days)</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="salesTrendChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Stock Distribution</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="stockDistributionChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity and Sales Row -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Recent Activity</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Activity</th>
+                                    <th>Details</th>
+                                    <th>Amount</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var activity in Model.RecentActivities)
+                                {
+                                    <tr>
+                                        <td>
+                                            @if (activity.Type == "Sale")
+                                            {
+                                                <span class="badge bg-danger">Sale</span>
+                                            }
+                                            else if (activity.Type == "In")
+                                            {
+                                                <span class="badge bg-success">Stock In</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary">@activity.Type</span>
+                                            }
+                                            @activity.ProductName
+                                        </td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(activity.Notes))
+                                            {
+                                                @activity.Notes
+                                            }
+                                            else
+                                            {
+                                                <span>-</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (activity.Quantity < 0)
+                                            {
+                                                <span class="text-danger">@activity.Quantity</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-success">+@activity.Quantity</span>
+                                            }
+                                        </td>
+                                        <td>@activity.Timestamp.ToString("MMM dd, HH:mm")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Recent Sales</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Customer</th>
+                                    <th>Products</th>
+                                    <th>Amount</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var sale in Model.RecentSales)
+                                {
+                                    <tr>
+                                        <td>@sale.SaleId</td>
+                                        <td>@sale.CustomerName</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-info" type="button" 
+                                                    data-bs-toggle="collapse" 
+                                                    data-bs-target="#sale-@sale.SaleId" 
+                                                    aria-expanded="false">
+                                                @sale.ItemCount items
+                                            </button>
+                                            <div class="collapse mt-2" id="sale-@sale.SaleId">
+                                                <div class="card card-body py-0 px-2">
+                                                    <ul class="list-unstyled mb-0">
+                                                        @foreach (var product in sale.Products)
+                                                        {
+                                                            <li>
+                                                                <small>
+                                                                    @product.ProductName (@product.Quantity × @product.UnitPrice.ToString("C"))
+                                                                </small>
+                                                            </li>
+                                                        }
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>@sale.TotalAmount.ToString("C")</td>
+                                        <td>@sale.SaleDate.ToString("MMM dd, HH:mm")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Sales Trend Chart
+        const salesTrendCtx = document.getElementById('salesTrendChart').getContext('2d');
+        const salesTrendChart = new Chart(salesTrendCtx, {
+            type: 'line',
+            data: {
+                labels: [@Html.Raw(string.Join(",", Model.SalesTrend.Select(x => $"'{x.Date.ToString("MMM dd")}'").ToArray()))],
+                datasets: [
+                    {
+                        label: 'Sales Amount',
+                        data: [@string.Join(",", Model.SalesTrend.Select(x => x.TotalSales))],
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Order Count',
+                        data: [@string.Join(",", Model.SalesTrend.Select(x => x.OrderCount))],
+                        backgroundColor: 'rgba(255, 159, 64, 0.2)',
+                        borderColor: 'rgba(255, 159, 64, 1)',
+                        borderWidth: 2,
+                        fill: false,
+                        tension: 0.4,
+                        yAxisID: 'y1',
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Revenue'
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + value;
+                            }
+                        }
+                    },
+                    y1: {
+                        beginAtZero: true,
+                        position: 'right',
+                        grid: {
+                            drawOnChartArea: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'Orders'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Stock Distribution Chart
+        const stockCtx = document.getElementById('stockDistributionChart').getContext('2d');
+        const stockChart = new Chart(stockCtx, {
+            type: 'doughnut',
+            data: {
+                labels: [@Html.Raw(string.Join(",", Model.StockDistribution.Select(x => $"'{x.Category}'").ToArray()))],
+                datasets: [{
+                    data: [@string.Join(",", Model.StockDistribution.Select(x => x.TotalQuantity))],
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.7)',
+                        'rgba(54, 162, 235, 0.7)',
+                        'rgba(255, 206, 86, 0.7)',
+                        'rgba(75, 192, 192, 0.7)',
+                        'rgba(153, 102, 255, 0.7)',
+                        'rgba(255, 159, 64, 0.7)',
+                        'rgba(199, 199, 199, 0.7)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.raw || 0;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = Math.round((value / total) * 100);
+                                return `${label}: ${value} items (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+} 

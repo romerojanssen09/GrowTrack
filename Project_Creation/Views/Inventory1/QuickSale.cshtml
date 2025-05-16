@@ -1,0 +1,301 @@
+﻿@model Project_Creation.Models.ViewModels.QuickSaleViewModel
+
+@{
+    ViewData["Title"] = "Quick Sale";
+}
+
+<div class="container mt-4">
+    <h2>Quick Sale</h2>
+
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert alert-danger">
+            <ul>
+                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <li>@error.ErrorMessage</li>
+                }
+            </ul>
+        </div>
+    }
+
+    <form asp-action="QuickSale" method="post" id="quickSaleForm">
+        <div class="mb-3">
+            <label asp-for="CustomerName" class="form-label">Customer Name</label>
+            <input asp-for="CustomerName" class="form-control" placeholder="Walk-in Customer" />
+            <span asp-validation-for="CustomerName" class="text-danger"></span>
+        </div>
+
+        <div id="items-container">
+            <!-- Initial item -->
+            <div class="item-row mb-3 row">
+                <div class="col-md-5">
+                    <label class="form-label">Product</label>
+                    <select name="Items[0].ProductId" class="form-select product-select" required>
+                        <option value="">Select a product</option>
+                        @if (ViewBag.Products != null)
+                        {
+                            @foreach (var product in ViewBag.Products)
+                            {
+                                <option value="@product.Id" data-price="@product.SellingPrice" data-stock="@product.QuantityInStock">
+                                    @product.ProductName (@product.QuantityInStock in stock) - @product.SellingPrice.ToString("C")
+                                </option>
+                            }
+                        }
+                        else
+                        {
+                            <option value="">No products available</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Quantity</label>
+                    <input type="number" name="Items[0].Quantity" class="form-control quantity-input" min="1" value="1" required />
+                    <small class="form-text text-muted available-stock">Max available: 0</small>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Price</label>
+                    <div class="input-group">
+                        <span class="input-group-text">Php</span>
+                        <input type="text" name="Items[0].Price" class="form-control item-price" readonly />
+                    </div>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="button" class="btn btn-danger remove-item" style="display:none">Remove</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <button type="button" id="add-item" class="btn btn-secondary">Add Another Item</button>
+        </div>
+
+        <div class="mb-3">
+            <h4>Total: <span id="total-amount">$0.00</span></h4>
+        </div>
+
+        <div class="mb-3">
+            <button type="submit" class="btn btn-primary">Complete Sale</button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            if ($('#quickSalesTable').length) {
+                $('#quickSalesTable').DataTable({
+                    "paging": true,
+                    "ordering": true,
+                    "info": true,
+                    "responsive": true
+                });
+            }
+
+            // Prevent form submission when pressing Enter in quantity inputs
+            $(document).on('keypress', '.quantity-input', function(e) {
+                if (e.which === 13) { // 13 is the Enter key code
+                    e.preventDefault();
+                    return false;
+                }
+            });
+
+            // Rest of your existing QuickSale JavaScript
+            let itemCount = 1;
+
+            // Initialize the first row price and total
+            updateItemPrice($('.product-select').first());
+            updateTotal();
+
+            // Update price and quantity limit when product changes
+            $(document).on('change', '.product-select', function() {
+                updateItemPrice($(this));
+                updateQuantityLimit($(this));
+                updateTotal();
+            });
+
+            // Update item price based on selected product
+            function updateItemPrice(selectElement) {
+                const option = selectElement.find('option:selected');
+                const row = selectElement.closest('.item-row');
+                const priceInput = row.find('.item-price');
+
+                if (option.val()) {
+                    const price = parseFloat(option.data('price')) || 0;
+                    priceInput.val(price.toFixed(2));
+                } else {
+                    priceInput.val('');
+                }
+            }
+
+            // Update quantity input limit based on available stock
+            function updateQuantityLimit(selectElement) {
+                const option = selectElement.find('option:selected');
+                const row = selectElement.closest('.item-row');
+                const quantityInput = row.find('.quantity-input');
+                const availableStockText = row.find('.available-stock');
+
+                if (option.val()) {
+                    const stock = parseInt(option.data('stock')) || 0;
+                    quantityInput.attr('max', stock);
+                    availableStockText.text(`Max available: ${stock}`);
+
+                    // Adjust current quantity if it exceeds the new max
+                    if (parseInt(quantityInput.val()) > stock) {
+                        quantityInput.val(stock);
+                    }
+                } else {
+                    quantityInput.removeAttr('max');
+                    availableStockText.text('Max available: 0');
+                }
+            }
+
+            // Add new item row
+            $('#add-item').click(function() {
+                const newRow = `
+                    <div class="item-row mb-3 row">
+                        <div class="col-md-5">
+                            <label class="form-label">Product</label>
+                            <select name="Items[${itemCount}].ProductId" class="form-select product-select" required>
+                                <option value="">Select a product</option>
+        @if (ViewBag.Products != null)
+        {
+            @foreach (var product in ViewBag.Products)
+            {
+                                                        <option value="@product.Id" data-price="@product.SellingPrice" data-stock="@product.QuantityInStock">
+                    @product.ProductName (@product.QuantityInStock in stock) - @product.SellingPrice.ToString("C")
+                                                        </option>
+            }
+        }
+        else
+        {
+                                            <option value="">No products available</option>
+        }
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Quantity</label>
+                            <input type="number" name="Items[${itemCount}].Quantity" class="form-control quantity-input" min="1" value="1" required />
+                            <small class="form-text text-muted available-stock">Max available: 0</small>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Price</label>
+                            <div class="input-group">
+                                <span class="input-group-text">Php</span>
+                                <input type="text" name="Items[${itemCount}].Price" class="form-control item-price" readonly />
+                            </div>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="button" class="btn btn-danger remove-item">Remove</button>
+                        </div>
+                    </div>
+                `;
+
+                $('#items-container').append(newRow);
+                itemCount++;
+
+                // Show remove button for the first item if we now have more than one item
+                if (itemCount > 1) {
+                    $('.remove-item').show();
+                }
+            });
+
+            // Remove item row
+            $(document).on('click', '.remove-item', function() {
+                $(this).closest('.item-row').remove();
+                itemCount--;
+
+                // Renumber the remaining rows to keep indexes sequential
+                $('.item-row').each(function(index) {
+                    $(this).find('select').attr('name', `Items[${index}].ProductId`);
+                    $(this).find('input[type="number"]').attr('name', `Items[${index}].Quantity`);
+                    $(this).find('.item-price').attr('name', `Items[${index}].Price`);
+                });
+
+                // Hide remove button if only one item left
+                if (itemCount === 1) {
+                    $('.remove-item').hide();
+                }
+
+                updateTotal();
+            });
+
+            // Update total when product or quantity changes
+            $(document).on('change', '.product-select, .quantity-input', function() {
+                updateTotal();
+            });
+
+            // Validate quantity doesn't exceed stock when changed
+            $(document).on('change', '.quantity-input', function() {
+                const row = $(this).closest('.item-row');
+                const select = row.find('.product-select');
+                const max = parseInt(select.find('option:selected').data('stock')) || 0;
+                const quantity = parseInt($(this).val()) || 0;
+
+                if (quantity > max) {
+                    $(this).val(max);
+                    alert(`Quantity cannot exceed available stock (${max})`);
+                }
+            });
+
+            function updateTotal() {
+                let total = 0;
+
+                $('.item-row').each(function() {
+                    const select = $(this).find('.product-select');
+                    const quantity = parseInt($(this).find('.quantity-input').val()) || 0;
+
+                    if (select.val()) {
+                        const price = parseFloat(select.find('option:selected').data('price')) || 0;
+                        const itemTotal = price * quantity;
+                        $(this).find('.item-price').val(price.toFixed(2));
+                        total += itemTotal;
+                    }
+                });
+
+                $('#total-amount').text('P' + total.toFixed(2));
+            }
+
+            // Form validation before submit
+            $('#quickSaleForm').on('submit', function(e) {
+                let isValid = true;
+                let errorMessage = '';
+
+                // Check at least one item is added
+                const hasItems = $('.product-select').filter(function() {
+                    return $(this).val() !== '';
+                }).length > 0;
+
+                if (!hasItems) {
+                    isValid = false;
+                    errorMessage = 'Please add at least one item to the sale';
+                }
+
+                // Check all quantities are valid
+                $('.item-row').each(function() {
+                    const select = $(this).find('.product-select');
+                    const quantityInput = $(this).find('.quantity-input');
+
+                    if (select.val()) {
+                        const max = parseInt(select.find('option:selected').data('stock')) || 0;
+                        const quantity = parseInt(quantityInput.val()) || 0;
+
+                        if (quantity > max) {
+                            isValid = false;
+                            errorMessage = `Quantity for ${select.find('option:selected').text()} exceeds available stock (${max})`;
+                            return false; // break out of each loop
+                        }
+                    }
+                });
+
+                if (!isValid) {
+                    e.preventDefault();
+                    alert(errorMessage);
+                    return false;
+                }
+
+                return true;
+            });
+        });
+    </script>
+}   

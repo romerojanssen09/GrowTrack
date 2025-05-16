@@ -1,0 +1,74 @@
+﻿@using Project_Creation.Models.Entities
+@model IEnumerable<Project_Creation.Models.Entities.Transaction>
+
+@{
+    ViewData["Title"] = "Transactions";
+}
+
+<div class="container">
+    <div class="card shadow">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h4>@ViewData["Title"]</h4>
+            <a asp-action="Create" class="btn btn-primary">
+                <i class="fas fa-plus"></i> New Transaction
+            </a>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Reference</th>
+                            <th>Product</th>
+                            <th>Type</th>
+                            <th>Quantity</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.TransactionDate.ToString("yyyy-MM-dd HH:mm")</td>
+                                <td>@item.ReferenceNumber</td>
+                                <td>@item.Product?.ProductName</td>
+                                <td>
+                                    @switch (item.Type)
+                                    {
+                                        case TransactionType.Purchase:
+                                            <span class="badge bg-success">Purchase</span>
+                                            break;
+                                        case TransactionType.Sale:
+                                            <span class="badge bg-primary">Sale</span>
+                                            break;
+                                        case TransactionType.Adjustment:
+                                            <span class="badge bg-warning">Adjustment</span>
+                                            break;
+                                        case TransactionType.Return:
+                                            <span class="badge bg-info">Return</span>
+                                            break;
+                                        case TransactionType.Damage:
+                                            <span class="badge bg-danger">Damage</span>
+                                            break;
+                                    }
+                                </td>
+                                <td>
+                                    @if (item.Type == TransactionType.Adjustment)
+                                    {
+                                        <span>@item.PreviousQuantity → @item.NewQuantity</span>
+                                    }
+                                    else
+                                    {
+                                        <span>@item.Quantity</span>
+                                    }
+                                </td>
+                                <td>@item.Notes</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

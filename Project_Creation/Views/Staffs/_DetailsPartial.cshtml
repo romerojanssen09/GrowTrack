@@ -1,0 +1,61 @@
+﻿@model Project_Creation.Models.Entities.Staff
+
+@{
+    @using Project_Creation.Models.Entities
+}
+
+<dl class="row">
+    <dt class="col-sm-4">Staff Name</dt>
+    <dd class="col-sm-8">@Model.StaffName</dd>
+
+    <dt class="col-sm-4">Email</dt>
+    <dd class="col-sm-8">@Model.StaffSEmail</dd>
+
+    <dt class="col-sm-4">Phone</dt>
+    <dd class="col-sm-8">@Model.StaffPhone</dd>
+
+    <dt class="col-sm-4">Status</dt>
+    <dd class="col-sm-8">
+        <span class="badge rounded-pill @(Model.IsActive == AccountStatus.Active ? "bg-success" :
+                          Model.IsActive == AccountStatus.Pending ? "bg-warning" : "bg-danger")">
+            @Model.IsActive
+        </span>
+    </dd>
+
+    <dt class="col-sm-4">Access Permissions</dt>
+    <dd class="col-sm-8">
+        <div class="row">
+            @foreach (var accessLevel in Enum.GetValues(typeof(StaffAccessLevel)))
+            {
+                if ((int)accessLevel > 0)
+                {
+                    <div class="col-md-6 mb-2">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input"
+                                   type="checkbox"
+                                   id="details_@accessLevel"
+                                   disabled
+                            @(Model.StaffAccessLevel.HasFlag((StaffAccessLevel)accessLevel) ? "checked" : "")>
+                            <label class="form-check-label" for="details_@accessLevel">
+                                @accessLevel
+                            </label>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </dd>
+</dl>
+
+<style>
+    .form-switch .form-check-input {
+        width: 2.5em;
+        height: 1.5em;
+        cursor: default;
+    }
+
+        .form-switch .form-check-input:checked {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+        }
+</style>

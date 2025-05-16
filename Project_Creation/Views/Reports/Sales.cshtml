@@ -1,0 +1,324 @@
+﻿@model List<Project_Creation.DTO.SaleDto>
+
+@{
+    ViewData["Title"] = "Sales Report";
+}
+
+<div class="container mt-4">
+    <h2>Sales Report</h2>
+
+    <!-- Filter Form -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" asp-action="Sales" asp-controller="Reports" class="row g-3">
+                <input type="hidden" name="viewType" value="@ViewBag.ViewType" />
+                
+                <!-- Time Period Selector -->
+                <div class="col-md-3">
+                    <label for="timePeriod" class="form-label">Time Period</label>
+                    <select class="form-select" id="timePeriod" name="timePeriod" onchange="handleTimePeriodChange()">
+                        @{
+                            var periods = new[] {
+                                new { Value = "custom", Text = "Custom Range" },
+                                new { Value = "today", Text = "Today" },
+                                new { Value = "yesterday", Text = "Yesterday" },
+                                new { Value = "thisWeek", Text = "This Week" },
+                                new { Value = "lastWeek", Text = "Last Week" },
+                                new { Value = "thisMonth", Text = "This Month" },
+                                new { Value = "lastMonth", Text = "Last Month" },
+                                new { Value = "thisYear", Text = "This Year" },
+                                new { Value = "lastYear", Text = "Last Year" }
+                            };
+                            
+                            foreach (var period in periods)
+                            {
+                                var isSelected = ViewBag.TimePeriod == period.Value;
+                                <option value="@period.Value" selected="@isSelected">@period.Text</option>
+                            }
+                        }
+                    </select>
+                </div>
+                
+                <div class="col-md-3" id="startDateContainer">
+                    <label for="startDate" class="form-label">Start Date</label>
+                    <input type="date" class="form-control" id="startDate" name="startDate" value="@ViewBag.StartDate">
+                </div>
+                <div class="col-md-3" id="endDateContainer">
+                    <label for="endDate" class="form-label">End Date</label>
+                    <input type="date" class="form-control" id="endDate" name="endDate" value="@ViewBag.EndDate">
+                </div>
+                <div class="col-md-3">
+                    <label for="customerName" class="form-label">Customer</label>
+                    <select class="form-select" id="customerName" name="customerName">
+                        <option value="">All Customers</option>
+                        @if (ViewBag.Customers != null)
+                        {
+                            foreach (var customer in ViewBag.Customers)
+                            {
+                                var isSelected = ViewBag.CustomerName == customer;
+                                <option value="@customer" selected="@isSelected">@customer</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="productName" class="form-label">Product Name</label>
+                    <input type="text" class="form-control" id="productName" name="productName"
+                           value="@ViewBag.ProductName" placeholder="Search by product name...">
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
+                </div>
+            </form>
+
+            <!-- View Type Toggle -->
+           <div class="d-flex justify-content-between align-items-center">
+                <div class="btn-group mt-3" role="group">
+                    @{
+                        string cardsUrl = Url.Action("Sales", new { 
+                            startDate = ViewBag.StartDate, 
+                            endDate = ViewBag.EndDate, 
+                            productName = ViewBag.ProductName, 
+                            customerName = ViewBag.CustomerName, 
+                            timePeriod = ViewBag.TimePeriod, 
+                            viewType = "cards" 
+                        });
+                        
+                        string tableUrl = Url.Action("Sales", new { 
+                            startDate = ViewBag.StartDate, 
+                            endDate = ViewBag.EndDate, 
+                            productName = ViewBag.ProductName, 
+                            customerName = ViewBag.CustomerName, 
+                            timePeriod = ViewBag.TimePeriod, 
+                            viewType = "table" 
+                        });
+                        
+                        bool isCardsView = ViewBag.ViewType == "cards";
+                        bool isTableView = ViewBag.ViewType == "table";
+                    }
+                    
+                    <a href="@cardsUrl" class="btn @(isCardsView ? "btn-primary" : "btn-outline-primary")">
+                        <i class="fas fa-th"></i> Cards @(isCardsView ? "✓" : "")
+                    </a>
+                    <a href="@tableUrl" class="btn @(isTableView ? "btn-primary" : "btn-outline-primary")">
+                        <i class="fas fa-table"></i> Table @(isTableView ? "✓" : "")
+                    </a>
+                </div>
+                <!-- Export Options -->
+                <div class="d-flex align-items-end gap-2 mt-3">
+                    <a href="@Url.Action("ExportSales", new { format = "csv", startDate = ViewBag.StartDate, endDate = ViewBag.EndDate, productName = ViewBag.ProductName, customerName = ViewBag.CustomerName, timePeriod = ViewBag.TimePeriod })" 
+                        class="btn btn-outline-success">
+                        <i class="fas fa-file-csv me-1"></i> Export CSV
+                    </a>
+                    <a href="@Url.Action("ExportSales", new { format = "excel", startDate = ViewBag.StartDate, endDate = ViewBag.EndDate, productName = ViewBag.ProductName, customerName = ViewBag.CustomerName, timePeriod = ViewBag.TimePeriod })" 
+                        class="btn btn-outline-success">
+                        <i class="fas fa-file-excel me-1"></i> Export Excel
+                    </a>
+                </div>
+           </div>
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info mt-4">
+            No sales found for the selected criteria.
+        </div>
+    }
+    else
+    {
+        <!-- Summary Section -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 text-center">
+                        <h5>Total Sales</h5>
+                        <h3>@Model.Count</h3>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <h5>Total Revenue</h5>
+                        <h3>@Model.Sum(s => s.TotalAmount).ToString("C")</h3>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <h5>Total Products Sold</h5>
+                        <h3>@Model.SelectMany(s => s.SaleItems).Sum(i => i.Quantity)</h3>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <h5>Avg. Sale Value</h5>
+                        <h3>@(Model.Any() ? (Model.Sum(s => s.TotalAmount) / Model.Count).ToString("C") : "$0.00")</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @if (ViewBag.ViewType == "cards")
+        {
+            <!-- Cards View -->
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                @foreach (var sale in Model)
+                {
+                    string cardBorderClass = sale.IsQuickSale ? "border-success" : "";
+                    string cardHeaderClass = sale.IsQuickSale ? "bg-success text-white" : "";
+                    string cardSubtitleClass = sale.IsQuickSale ? "text-success" : "text-muted";
+                    string cardFooterClass = sale.IsQuickSale ? "bg-light" : "";
+                    
+                    <div class="col">
+                        <div class="card h-100 shadow-sm @cardBorderClass">
+                            <div class="card-header @cardHeaderClass">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="card-title mb-0">
+                                        @if (sale.IsQuickSale)
+                                        {
+                                            <i class="fas fa-bolt me-2"></i>
+                                        }
+                                        Sale #@sale.Id
+                                    </h5>
+                                    <small>@sale.SaleDate.ToString("MMM dd, yyyy HH:mm")</small>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h6 class="card-subtitle mb-2 @cardSubtitleClass">
+                                    @if (sale.IsQuickSale)
+                                    {
+                                        <span class="badge bg-success me-1">QuickSale</span>
+                                    }
+                                    Customer: @sale.CustomerName
+                                </h6>
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Product</th>
+                                                <th>Qty</th>
+                                                <th>Price</th>
+                                                <th>Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="bg-white">
+                                            @foreach (var item in sale.SaleItems)
+                                            {
+                                                <tr class="border-bottom border-light">
+                                                    <td class="text-primary">@item.ProductName</td>
+                                                    <td>@item.Quantity</td>
+                                                    <td class="text-secondary">@item.UnitPrice.ToString("C")</td>
+                                                    <td class="text-success">@item.TotalPrice.ToString("C")</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="card-footer @cardFooterClass">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span><strong>Total:</strong> @sale.TotalAmount.ToString("C")</span>
+                                    <span><strong>Items:</strong> @sale.SaleItems.Count</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <!-- Table View -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover shadow-sm">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Date</th>
+                                    <th>Customer</th>
+                                    <th>Items</th>
+                                    <th>Total</th>
+                                    <th>Type</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white">
+                                @foreach (var sale in Model)
+                                {
+                                    string rowClass = sale.IsQuickSale ? "table-success" : "bg-light border-bottom";
+                                    <tr class="@rowClass">
+                                        <td class="py-3">@sale.Id</td>
+                                        <td class="py-3">@sale.SaleDate.ToString("MM/dd/yyyy HH:mm")</td>
+                                        <td class="py-3 text-primary">@sale.CustomerName</td>
+                                        <td class="py-3">
+                                            <button class="btn btn-sm btn-info text-white" type="button"
+                                                    data-bs-toggle="collapse"
+                                                    data-bs-target="#products-@sale.Id"
+                                                    aria-expanded="false">
+                                                @sale.SaleItems.Count items
+                                            </button>
+                                            <div class="collapse mt-2" id="products-@sale.Id">
+                                                <div class="card card-body py-1 px-2">
+                                                    <ul class="list-unstyled mb-0">
+                                                        @foreach (var item in sale.SaleItems)
+                                                        {
+                                                            <li>
+                                                                <span class="text-primary">@item.ProductName</span> 
+                                                                (<span class="text-secondary">@item.Quantity</span>) - 
+                                                                <span class="text-success">@item.TotalPrice.ToString("C")</span>
+                                                            </li>
+                                                        }
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="py-3 text-success fw-bold">@sale.TotalAmount.ToString("C")</td>
+                                        <td class="py-3">
+                                            @if (sale.IsQuickSale)
+                                            {
+                                                <span class="badge bg-success">QuickSale</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary">Regular</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const searchInput = document.getElementById("productName");
+            let typingTimer;
+            
+            searchInput.addEventListener("input", function () {
+                clearTimeout(typingTimer);
+                typingTimer = setTimeout(function () {
+                    if (searchInput.value.length > 2 || searchInput.value.length === 0) {
+                        searchInput.form.submit();
+                    }
+                }, 500);
+            });
+            
+            // Initialize time period filter visibility
+            handleTimePeriodChange();
+        });
+        
+        function handleTimePeriodChange() {
+            const timePeriod = document.getElementById('timePeriod').value;
+            const startDateContainer = document.getElementById('startDateContainer');
+            const endDateContainer = document.getElementById('endDateContainer');
+            
+            if (timePeriod === 'custom') {
+                startDateContainer.style.display = 'block';
+                endDateContainer.style.display = 'block';
+            } else {
+                startDateContainer.style.display = 'none';
+                endDateContainer.style.display = 'none';
+            }
+        }
+    </script>
+}

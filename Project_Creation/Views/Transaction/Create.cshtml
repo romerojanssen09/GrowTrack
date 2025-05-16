@@ -1,0 +1,136 @@
+﻿@using Project_Creation.Models.Entities
+@model Project_Creation.DTO.TransactionDto
+
+@{
+    ViewData["Title"] = "Create Transaction";
+}
+
+<div class="container">
+    <div class="card shadow">
+        <div class="card-header">
+            <h4>@ViewData["Title"]</h4>
+        </div>
+        <div class="card-body">
+            <form asp-action="Create">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="ProductId" class="form-label"></label>
+                        <select asp-for="ProductId" class="form-select"
+                                asp-items="@(new SelectList(ViewBag.Products, "Id", "ProductName"))">
+                            <option value="">-- Select Product --</option>
+                        </select>
+                        <span asp-validation-for="ProductId" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="Type" class="form-label"></label>
+                        <select asp-for="Type" class="form-select" id="transactionType">
+                            <option value="">-- Select Type --</option>
+                            <option value="@TransactionType.Purchase">Purchase (Add Stock)</option>
+                            <option value="@TransactionType.Sale">Sale (Remove Stock)</option>
+                            <option value="@TransactionType.Adjustment">Adjustment</option>
+                            <option value="@TransactionType.Return">Return</option>
+                            <option value="@TransactionType.Damage">Damage</option>
+                        </select>
+                        <span asp-validation-for="Type" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <!-- Dynamic fields based on transaction type -->
+                <div id="quantityFields" class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="Quantity" class="form-label"></label>
+                        <input asp-for="Quantity" class="form-control" />
+                        <span asp-validation-for="Quantity" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div id="adjustmentFields" class="row mb-3" style="display: none;">
+                    <div class="col-md-6">
+                        <label asp-for="CurrentQuantity" class="form-label"></label>
+                        <input asp-for="CurrentQuantity" class="form-control" readonly />
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="NewQuantity" class="form-label"></label>
+                        <input asp-for="NewQuantity" class="form-control" />
+                        <span asp-validation-for="NewQuantity" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div id="returnFields" class="row mb-3" style="display: none;">
+                    <div class="col-md-6">
+                        <label asp-for="CustomerName" class="form-label"></label>
+                        <input asp-for="CustomerName" class="form-control" />
+                        <span asp-validation-for="CustomerName" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="Reason" class="form-label"></label>
+                        <input asp-for="Reason" class="form-control" />
+                        <span asp-validation-for="Reason" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <label asp-for="Notes" class="form-label"></label>
+                        <textarea asp-for="Notes" class="form-control" rows="3"></textarea>
+                        <span asp-validation-for="Notes" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">Create Transaction</button>
+                    <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        $(document).ready(function() {
+            // Handle transaction type change
+            $('#transactionType').change(function() {
+                var type = $(this).val();
+
+                // Hide all dynamic fields first
+                $('#adjustmentFields, #returnFields').hide();
+                $('#quantityFields').show();
+
+                // Show fields based on selected type
+                if (type === '@@TransactionType.Adjustment') {
+                    $('#quantityFields').hide();
+                    $('#adjustmentFields').show();
+                    loadCurrentQuantity();
+                }
+                else if (type === '@@TransactionType.Return') {
+                    $('#returnFields').show();
+                }
+            });
+
+            // Load current quantity when product changes (for adjustments)
+            $('#ProductId').change(function() {
+                if ($('#transactionType').val() === '@@TransactionType.Adjustment') {
+                    loadCurrentQuantity();
+                }
+            });
+
+            function loadCurrentQuantity() {
+                var productId = $('#ProductId').val();
+                if (productId) {
+                    $.get('/Product/GetQuantity/' + productId, function(data) {
+                        $('#CurrentQuantity').val(data.quantity);
+                    });
+                } else {
+                    $('#CurrentQuantity').val('');
+                }
+            }
+        });
+    </script>
+}

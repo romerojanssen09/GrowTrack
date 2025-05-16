@@ -1,0 +1,721 @@
+@model Project_Creation.Models.ViewModels.BusinessProfileViewModel
+
+@{
+    ViewData["Title"] = Model.ShopName + " - Business Profile";
+    var backgroundStyle = !string.IsNullOrEmpty(Model.BusinessBackgroundImgPath)
+        ? $"background-image: url('{Model.BusinessBackgroundImgPath}');"
+        : "";
+
+    // Helper function to get the main product image
+    string GetProductMainImagePath(ICollection<Project_Creation.Models.Entities.ProductImage> images)
+    {
+        if (images == null || !images.Any())
+            return "/default/product.jpg";
+
+        var mainImage = images.FirstOrDefault(img => img.IsMainImage);
+        return mainImage?.ImagePath ?? images.First().ImagePath;
+    }
+
+    // Helper function to get image alt text
+    string GetProductImageAlt(ICollection<Project_Creation.Models.Entities.ProductImage> images, string productName)
+    {
+        if (images == null || !images.Any())
+            return "No image available";
+
+        var mainImage = images.FirstOrDefault(img => img.IsMainImage);
+        return !string.IsNullOrEmpty(mainImage?.AltText) ? mainImage.AltText : productName;
+    }
+}
+
+<div class="business-profile-container">
+    <!-- Success/Error Messages -->
+    @if (ViewBag.SuccessMessage != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @ViewBag.SuccessMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (ViewBag.ErrorMessage != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @ViewBag.ErrorMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (ViewBag.InfoMessage != null)
+    {
+        <div class="alert alert-info alert-dismissible fade show" role="alert">
+            @ViewBag.InfoMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Business Header Section -->
+    <div class="business-header" style="@backgroundStyle">
+        <div class="header-overlay"></div>
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-2" style="z-index:99;">
+                    <img src="@Model.LogoPath" alt="@Model.ShopName Logo" class="business-logo img-thumbnail">
+                </div>
+                <div class="col-md-8" style="z-index:99;">
+                    <h1 class="business-name">@Model.ShopName</h1>
+                    <div class="business-meta">
+                        <span class="business-address"><i class="fas fa-map-marker-alt"></i> @Model.BusinessAddress</span>
+                        <span class="business-phone ms-3"><i class="fas fa-phone"></i> @Model.PhoneNumber</span>
+                    </div>
+                    <p class="business-description">@Model.ShopDescription</p>
+                </div>
+                @if (Model.IsCurrentUser)
+                {
+                    <div class="col-md-2 text-end" style="z-index:99;">
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                            <i class="fas fa-edit"></i> Edit Profile
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container mt-4">
+        <!-- Shop Navigation -->
+        <div class="shop-navigation mb-4">
+            <ul class="nav nav-tabs" id="shopTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="shop-tab" data-bs-toggle="tab" data-bs-target="#shop-content" type="button" role="tab" aria-controls="shop-content" aria-selected="true">Shop</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="products-tab" data-bs-toggle="tab" data-bs-target="#products-content" type="button" role="tab" aria-controls="products-content" aria-selected="false">Products</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="categories-tab" data-bs-toggle="tab" data-bs-target="#categories-content" type="button" role="tab" aria-controls="categories-content" aria-selected="false">Categories</button>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="tab-content" id="shopTabContent">
+            <!-- Shop Tab Content -->
+            <div class="tab-pane fade show active" id="shop-content" role="tabpanel" aria-labelledby="shop-tab">
+                <!-- Recommended Products Section -->
+                <div class="product-section mb-5">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="section-title">Recommended Products</h4>
+                        <a href="#" class="text-decoration-none see-more" onclick="$('#products-tab').tab('show'); return false;">
+                            See More <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </div>
+
+                    <div class="row" id="recommendedProducts">
+                        @{
+                            // Get 3 random products as recommended products
+                            var recommendedProducts = Model.Recommended?.OrderBy(x => Guid.NewGuid()).Take(3).ToList();
+                        }
+
+                        @if (recommendedProducts != null && recommendedProducts.Any())
+                        {
+                            @foreach (var product in recommendedProducts)
+                            {
+                                <div class="col-md-4 mb-4">
+                                    <div class="product-card" onclick="recordProductClick(@product.Id)">
+                                        <div class="product-image-container">
+                                            @if (product.Images != null && product.Images.Any())
+                                            {
+                                                <img src="@GetProductMainImagePath(product.Images)" class="product-image" alt="@GetProductImageAlt(product.Images, product.ProductName)">
+                                            }
+                                            else
+                                            {
+                                                <img src="/default/product-placeholder.jpg" class="product-image" alt="No image available">
+                                            }
+                                        </div>
+                                        <div class="product-details">
+                                            <h5 class="product-title">@product.ProductName</h5>
+                                            <div class="d-flex justify-content-between">
+                                                <div class="product-price">
+                                                    <span class="current-price">₱@product.SellingPrice.ToString("N0")</span>
+                                                </div>
+                                                <div class="product-meta">
+                                                    <div class="quantity-left">
+                                                        <i class="fas fa-box"></i>
+                                                        <span>@product.QuantityInStock left</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="col-12">
+                                <div class="alert alert-info">No recommended products found</div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Top 3 Hot Sales Section -->
+                @* <div class="product-section mb-5"> *@
+                @*     <div class="d-flex justify-content-between align-items-center mb-3"> *@
+                @*         <h4 class="section-title">Top Hot Sales</h4> *@
+                @*         <a href="#" class="text-decoration-none see-more" onclick="$('#products-tab').tab('show'); return false;">See More <i class="fas fa-chevron-right"></i></a> *@
+                @*     </div> *@
+
+                @*     <div class="row"> *@
+                @*         @if (Model.HotSalesProducts != null && Model.HotSalesProducts.Any()) *@
+                @*         { *@
+                @*             @foreach (var product in Model.HotSalesProducts) *@
+                @*             { *@
+                @*                 <div class="col-md-4 mb-4"> *@
+                @*                     <div class="product-card" onclick="recordProductClick(@product.Id)"> *@
+                @*                         <div class="product-image-container"> *@
+                @*                             @if (product.Images != null && product.Images.Any()) *@
+                @*                             { *@
+                @*                                 <img src="@GetProductMainImagePath(product.Images)" class="product-image" alt="@GetProductImageAlt(product.Images, product.ProductName)"> *@
+                @*                             } *@
+                @*                             else *@
+                @*                             { *@
+                @*                                 <img src="/default/product-placeholder.jpg" class="product-image" alt="No image available"> *@
+                @*                             } *@
+                @*                             <div class="hot-badge"> *@
+                @*                                 <i class="fas fa-fire"></i> Hot *@
+                @*                             </div> *@
+                @*                         </div> *@
+                @*                         <div class="product-details"> *@
+                @*                             <h5 class="product-title">@product.ProductName</h5> *@
+                @*                             <div class="d-flex justify-content-between"> *@
+                @*                                 <div class="product-price"> *@
+                @*                                     <span class="current-price">₱@product.SellingPrice.ToString("N0")</span> *@
+                @*                                 </div> *@
+                @*                                 <div class="product-meta"> *@
+                @*                                     <div class="quantity-left"> *@
+                @*                                         <i class="fas fa-box"></i> *@
+                @*                                         <span>@product.QuantityInStock left</span> *@
+                @*                                     </div> *@
+                @*                                 </div> *@
+                @*                             </div> *@
+                @*                         </div> *@
+                @*                     </div> *@
+                @*                 </div> *@
+                @*             } *@
+                @*         } *@
+                @*         else *@
+                @*         { *@
+                @*             <div class="col-12"> *@
+                @*                 <div class="alert alert-info">No hot sales products found</div> *@
+                @*             </div> *@
+                @*         } *@
+                @*     </div> *@
+                @* </div> *@
+
+                @* change to featured products *@
+                <div class="product-section mb-5">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="section-title">Featured Products</h4>
+                        <a href="#" class="text-decoration-none see-more" onclick="$('#products-tab').tab('show'); return false;">See More <i class="fas fa-chevron-right"></i></a>
+                    </div>
+
+                    <div class="row">
+                        @if (Model.FeaturedProductViewModel != null && Model.FeaturedProductViewModel.Any())
+                        {
+                            @foreach (var product in Model.FeaturedProductViewModel)
+                            {
+                                <div class="col-md-4 mb-4">
+                                    <div class="product-card" onclick="recordProductClick(@product.Id)">
+                                        <div class="product-image-container">
+                                            @if (product.Images != null && product.Images.Any())
+                                            {
+                                                <img src="@GetProductMainImagePath(product.Images)" class="product-image" alt="@GetProductImageAlt(product.Images, product.ProductName)">
+                                            }
+                                            else
+                                            {
+                                                <img src="/default/product-placeholder.jpg" class="product-image" alt="No image available">
+                                            }
+                                            <div class="hot-badge">
+                                                <i class="fas fa-fire"></i> Featured
+                                            </div>
+                                        </div>
+                                        <div class="product-details">
+                                            <h5 class="product-title">@product.ProductName</h5>
+                                            <div class="d-flex justify-content-between">
+                                                <div class="product-price">
+                                                    <span class="current-price">₱@product.SellingPrice.ToString("N0")</span>
+                                                </div>
+                                                <div class="product-meta">
+                                                    <div class="quantity-left">
+                                                        <i class="fas fa-box"></i>
+                                                        <span>@product.QuantityInStock left</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="col-12">
+                                <div class="alert alert-info">No hot sales products found</div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Products Tab Content -->
+            <div class="tab-pane fade" id="products-content" role="tabpanel" aria-labelledby="products-tab">
+                <!-- All Products Section -->
+                <div class="product-section mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="section-title">All Products</h4>
+                        <div class="search-filter">
+                            <input type="text" id="productSearch" class="form-control" placeholder="Search products...">
+                        </div>
+                    </div>
+
+                    <div class="row" id="allProductsContainer">
+                        @if (Model.Products != null && Model.Products.Any())
+                        {
+                            @foreach (var product in Model.Products)
+                            {
+                                <div class="col-md-4 mb-4 product-item" data-category="@product.Category" data-name="@product.ProductName.ToLower()">
+                                    <div class="product-card" onclick="recordProductClick(@product.Id)">
+                                        <div class="product-image-container">
+                                            @if (product.Images != null && product.Images.Any())
+                                            {
+                                                <img src="@GetProductMainImagePath(product.Images)" class="product-image" alt="@GetProductImageAlt(product.Images, product.ProductName)">
+                                            }
+                                            else
+                                            {
+                                                <img src="/default/product-placeholder.jpg" class="product-image" alt="No image available">
+                                            }
+                                            <div class="hot-badge">
+                                                @product.Category2
+                                            </div>
+                                        </div>
+                                        <div class="product-details">
+                                            <h5 class="product-title">@product.ProductName</h5>
+                                            <div class="d-flex justify-content-between">
+                                                <div class="product-price">
+                                                    <span class="current-price">₱@product.SellingPrice.ToString("N0")</span>
+                                                </div>
+                                                <div class="product-meta">
+                                                    <div class="quantity-left">
+                                                        <i class="fas fa-box"></i>
+                                                        <span>@product.QuantityInStock left</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="col-12">
+                                <div class="alert alert-info">
+                                    No products found. @(Model.IsCurrentUser ? "Add your first product to get started!" : "")
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Categories Tab Content -->
+            <div class="tab-pane fade" id="categories-content" role="tabpanel" aria-labelledby="categories-tab">
+                @if (Model.GroupedProductsByCategory != null && Model.GroupedProductsByCategory.Any())
+                {
+                    @foreach (var categoryGroup in Model.GroupedProductsByCategory)
+                    {
+                        <div class="product-section mb-5">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h4 class="section-title">@categoryGroup.CategoryName</h4>
+                            </div>
+
+                            <div class="row">
+                                @foreach (var product in categoryGroup.Products)
+                                {
+                                    <div class="col-md-4 mb-4">
+                                        <div class="product-card" onclick="recordProductClick(@product.BOId)">
+                                            <div class="product-image-container">
+                                                @if (product.Images != null && product.Images.Any())
+                                                {
+                                                    <img src="@GetProductMainImagePath(product.Images)" class="product-image" alt="@GetProductImageAlt(product.Images, product.ProductName)">
+                                                }
+                                                else
+                                                {
+                                                    <img src="/default/product-placeholder.jpg" class="product-image" alt="No image available">
+                                                }
+                                            </div>
+                                            <div class="product-details">
+                                                <h5 class="product-title">@product.ProductName</h5>
+                                                <div class="d-flex justify-content-between">
+                                                    <div class="product-price">
+                                                        <span class="current-price">₱@product.SellingPrice.ToString("N0")</span>
+                                                    </div>
+                                                    <div class="product-meta">
+                                                        <div class="quantity-left">
+                                                            <i class="fas fa-box"></i>
+                                                            <span>@product.QuantityInStock left</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="alert alert-info">
+                        No categorized products found.
+                    </div>
+                }
+            </div>
+
+            <!-- Add Product Button (for shop owner) -->
+            @if (Model.IsCurrentUser)
+            {
+                <div class="text-center mb-4">
+                    <a asp-controller="Inventory1" asp-action="Create" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Add New Product
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Edit Profile Modal -->
+    @if (Model.IsCurrentUser)
+    {
+        <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <form asp-controller="BOBusinessProfile" asp-action="UpdateProfile" method="post" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="editProfileModalLabel">Edit Business Profile</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <input type="hidden" asp-for="UserId" name="UserId" />
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label asp-for="BusinessName" class="form-label">Business Name</label>
+                                    <input asp-for="BusinessName" name="BusinessName" class="form-control" />
+                                    <span asp-validation-for="BusinessName" class="text-danger"></span>
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="ShopName" class="form-label">Shop Name</label>
+                                    <input asp-for="ShopName" name="ShopName" class="form-control" />
+                                    <span asp-validation-for="ShopName" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="BusinessAddress" class="form-label">Business Address</label>
+                                <input asp-for="BusinessAddress" name="BusinessAddress" class="form-control" />
+                                <span asp-validation-for="BusinessAddress" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="ShopDescription" class="form-label">Description</label>
+                                <textarea asp-for="ShopDescription" name="Description" class="form-control" rows="3"></textarea>
+                                <span asp-validation-for="ShopDescription" class="text-danger"></span>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="logo" class="form-label">Business Logo</label>
+                                    <input type="file" class="form-control" id="logo" name="logo" accept="image/*">
+                                    <small class="text-muted">Current logo: <a href="@Model.LogoPath" target="_blank">View</a></small>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="backgroundImage" class="form-label">Background Image</label>
+                                    <input type="file" class="form-control" id="backgroundImage" name="backgroundImage" accept="image/*">
+                                    <small class="text-muted">Current background: <a href="@Model.BusinessBackgroundImgPath" target="_blank">View</a></small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    }
+
+    @section Styles {
+        <style>
+            .business-profile-container {
+                min-height: 100vh;
+            }
+
+            .business-header {
+                position: relative;
+                padding: 3rem 0;
+                background-size: cover;
+                background-position: center;
+                color: white;
+                margin-bottom: 2rem;
+            }
+
+            /* Shop Navigation Styles */
+            .shop-navigation .nav-tabs {
+                border-bottom: 1px solid #dee2e6;
+            }
+
+            .shop-navigation .nav-link {
+                color: #6c757d;
+                font-weight: 500;
+            }
+
+                .shop-navigation .nav-link.active {
+                    color: #ff4d4f;
+                    border-bottom: 2px solid #ff4d4f;
+                }
+
+            /* Product Section Styles */
+            .product-section {
+                padding: 15px 0;
+            }
+
+            .section-title {
+                font-size: 1.25rem;
+                font-weight: 600;
+                margin-bottom: 0;
+            }
+
+            .see-more {
+                color: #ff4d4f;
+                font-size: 0.9rem;
+            }
+
+            /* Product Card Styles */
+            .product-card {
+                border-radius: 8px;
+                overflow: hidden;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                transition: transform 0.3s;
+                background-color: #fff;
+                height: 100%;
+                cursor: pointer;
+            }
+
+                .product-card:hover {
+                    transform: translateY(-5px);
+                    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+                }
+
+            .product-image-container {
+                position: relative;
+                height: 180px;
+                overflow: hidden;
+            }
+
+            .product-image {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+
+            .discount-badge {
+                position: absolute;
+                top: 10px;
+                right: 10px;
+                background-color: #ff4d4f;
+                color: white;
+                padding: 2px 6px;
+                border-radius: 4px;
+                font-size: 0.8rem;
+                font-weight: bold;
+            }
+
+            .hot-badge {
+                position: absolute;
+                top: 10px;
+                left: 10px;
+                background-color: #ff8800;
+                color: white;
+                padding: 2px 6px;
+                border-radius: 4px;
+                font-size: 0.8rem;
+                font-weight: bold;
+            }
+
+            .product-details {
+                padding: 12px;
+            }
+
+            .product-title {
+                font-size: 1rem;
+                font-weight: 500;
+                margin-bottom: 8px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                height: 40px;
+            }
+
+            .product-price {
+                margin-bottom: 8px;
+            }
+
+            .current-price {
+                font-weight: bold;
+                color: #ff4d4f;
+                font-size: 1.1rem;
+            }
+
+            .original-price {
+                text-decoration: line-through;
+                color: #999;
+                font-size: 0.9rem;
+                margin-left: 5px;
+            }
+
+            .product-meta {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                font-size: 0.85rem;
+                color: #6c757d;
+            }
+
+            .quantity-left {
+                display: flex;
+                align-items: center;
+                color: #28a745;
+                font-size: 14px;
+            }
+
+                .quantity-left i {
+                    margin-right: 5px;
+                }
+
+                .quantity-left span {
+                    font-weight: bold;
+                    margin-right: 3px;
+                }
+
+            .header-overlay {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: rgba(0, 0, 0, 0.6);
+            }
+
+            .business-logo {
+                width: 150px;
+                height: 150px;
+                object-fit: cover;
+                border-radius: 50%;
+                border: 3px solid white;
+                background-color: white;
+                z-index: 1;
+            }
+
+            .business-name {
+                font-weight: 700;
+                margin-bottom: 0.5rem;
+                z-index: 1;
+            }
+
+            .business-description {
+                font-size: 1.1rem;
+                margin-bottom: 1rem;
+                z-index: 1;
+            }
+
+            .business-meta {
+                z-index: 1;
+            }
+
+            .product-card {
+                transition: transform 0.3s ease;
+            }
+
+                .product-card:hover {
+                    transform: translateY(-5px);
+                }
+
+            .product-image {
+                height: 200px;
+                object-fit: cover;
+            }
+        </style>
+    }
+
+    @section Scripts {
+        <partial name="_ValidationScriptsPartial" />
+        <script>
+            $(document).ready(function() {
+                // Product search functionality
+                $('#productSearch').on('input', function() {
+                    const searchTerm = $(this).val().toLowerCase();
+                    $('.product-item').each(function() {
+                        const productName = $(this).data('name');
+                        const category = $(this).data('category')?.toString().toLowerCase() || '';
+
+                        if (productName.includes(searchTerm)) {
+                            $(this).show();
+                        } else {
+                            $(this).hide();
+                        }
+                    });
+                });
+
+                // Function to record product clicks
+                function recordProductClick(productId) {
+                    // Store clicked product IDs in localStorage
+                    let clickedProducts = JSON.parse(localStorage.getItem('clickedProducts') || '[]');
+
+                    // Add the product ID if it's not already in the list
+                    if (!clickedProducts.includes(productId)) {
+                        // Keep only the last 10 clicked products
+                        if (clickedProducts.length >= 10) {
+                            clickedProducts.pop();
+                        }
+                        clickedProducts.unshift(productId);
+                        localStorage.setItem('clickedProducts', JSON.stringify(clickedProducts));
+                    }
+
+                    // Send this data to the server for analytics
+                    $.ajax({
+                        url: '@Url.Action("RecordProductClick", "BOBusinessProfile")',
+                        type: 'POST',
+                        data: { productId: productId },
+                        success: function(response) {
+                            console.log('Product click recorded');
+                        },
+                        error: function(error) {
+                            console.log('Error recording product click');
+                        }
+                    });
+
+                    // Navigate to product details page
+                    window.location.href = '/Inventory1/Details/' + productId;
+                }
+
+                // Initialize tooltips
+                $('[data-bs-toggle="tooltip"]').tooltip();
+            });
+        </script>
+    }

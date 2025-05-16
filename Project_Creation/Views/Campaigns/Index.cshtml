@@ -1,0 +1,459 @@
+﻿@model IEnumerable<Project_Creation.Models.Entities.Campaign>
+
+@{
+    ViewData["Title"] = "Campaigns";
+    @using System.Security.Claims
+    @using Project_Creation.Models.Entities
+    @using Microsoft.AspNetCore.Mvc.Rendering
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["WarningMessage"] != null)
+{
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        @TempData["WarningMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-12 d-flex justify-content-between align-items-center">
+            <h1>Campaign Management</h1>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createCampaignModal">
+                <i class="fas fa-plus"></i> Create Campaign
+            </button>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table id="campaignsTable" class="table table-striped table-hover">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th>Campaign Name</th>
+                                    <th>Message</th>
+                                    <th>Target Products</th>
+                                    <th>Created</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td>@item.CampaignName</td>
+                                        <td>@item.Message</td>
+                                        <td>
+                                            @if (item.SendToAll)
+                                            {
+                                                <span>All Leads</span>
+                                            }
+                                            else if (item.TargetProducts != null && item.TargetProducts.Any())
+                                            {
+                                                @foreach (var product in ViewBag.Products as List<Product2>)
+                                                {
+                                                    var isSelected = item.TargetProducts?.Split(',').Contains(product.Id.ToString()) ?? false;
+                                                    if (!isSelected) continue;
+                                                    <div class="form-check product-item">
+                                                        <label class="form-check-label">@product.ProductName</label>
+                                                    </div>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <span>Mango!</span>
+                                            }
+                                        </td>
+                                        <td>@item.CampaignAt.ToString("MM/dd/yyyy HH:mm")</td>
+                                        <td>@(item.IsSent ? "Sent" : "Draft")</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-info btn-view" data-id="@item.Id">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-warning btn-edit" data-id="@item.Id">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-danger btn-delete" data-id="@item.Id">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Campaign Modal -->
+<div class="modal fade" id="createCampaignModal" tabindex="-1" aria-labelledby="createCampaignModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="createCampaignModalLabel">Create New Campaign</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="createCampaignForm">
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <div class="form-group mb-3">
+                        <label class="form-label">Sender Information</label>
+                        <div class="card p-3 mb-3">
+                            <div><strong>Name:</strong> <span id="senderName">@User.FindFirst("FirstName")?.Value @User.FindFirst("LastName")?.Value</span></div>
+                            <div><strong>Company:</strong> <span id="senderCompany">@User.FindFirst("CompanyName")?.Value</span></div>
+                            <div><strong>Email:</strong> <span id="senderEmail">@User.FindFirst(ClaimTypes.Email)?.Value</span></div>
+                        </div>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="CampaignName" class="form-label">Campaign Name</label>
+                        <input type="text" class="form-control" id="CampaignName" name="CampaignName" required>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="Message" class="form-label">Message</label>
+                        <textarea class="form-control" id="Message" name="Message" rows="5" required></textarea>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <div id="targetProductsContainer2">
+                            <label class="form-label">Target leads interested in</label>
+                            <div class="input-group mb-2">
+                                <input type="text" class="form-control product-search" placeholder="Search products...">
+                            </div>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="SendToAll" name="SendToAll">
+                            <label class="form-check-label" for="SendToAll">Send to all leads</label>
+                        </div>
+                        <div class="border p-2 product-checkbox-container" id="targetProductsContainer" style="max-height: 200px; overflow-y: auto;">
+                            <!-- Products will be loaded via AJAX -->
+                            <div class="text-center py-3">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Create Campaign</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Details Modal -->
+<div class="modal fade" id="detailsModal" tabindex="-1" aria-labelledby="detailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="detailsModalLabel">Campaign Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="detailsModalBody">
+                <!-- Content will be loaded via AJAX -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="editModalLabel">Edit Campaign</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editForm">
+                @Html.AntiForgeryToken()
+                <div class="modal-body" id="editModalBody">
+                    <!-- Content will be loaded via AJAX -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" />
+    <style>
+        .card {
+            border-radius: 10px;
+        }
+
+        .modal-header {
+            border-bottom: none;
+        }
+
+        .product-checkbox-container {
+            background-color: #f8f9fa;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            // Initialize DataTable
+            $('#campaignsTable').DataTable();
+
+            // View Details Button Click
+            $(document).on('click', '.btn-view', function() {
+                var campaignId = $(this).data('id');
+                $.get('@Url.Action("DetailsPartial", "Campaigns")/' + campaignId, function(data) {
+                    $('#detailsModalBody').html(data);
+                    $('#detailsModal').modal('show');
+                }).fail(function() {
+                    Swal.fire('Error', 'Could not load campaign details', 'error');
+                });
+            });
+
+            // Delete Button Click
+            $(document).on('click', '.btn-delete', function() {
+                var campaignId = $(this).data('id');
+                console.log(campaignId);
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "You won't be able to revert this!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.post('/Campaigns/Delete/' + campaignId, {
+                            __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                        }).done(function() {
+                            Swal.fire(
+                                'Deleted!',
+                                'Campaign has been deleted.',
+                                'success'
+                            ).then(() => {
+                                window.location.reload();
+                            });
+                        }).fail(function() {
+                            Swal.fire(
+                                'Error!',
+                                'Failed to delete campaign.',
+                                'error'
+                            );
+                        });
+                    }
+                });
+            });
+
+            // Load products when modal is shown
+            $('#createCampaignModal').on('shown.bs.modal', function() {
+                loadProducts();
+            });
+
+            // Toggle target products visibility
+            $('#SendToAll').change(function() {
+                $('#targetProductsContainer').toggle(!this.checked);
+                $('#targetProductsContainer2').toggle(!this.checked);
+            });
+
+            // Product search functionality
+            $(document).on('input', '.product-search', function() {
+                const searchTerm = $(this).val().toLowerCase();
+                $('.product-item').each(function() {
+                    const productName = $(this).find('.form-check-label').text().toLowerCase();
+                    $(this).toggle(productName.includes(searchTerm));
+                });
+            });
+
+            // Form submission
+            $('#createCampaignForm').submit(function(e) {
+                e.preventDefault();
+
+                const formData = {
+                    CampaignName: $('#CampaignName').val(),
+                    Message: $('#Message').val(),
+                    SendToAll: $('#SendToAll').is(':checked'),
+                    TargetProducts: $('#SendToAll').is(':checked')
+                        ? null
+                        : $('input[name="SelectedProductIds"]:checked').map(function() {
+                            return this.value;
+                        }).get().join(','),
+                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                };
+
+                $.ajax({
+                    url: '@Url.Action("Create", "Campaigns")',
+                    type: 'POST',
+                    data: formData,
+                    success: function(response) {
+                        if (response.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success!',
+                                text: 'Campaign created successfully!',
+                                timer: 1500,
+                                showConfirmButton: false
+                            }).then(() => {
+                                window.location.reload();
+                            });
+                        } else {
+                            let errorMessage = 'Failed to create campaign';
+                            if (response.errors && response.errors.length > 0) {
+                                errorMessage = response.errors.join('\n');
+                            }
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error!',
+                                text: errorMessage
+                            });
+                        }
+                    },
+                    error: function(xhr) {
+                        let errorMessage = 'An error occurred while creating the campaign';
+                        if (xhr.responseJSON && xhr.responseJSON.errors) {
+                            errorMessage = xhr.responseJSON.errors.join('\n');
+                        }
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: errorMessage
+                        });
+                    }
+                });
+            });
+
+            function loadProducts() {
+                $.get('@Url.Action("GetProducts", "Campaigns")', function(data) {
+                    const container = $('.product-checkbox-container');
+                    container.empty();
+
+                    if (data.length > 0) {
+                        data.forEach(product => {
+                            container.append(`
+                                <div class="form-check product-item">
+                                    <input class="form-check-input" type="checkbox"
+                                           name="SelectedProductIds" value="${product.id}">
+                                    <label class="form-check-label">${product.name}</label>
+                                </div>
+                            `);
+                        });
+                    } else {
+                        container.append('<p class="text-muted">No products available</p>');
+                    }
+                });
+            }
+
+            // Edit Button Click
+            $(document).on('click', '.btn-edit', function() {
+                var campaignId = $(this).data('id');
+                $.get('/Campaigns/EditPartial/' + campaignId)
+                    .done(function(data) {
+                        $('#editModalBody').html(data);
+                        $('#editModal').modal('show');
+
+                        // Initialize product search
+                        $('.product-search').on('input', function() {
+                            const searchTerm = $(this).val().toLowerCase();
+                            $(this).closest('.modal').find('.product-item').each(function() {
+                                const productName = $(this).find('.form-check-label').text().toLowerCase();
+                                $(this).toggle(productName.includes(searchTerm));
+                            });
+                        });
+
+                        // Toggle target products container
+                        $('#Edit_SendToAll').change(function() {
+                            $('#editTargetProductsContainer').toggle(!this.checked);
+                        }).trigger('change');
+                    })
+                    .fail(function(xhr) {
+                        console.error('Error loading edit form:', xhr.responseText);
+                        Swal.fire('Error', 'Could not load campaign for editing', 'error');
+                    });
+            });
+
+            // Edit Form Submission
+            $(document).on('submit', '#editForm', function(e) {
+                e.preventDefault();
+
+                // Collect form data
+                const formData = {
+                    Id: $('#Edit_Id').val(),
+                    CampaignName: $('#Edit_CampaignName').val(),
+                    Message: $('#Edit_Message').val(),
+                    SendToAll: $('#Edit_SendToAll').is(':checked'),
+                    SelectedProductIds: $('#Edit_SendToAll').is(':checked') ? [] :
+                        $('input[name="SelectedProductIds"]:checked').map(function() {
+                            return this.value;
+                        }).get(),
+                    Notes: $('#Edit_Notes').val(),
+                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                };
+
+                // Convert SelectedProductIds array to comma-separated string
+                formData.TargetProducts = formData.SelectedProductIds.join(',');
+                delete formData.SelectedProductIds;
+
+                $.ajax({
+                    url: '/Campaigns/Edit/' + formData.Id,
+                    type: 'POST',
+                    contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                    data: formData,
+                    success: function(response) {
+                        if (response.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success!',
+                                text: 'Campaign updated successfully',
+                                timer: 1500,
+                                showConfirmButton: false
+                            }).then(() => {
+                                window.location.reload();
+                            });
+                        } else {
+                            let errorMessage = 'Failed to update campaign';
+                            if (response.errors && response.errors.length > 0) {
+                                errorMessage = response.errors.join('\n');
+                            }
+                            Swal.fire('Error', errorMessage, 'error');
+                        }
+                    },
+                    error: function(xhr) {
+                        let errorMessage = 'An error occurred while updating the campaign';
+                        if (xhr.responseJSON && xhr.responseJSON.errors) {
+                            errorMessage = xhr.responseJSON.errors.join('\n');
+                        }
+                        Swal.fire('Error', errorMessage, 'error');
+                    }
+                });
+            });
+        });
+    </script>
+}

@@ -1,0 +1,70 @@
+[
+  {
+    "ContainingType": "Project_Creation.Controllers.EmailController",
+    "Method": "SendEmail",
+    "RelativePath": "api/emails",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "receiver",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "subject",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "body",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "isBodyHtml",
+        "Type": "System.Boolean",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TrackingController",
+    "Method": "TrackOpen",
+    "RelativePath": "api/tracking/open/{campaignId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "campaignId",
+        "Type": "System.String",
+        "IsRequired": true
+      },
+      {
+        "Name": "email",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TrackingController",
+    "Method": "TrackReply",
+    "RelativePath": "api/tracking/reply",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "reply",
+        "Type": "Project_Creation.DTO.EmailReplyDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  }
+]

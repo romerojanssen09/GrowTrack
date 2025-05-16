@@ -1,0 +1,396 @@
+﻿@using System.Security.Claims
+@model IEnumerable<Project_Creation.Models.ViewModels.ChatmateViewModel>
+
+@{
+	ViewData["Title"] = "Chat";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="">
+	<div class="row border rounded shadow-sm" style="height: calc(100vh - 150px); overflow: hidden;" overflow: hidden;">
+		<!-- Sidebar -->
+		<div class="col-md-4 border-end d-flex flex-column p-0">
+			<div class="bg-light p-3 border-bottom">
+				<h5 class="mb-3">Messages</h5>
+				<div class="input-group">
+					<span class="input-group-text bg-white"><i class="fas fa-search text-muted"></i></span>
+					<input type="text" class="form-control" placeholder="Search conversations...">
+				</div>
+			</div>
+			<div class="overflow-auto flex-grow-1">
+				@foreach (var chatmate in Model)
+				{
+					<div class="chatmate-item d-flex p-3 border-bottom chatmate-item align-items-center" data-userid="@chatmate.Id" data-action="load-messages">
+						<div class="position-relative me-3">
+							<img src="/default/default-profile.png" alt="@chatmate.FirstName" class="rounded-circle" width="50" height="50">
+							@if (chatmate.UnreadCount > 0)
+							{
+								<span class="badge bg-primary rounded-circle position-absolute top-0 start-100 translate-middle">@chatmate.UnreadCount</span>
+							}
+						</div>
+						<div class="flex-grow-1">
+							<div class="d-flex justify-content-between fw-semibold">
+								<span>@chatmate.FirstName @chatmate.LastName</span>
+								<small class="text-muted">@chatmate.LastMessageTime.ToString("h:mm tt")</small>
+							</div>
+							<div class="text-muted small text-truncate">
+								@if (chatmate.IsCurrentUserSender)
+								{
+									<span>You: </span>
+								}
+								@(chatmate.LastMessage?.Length > 30 ? chatmate.LastMessage.Substring(0, 30) + "..." : chatmate.LastMessage)
+							</div>
+						</div>
+					</div>
+				}
+			</div>
+		</div>
+
+		<!-- Chat Main -->
+		<div class="col-md-8 d-flex flex-column p-0">
+			<div class="bg-light p-3 border-bottom d-flex align-items-center">
+				<img id="currentChatmateImage" src="/default/user.png" class="rounded-circle me-2" width="40" height="40" alt="User">
+				<strong id="currentChatmateName">Select a conversation</strong>
+			</div>
+
+            <div class="flex-grow-1 overflow-auto p-3 bg-light" id="messagesContainer">
+				<div class="d-flex flex-column align-items-center justify-content-center text-muted h-100">
+					<i class="fas fa-comments fa-3x mb-3"></i>
+					<p>Select a conversation to start chatting</p>
+				</div>
+			</div>
+
+			<div class="border-top p-3 bg-light message-input">
+				<form id="messageForm">
+					@Html.AntiForgeryToken()
+					<input type="hidden" id="currentUserId" value="@User.FindFirst(ClaimTypes.NameIdentifier)?.Value" />
+					<input type="hidden" id="receiverId">
+					<div class="input-group">
+						<input type="text" id="messageInput" class="form-control" placeholder="Type a message...">
+						<button class="btn btn-primary" type="submit">
+							<i class="fas fa-paper-plane"></i>
+						</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+
+@section Styles{
+    <style>
+        .message-bubble {
+            border-radius: 18px;
+            padding: 10px 15px;
+            position: relative;
+            margin: 0 10px;
+        }
+
+        .sent-message {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .received-message {
+            background-color: #e9ecef;
+            color: black;
+        }
+
+        .message-content {
+            word-wrap: break-word;
+        }
+
+        .message-time {
+            font-size: 0.75rem;
+            color: #6c757d;
+            text-align: right;
+            margin-top: 4px;
+        }
+
+        /* For received messages, align time to left */
+        .received-message .message-time {
+            text-align: left;
+        }
+
+        #messagesContainer {
+            min-height: 200px;
+            max-height: 361px;
+        }
+
+        .message-input {
+            position: relative;
+        }
+
+        .loading-spinner {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: none; /* Hidden by default */
+        }
+
+        .input-group {
+            margin-bottom: 10px; /* Add some space below the input */
+        }
+
+        .form-control {
+            border-radius: 20px; /* Rounded corners */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+        }
+
+        .btn-primary {
+            border-radius: 20px; /* Rounded corners */
+        }
+
+        /* Additional styles for better visual feedback */
+        .chatmate-item:hover {
+            background-color: #f1f1f1; /* Highlight on hover */
+        }
+
+        .chatmate-item.active {
+            background-color: #e9f5ff;
+            border-left: 3px solid #007bff;
+        }
+    </style>
+}
+
+@section Scripts {
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+	<script>
+                $(document).ready(function() {
+            // SignalR connection
+            const connection = new signalR.HubConnectionBuilder()
+                .withUrl("/realtimehub")
+                .build();
+
+            connection.start().then(function () {
+                console.log('SignalR Connected');
+            }).catch(function (err) {
+                return console.error(err.toString());
+            });
+
+            // Function to scroll to bottom of messages
+            function scrollToBottom() {
+                const container = document.getElementById('messagesContainer');
+                if (container) {
+                    container.scrollTop = container.scrollHeight;
+                }
+            }
+
+            // Check if there's a preselected user from the URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const preselectedUserId = urlParams.get('userId') || @(ViewBag.SelectedUserId != null ? ViewBag.SelectedUserId : "null");
+
+            // If we have a preselected user, load their messages
+            if (preselectedUserId && preselectedUserId !== "null") {
+                loadMessages(preselectedUserId);
+            }
+            // Otherwise, auto-select first chatmate if available
+            else if ($('.chatmate-item').length > 0) {
+                const firstChatmateId = $('.chatmate-item').first().data('userid');
+                loadMessages(firstChatmateId);
+            }
+
+            // Function to convert UTC to PH time (UTC+8)
+            function convertToPHTime(utcDate) {
+                const date = new Date(utcDate);
+                date.setHours(date.getHours() + 8); // Add 8 hours for PH time
+                return date;
+            }
+
+            // Function to format time as "h:mm AM/PM"
+            function formatTime(date) {
+                return date.toLocaleTimeString('en-US', {
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: true
+                });
+            }
+
+            connection.on("ReceiveChatMessage", function (senderId, receiverId, message, createdAt) {
+                const currentChatmateId = $('#receiverId').val();
+                const currentUserId = $('#currentUserId').val();
+
+                if ((receiverId == currentUserId && senderId == currentChatmateId) ||
+                    (senderId == currentUserId && receiverId == currentChatmateId)) {
+
+                    // ✅ Remove empty state if it exists
+                    $('#messagesContainer .empty-state').remove();
+
+                    const isSent = senderId == currentUserId;
+                    const phTime = convertToPHTime(new Date(createdAt));
+                    const timeString = formatTime(phTime);
+
+                    const messageClass = isSent ? 'sent-message' : 'received-message';
+                    const alignClass = isSent ? 'justify-content-end' : 'justify-content-start';
+                    const messageLength = message.length;
+                    const widthPercentage = Math.min(70, Math.max(30, (messageLength * 1.5)));
+
+                    const messageHtml = `
+                        <div class="d-flex ${alignClass} mb-3">
+                            <div class="message-bubble ${messageClass}" style="max-width: ${widthPercentage}%">
+                                <div class="message-content">${message}</div>
+                                <div class="message-time">${timeString}</div>
+                            </div>
+                        </div>
+                    `;
+
+                    $('#messagesContainer').append(messageHtml);
+                    scrollToBottom();
+                }
+            });
+
+            // In your $(document).ready function:
+            function loadMessages(userId) {
+                // Remove active class from all chatmates
+                $('.chatmate-item').removeClass('active');
+
+                // Add active class to the selected chatmate (if exists in DOM)
+                const chatmateElement = $(`.chatmate-item[data-userid="${userId}"]`);
+                if (chatmateElement.length) {
+                    chatmateElement.addClass('active');
+
+                    // ✅ Update name and image even if chatmate is in sidebar
+                    const name = chatmateElement.find('span').first().text();
+                    $('#currentChatmateName').text(name);
+
+                    const imgSrc = chatmateElement.find('img').attr('src');
+                    $('#currentChatmateImage').attr('src', imgSrc);
+                } else {
+                    // Fallback if not in sidebar
+                    $.get('/Chat/GetUserInfo', { userId: userId }, function(user) {
+                        $('#currentChatmateName').text(user.firstName + ' ' + user.lastName);
+                        $('#currentChatmateImage').attr('src', user.imageUrl);
+                    });
+                }
+
+
+                // Show loading state
+                $('#messagesContainer').html('<div class="text-center py-4"><i class="fas fa-spinner fa-spin"></i> Loading messages...</div>');
+
+                // Load messages via AJAX
+                $.get('/Chat/GetMessages', { otherUserId: userId }, function(messages) {
+                    if (messages.length === 0) {
+                        $('#messagesContainer').html('<div class="empty-state"><i class="fas fa-comment-slash"></i><p>No messages yet</p></div>');
+                    } else {
+                        let html = '';
+                        const currentUserId = $('#currentUserId').val();
+
+                        messages.forEach(msg => {
+                            const isSent = msg.senderId == currentUserId;
+                            const phTime = convertToPHTime(new Date(msg.createdAt));
+                            const timeString = formatTime(phTime);
+                            const messageClass = isSent ? 'sent-message' : 'received-message';
+                            const alignClass = isSent ? 'justify-content-end' : 'justify-content-start';
+
+                            // Calculate width based on message length
+                            const messageLength = msg.message.length;
+                            const widthPercentage = Math.min(70, Math.max(30, (messageLength * 1.5)));
+
+                            html += `
+                                <div class="d-flex ${alignClass} mb-3">
+                                    <div class="message-bubble ${messageClass}" style="max-width: ${widthPercentage}%">
+                                        <div class="message-content">${msg.message}</div>
+                                        <div class="message-time">${timeString}</div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+
+                        $('#messagesContainer').html(html);
+                        scrollToBottom();
+                    }
+
+                    // Show message input
+                    $('.message-input').show();
+                    $('#receiverId').val(userId);
+                    $('#messageInput').focus();
+                }).fail(function() {
+                    $('#messagesContainer').html('<div class="text-center py-4 text-danger"><i class="fas fa-exclamation-circle"></i> Failed to load messages</div>');
+                });
+            }
+
+            // Click handler for chatmate items
+            $(document).on('click', '.chatmate-item', function() {
+                const userId = $(this).data('userid');
+                loadMessages(userId);
+            });
+
+            // Auto-select first chatmate if available
+            if ($('.chatmate-item').length > 0) {
+                const firstChatmateId = $('.chatmate-item').first().data('userid');
+                loadMessages(firstChatmateId);
+            }
+
+            // Handle message submission
+            $('#messageForm').submit(function(e) {
+                e.preventDefault();
+                const message = $('#messageInput').val().trim();
+                const receiverId = $('#receiverId').val();
+
+                if (message && receiverId) {
+                    const token = $('input[name="__RequestVerificationToken"]').val();
+                    const $spinner = $('<i class="fas fa-spinner fa-spin loading-spinner"></i>'); // Create spinner element
+                    $('.message-input').append($spinner); // Append spinner to the input area
+                    $spinner.show(); // Show spinner
+
+                    $.ajax({
+                        url: '/Chat/SendMessage',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({
+                            ReceiverId: receiverId,
+                            Message: message
+                        }),
+                        headers: {
+                            'RequestVerificationToken': token,
+                            'Content-Type': 'application/json'
+                        },
+                        success: function(response) {
+                            $spinner.hide(); // Hide spinner on success
+                            if (response.success) {
+                                $('#messageInput').val('');
+                                // Optimistic UI update
+                                const phTime = convertToPHTime(new Date());
+                                const timeString = formatTime(phTime);
+                                const widthPercentage = Math.min(70, Math.max(30, (message.length * 1.5)));
+
+                                const messageHtml = `
+                                    <div class="d-flex justify-content-end mb-3">
+                                        <div class="message-bubble sent-message" style="max-width: ${widthPercentage}%">
+                                            <div class="message-content">${message}</div>
+                                            <div class="message-time">${timeString}</div>
+                                        </div>
+                                    </div>
+                                `;
+                                scrollToBottom();
+                            } else {
+                                alert('Failed to send message!');
+                            }
+                        },
+                        error: function(xhr) {
+                            $spinner.hide(); // Hide spinner on error
+                            console.error('Error:', xhr.responseJSON?.message || 'Unknown error');
+                            alert('Failed to send message. Please try again.');
+                        }
+                    });
+                }
+            });
+
+            // Auto-scroll when new messages arrive
+            const observer = new MutationObserver(function(mutations) {
+                scrollToBottom();
+            });
+            observer.observe(document.getElementById('messagesContainer'), {
+                childList: true,
+                subtree: true
+            });
+        });
+
+        // Store user ID in a hidden field for SignalR if not exists
+        if (!$('#currentUserId').length) {
+            const currentUserId = '@(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value)';
+            $('<input>').attr({type: 'hidden', id: 'currentUserId', value: currentUserId}).appendTo('body');
+        }
+	</script>
+}

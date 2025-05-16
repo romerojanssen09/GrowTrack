@@ -1,0 +1,59 @@
+﻿@model Project_Creation.Models.Entities.Staff
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<h1>Create</h1>
+
+<h4>Staff</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="StaffName" class="control-label"></label>
+                <input asp-for="StaffName" class="form-control" />
+                <span asp-validation-for="StaffName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="StaffSEmail" class="control-label"></label>
+                <input asp-for="StaffSEmail" class="form-control" />
+                <span asp-validation-for="StaffSEmail" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="StaffPhone" class="control-label"></label>
+                <input asp-for="StaffPhone" class="form-control" />
+                <span asp-validation-for="StaffPhone" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="IsActive" class="control-label"></label>
+                <select asp-for="IsActive" class="form-control"></select>
+                <span asp-validation-for="IsActive" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="StaffAccessLevel" class="control-label"></label>
+                <select asp-for="StaffAccessLevel" class="form-control"></select>
+                <span asp-validation-for="StaffAccessLevel" class="text-danger"></span>
+            </div>
+            <input asp-for="Link" type="text" name="name" id="link" />
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+			$(document).ready(function () {
+            $('#link').val(`${window.location.origin}/Register/SecondRegistration?userId=${userId}`);
+			});
+	</script>
+}

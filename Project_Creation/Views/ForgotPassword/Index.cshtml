@@ -1,0 +1,448 @@
+@model Project_Creation.DTO.ForgotPasswordDto
+
+@{
+    ViewData["Title"] = "Forgot Password";
+}
+
+<style>
+    .password-requirements ul li {
+        margin-bottom: 5px;
+    }
+
+    .password-requirements i {
+        margin-right: 5px;
+    }
+
+    .progress {
+        background-color: #e9ecef;
+        border-radius: 4px;
+    }
+
+    .progress-bar {
+        transition: width 0.3s ease, background-color 0.3s ease;
+    }
+</style>
+
+<style>
+    .slide-container {
+        display: flex;
+        transition: transform 0.5s ease-in-out;
+        width: calc(100% * 3); /* 3 slides in this case */
+    }
+
+    .slide-step {
+        flex: 0 0 100%;
+        width: 100%;
+        padding: 20px;
+    }
+
+    .form-slider {
+        overflow: hidden;
+        width: 100%;
+    }
+
+    .disabled {
+        pointer-events: none;
+        opacity: 0.5;
+    }
+</style>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+                <div class="card-header bg-primary text-white">
+                    <h3>Reset Password</h3>
+                </div>
+                <div class="card-header bg-primary bg-gradient text-white p-4 border-0 text-center">
+                    <i class="fas fa-key fa-3x mb-3"></i>
+                    <h3 class="fw-bold mb-0">Forgot Password</h3>
+                    <p class="mb-0 opacity-75">We'll help you reset your password</p>
+                </div>
+                <div class="form-slider">
+                    <div class="slide-container" id="slideContainer">
+
+                        <!-- Step 1: Email Input -->
+                        <div class="slide-step">
+                            <div class="alert alert-info d-flex align-items-center mb-4">
+                                <i class="fas fa-info-circle me-3 fs-4"></i>
+                                <div>Enter your email address and we'll send you a verification code.</div>
+                            </div>
+                            <div class="form-group mb-4">
+                                <label for="emailInput" class="form-label fw-semibold"><i class="fas fa-envelope text-primary me-2"></i>Email Address</label>
+                                <div class="input-group mb-2">
+                                    <span class="input-group-text bg-light"><i class="fas fa-envelope"></i></span>
+                                    <input type="email" class="form-control" id="emailInput" placeholder="Enter your email" required>
+                                </div>
+                                <div id="emailError" class="text-danger small d-none mt-2">
+                                    <i class="fas fa-exclamation-circle me-1"></i> Please enter a valid email address.
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between mt-4">
+                                <a href="/Login/Login" class="btn btn-outline-secondary">
+                                    <i class="fas fa-arrow-left me-2"></i>Back to Login
+                                </a>
+                                <button class="btn btn-primary" id="sendCodeBtn">
+                                    <i class="fas fa-paper-plane me-2"></i>Send Code
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Step 2: Code Verification -->
+                        <div class="slide-step">
+                            <div class="card-body p-0">
+                                @if (TempData["ErrorMessage"] != null)
+                                {
+                                    <div class="alert alert-danger d-flex align-items-center mb-4">
+                                        <i class="fas fa-exclamation-circle me-3 fs-4"></i>
+                                        <div>@TempData["ErrorMessage"]</div>
+                                    </div>
+                                }
+                                <div class="text-center mb-4">
+                                    <div class="bg-success bg-opacity-10 text-success rounded-circle p-3 mx-auto mb-3" style="width: 80px; height: 80px;">
+                                        <i class="fas fa-envelope-open-text fa-2x"></i>
+                                    </div>
+                                    <h5 class="fw-bold">Check Your Email</h5>
+                                    <p class="text-muted">We've sent a verification code to your email address.</p>
+                                </div>
+                                <div class="form-group mb-4">
+                                    <label for="codeInput" class="form-label fw-semibold"><i class="fas fa-shield-alt text-primary me-2"></i>Verification Code</label>
+                                    <div class="input-group mb-2">
+                                        <span class="input-group-text bg-light"><i class="fas fa-key"></i></span>
+                                        <input type="text" class="form-control" id="codeInput" placeholder="Enter verification code" required>
+                                    </div>
+                                    <div id="codeError" class="text-danger small d-none mt-2">
+                                        <i class="fas fa-exclamation-circle me-1"></i> Invalid verification code.
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-between mt-4">
+                                    <button class="btn btn-outline-secondary" id="backToEmailBtn">
+                                        <i class="fas fa-arrow-left me-2"></i>Back
+                                    </button>
+                                    <button class="btn btn-primary" id="verifyCodeBtn">
+                                        <i class="fas fa-check-circle me-2"></i>Verify Code
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 3: New Password -->
+                        <div class="slide-step">
+                            <div class="card-body">
+                                <form asp-action="ForgotPassword" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="number" style="display:none" asp-for="UserId" id="userIdField" />
+                                    <input type="email" style="display:none" asp-for="Email" id="emailField" />
+                                    <div class="form-group mb-3">
+                                        <label asp-for="Password" class="form-label fw-semibold"><i class="fas fa-lock text-primary me-2"></i>Password *</label>
+                                        <div class="input-group mb-2">
+                                            <span class="input-group-text bg-light"><i class="fas fa-lock"></i></span>
+                                            <input asp-for="Password" type="password" class="form-control" id="passwordInput" required>
+                                        </div>
+                                        <span asp-validation-for="Password" class="text-danger"></span>
+                                        <div class="password-requirements mt-2">
+                                            <small class="form-text text-muted">
+                                                Password must contain at least:
+                                                <ul class="list-unstyled">
+                                                    <li id="lengthRequirement" data-text="8 characters"><i class="bi bi-x-circle-fill text-danger"></i> 8 characters</li>
+                                                    <li id="upperRequirement" data-text="1 uppercase letter"><i class="bi bi-x-circle-fill text-danger"></i> 1 uppercase letter</li>
+                                                    <li id="lowerRequirement" data-text="1 lowercase letter"><i class="bi bi-x-circle-fill text-danger"></i> 1 lowercase letter</li>
+                                                    <li id="numberRequirement" data-text="1 number"><i class="bi bi-x-circle-fill text-danger"></i> 1 number</li>
+                                                    <li id="specialRequirement" data-text="1 special character"><i class="bi bi-x-circle-fill text-danger"></i> 1 special character</li>
+                                                </ul>
+                                            </small>
+                                            <div class="progress mt-2" style="height: 5px;">
+                                                <div id="passwordStrength" class="progress-bar bg-danger" role="progressbar" style="width: 0%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group mb-3">
+                                        <label class="form-label fw-semibold"><i class="fas fa-lock text-primary me-2"></i>Confirm Password *</label>
+                                        <div class="input-group mb-2">
+                                            <span class="input-group-text bg-light"><i class="fas fa-lock"></i></span>
+                                            <input asp-for="ConfirmPassword" type="password" class="form-control" id="confirmPasswordInput" required>
+                                        </div>
+                                        <span id="confirmPasswordError" class="text-danger d-none">Passwords do not match</span>
+                                        <span id="confirmPasswordSuccess" class="text-success d-none">
+                                            <i class="bi bi-check-circle-fill"></i> Passwords match
+                                        </span>
+                                    </div>
+                                    <div class="form-group">
+                                        <button type="submit" class="btn btn-primary">Reset Password</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="text-center mt-4 text-muted small">
+    <p>Remember your password? <a href="/Login/Login" class="text-decoration-none fw-semibold">Back to login</a></p>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    @* password validation*@
+    <script>
+        const passwordInput = document.getElementById('passwordInput');
+        const confirmPasswordInput = document.getElementById('confirmPasswordInput');
+        const confirmPasswordError = document.getElementById('confirmPasswordError');
+        const confirmPasswordSuccess = document.getElementById('confirmPasswordSuccess');
+        const submitButton = document.querySelector('button[type="submit"]');
+
+        function updateRequirement(elementId, isValid) {
+            const element = document.getElementById(elementId);
+            const text = element.getAttribute('data-text');
+            element.innerHTML = isValid
+                ? `<i class="bi bi-check-circle-fill text-success"></i> ${text}`
+                : `<i class="bi bi-x-circle-fill text-danger"></i> ${text}`;
+        }
+
+        function validatePassword() {
+            const password = passwordInput.value;
+
+            const hasLength = password.length >= 8;
+            const hasUpper = /[A-Z]/.test(password);
+            const hasLower = /[a-z]/.test(password);
+            const hasNumber = /[0-9]/.test(password);
+            const hasSpecial = /[!@@#$%^&*(),.?":{}|<>\[\]\\\/\-_=+]/.test(password);
+
+
+            updateRequirement('lengthRequirement', hasLength);
+            updateRequirement('upperRequirement', hasUpper);
+            updateRequirement('lowerRequirement', hasLower);
+            updateRequirement('numberRequirement', hasNumber);
+            updateRequirement('specialRequirement', hasSpecial);
+
+            updatePasswordStrengthBar(password.length, hasUpper, hasLower, hasNumber, hasSpecial);
+
+            // Re-validate confirmation and submit button
+            validatePasswordConfirmation();
+            toggleSubmitButton();
+        }
+
+        function validatePasswordConfirmation() {
+            const password = passwordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
+
+            if (confirmPassword === '') {
+                confirmPasswordError.classList.add('d-none');
+                confirmPasswordSuccess.classList.add('d-none');
+            } else if (password === confirmPassword) {
+                confirmPasswordError.classList.add('d-none');
+                confirmPasswordSuccess.classList.remove('d-none');
+            } else {
+                confirmPasswordError.classList.remove('d-none');
+                confirmPasswordSuccess.classList.add('d-none');
+            }
+
+            toggleSubmitButton();
+        }
+
+        function allPasswordRequirementsMet() {
+            const password = passwordInput.value;
+            return (
+                password.length >= 8 &&
+                /[A-Z]/.test(password) &&
+                /[a-z]/.test(password) &&
+                /[0-9]/.test(password) &&
+                /[!@@#$%^&*(),.?":{}|<>\[\]\\\/\-_=+]/.test(password)
+
+            );
+        }
+
+        function toggleSubmitButton() {
+            submitButton.disabled = !(
+                allPasswordRequirementsMet() &&
+                passwordInput.value === confirmPasswordInput.value
+            );
+        }
+
+        function updatePasswordStrengthBar(length, hasUpper, hasLower, hasNumber, hasSpecial) {
+            const strengthBar = document.getElementById('passwordStrength');
+            let strength = 0;
+            if (length >= 8) strength += 20;
+            if (hasUpper) strength += 20;
+            if (hasLower) strength += 20;
+            if (hasNumber) strength += 20;
+            if (hasSpecial) strength += 20;
+
+            strengthBar.style.width = `${strength}%`;
+
+            if (strength <= 40) {
+                strengthBar.className = 'progress-bar bg-danger';
+            } else if (strength <= 80) {
+                strengthBar.className = 'progress-bar bg-warning';
+            } else {
+                strengthBar.className = 'progress-bar bg-success';
+            }
+        }
+
+        passwordInput.addEventListener("keyup", validatePassword);
+        confirmPasswordInput.addEventListener("keyup", validatePasswordConfirmation);
+    </script>
+
+    @* slider ui with enhanced error handling *@
+    <script>
+        let currentSlide = 0;
+        const slideContainer = document.getElementById("slideContainer");
+        const totalSlides = document.querySelectorAll('.slide-step').length;
+
+        function slideTo(index) {
+            console.log(`Sliding to index: ${index}`);
+            if (index < 0 || index >= totalSlides) {
+                console.log(`Invalid slide index: ${index}`);
+                return;
+            }
+
+            currentSlide = index;
+            slideContainer.style.transform = `translateX(-${index * 100}%)`;
+            console.log(`Current slide position: translateX(-${index * 100}%)`);
+        }
+
+        async function verifyEmail(event) {
+            event.preventDefault();
+            const email = document.getElementById("emailInput").value;
+            const emailError = document.getElementById("emailError");
+            emailError.classList.add("d-none");
+
+            if (!email || !email.includes('@@') || !email.includes('.')) {
+                emailError.textContent = "Please enter a valid email address";
+                emailError.classList.remove("d-none");
+                return;
+            }
+
+            const btn = event.target;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Sending...';
+
+            try {
+                const response = await fetch(`/ForgotPassword/SendCode?email=${encodeURIComponent(email)}`);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+
+                if (result.success) {
+                    const emailField = document.getElementById('emailField');
+                    if (emailField) {
+                        emailField.value = email;
+                        // Only slide once to the next step
+                        slideTo(1);
+                    } else {
+                        throw new Error("emailField element not found");
+                    }
+                } else {
+                    emailError.textContent = result.message || "Email not found in our system. Please check and try again.";
+                    emailError.classList.remove("d-none");
+                }
+            } catch (error) {
+                console.error("Error details:", error);
+                emailError.textContent = "An error occurred. Please try again later.";
+                emailError.classList.remove("d-none");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Send Code';
+            }
+        }
+
+        async function verifyCode(event) {
+            event.preventDefault();
+            const code = document.getElementById("codeInput").value;
+            const codeError = document.getElementById("codeError");
+            codeError.classList.add("d-none");
+
+            if (!code || code.length !== 6) {
+                codeError.textContent = "Please enter a valid 6-digit code";
+                codeError.classList.remove("d-none");
+                return;
+            }
+
+            const btn = event.target;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Verifying...';
+
+            try {
+                const response = await fetch(`/ForgotPassword/VerifyCode?code=${encodeURIComponent(code)}`, {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                // First check if response is OK
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(errorText || 'Network response was not ok');
+                }
+
+                // Then parse the JSON
+                const result = await response.json();
+                console.log("Verification result:", result);
+
+                if (result.success) {
+                    console.log("Setting form values:", {
+                        userId: result.userId,
+                        email: result.email
+                    });
+
+                    document.getElementById('userIdField').value = result.userId || '';
+                    document.getElementById('emailField').value = result.email || '';
+
+                    // Force UI update
+                    document.getElementById('userIdField').dispatchEvent(new Event('change'));
+                    document.getElementById('emailField').dispatchEvent(new Event('change'));
+
+                    slideTo(2);
+                } else {
+                    codeError.textContent = result.message || "Invalid verification code. Please check your email and try again.";
+                    codeError.classList.remove("d-none");
+                }
+            } catch (error) {
+                console.error("Verification error:", error);
+                codeError.textContent = error.message || "An error occurred during verification. Please try again.";
+                codeError.classList.remove("d-none");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Verify Code';
+            }
+        }
+
+        // Update the form submission handler
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const userId = document.getElementById('userIdField').value;
+            const email = document.getElementById('emailField').value;
+            const password = document.getElementById('passwordInput').value;
+            const confirmPassword = document.getElementById('confirmPasswordInput').value;
+
+            console.log('Form submission data:', {
+                userId,
+                email,
+                password,
+                confirmPassword
+            });
+
+            if (!userId || !email || !password || !confirmPassword) {
+                e.preventDefault();
+                alert('Please complete all steps and fields before submitting');
+                return false;
+            }
+
+            if (password !== confirmPassword) {
+                e.preventDefault();
+                document.getElementById('confirmPasswordError').classList.remove('d-none');
+                return false;
+            }
+
+            return true;
+        });
+    </script>
+
+}

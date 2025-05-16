@@ -1,0 +1,150 @@
+@{
+    ViewData["Title"] = "Home - GrowTrack";
+}
+
+<div class="hero-section position-relative text-white" style="background-color: #304251;">
+    <div class="container py-5">
+        <div class="row align-items-center py-5">
+            <div class="col-lg-6 mb-4 mb-lg-0">
+                <h1 class="display-4 fw-bold mb-3">GrowTrack</h1>
+                <p class="lead mb-4">Gain valuable insights into your business performance with our comprehensive analytics-driven CRM solution designed specifically for small and medium enterprises.</p>
+                <div class="d-flex flex-wrap gap-3">
+                    <a href="#features" class="btn btn-light btn-lg px-4 rounded-pill" style="z-index: 99;">
+                        <i class="fas fa-info-circle me-2"></i>Learn More
+                    </a>
+                    <a asp-controller="Login" asp-action="Login" class="btn btn-lg px-4 rounded-pill" style="background-color: #F3993E; color: white; z-index: 99;">
+                        <i class="fas fa-sign-in-alt me-2"></i>Login
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-6 text-center">
+                <img src="~/images/default/growchart.jpg" alt="GrowTrack Dashboard" class="img-fluid rounded shadow-lg" style="max-height: 400px;">
+            </div>
+        </div>
+    </div>
+    <div class="wave-bottom">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="#F7F5EF" fill-opacity="1" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,122.7C672,117,768,139,864,149.3C960,160,1056,160,1152,138.7C1248,117,1344,75,1392,53.3L1440,32L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>
+    </div>
+</div>
+
+<div id="features" class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">Key Features</h2>
+            <p class="text-muted">Powerful analytics tools to help you understand and grow your business</p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body p-4 text-center">
+                        <div class="rounded-circle p-3 mx-auto mb-4" style="width: 80px; height: 80px; background-color: rgba(243, 153, 62, 0.1); color: #F3993E;">
+                            <i class="fas fa-users fa-2x"></i>
+                        </div>
+                        <h4 class="card-title mb-3">Business Analytics</h4>
+                        <p class="card-text">Get comprehensive insights into your business performance with customizable dashboards and real-time analytics.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body p-4 text-center">
+                        <div class="rounded-circle p-3 mx-auto mb-4" style="width: 80px; height: 80px; background-color: rgba(48, 66, 81, 0.1); color: #304251;">
+                            <i class="fas fa-chart-line fa-2x"></i>
+                        </div>
+                        <h4 class="card-title mb-3">Performance Tracking</h4>
+                        <p class="card-text">Track key performance indicators and growth metrics with interactive visualizations that help you make data-driven business decisions.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body p-4 text-center">
+                        <div class="rounded-circle p-3 mx-auto mb-4" style="width: 80px; height: 80px; background-color: rgba(233, 243, 245, 0.6); color: #304251;">
+                            <i class="fas fa-tasks fa-2x"></i>
+                        </div>
+                        <h4 class="card-title mb-3">Growth Forecasting</h4>
+                        <p class="card-text">Leverage predictive analytics to forecast business growth, identify opportunities, and plan strategic initiatives with confidence.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="py-5" style="background-color: #E9F3F6;">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 mb-4 mb-lg-0">
+                <img src="/images/default/business-growth-chart.png" alt="Business Growth Chart" class="img-fluid rounded shadow" style="max-height: 400px;">
+            </div>
+            <div class="col-lg-6">
+                <h2 class="fw-bold mb-4">Accelerate Your Business Growth</h2>
+                <p class="mb-4">GrowTrack is designed to help small and medium enterprises gain actionable insights, identify growth opportunities, and make strategic decisions based on real-time data.</p>
+                
+                <div class="d-flex mb-3">
+                    <div class="text-white rounded-circle p-2 me-3" style="width: 40px; height: 40px; background-color: #F3993E;">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-1">Identify Growth Opportunities</h5>
+                        <p class="text-muted mb-0">Discover untapped markets and opportunities through advanced data analytics and trend analysis.</p>
+                    </div>
+                </div>
+                
+                <div class="d-flex mb-3">
+                    <div class="text-white rounded-circle p-2 me-3" style="width: 40px; height: 40px; background-color: #F3993E;">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-1">Track Business Performance</h5>
+                        <p class="text-muted mb-0">Monitor key performance indicators with customizable dashboards that highlight areas of success and improvement.</p>
+                    </div>
+                </div>
+                
+                <div class="d-flex">
+                    <div class="text-white rounded-circle p-2 me-3" style="width: 40px; height: 40px; background-color: #F3993E;">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-1">Strategic Planning</h5>
+                        <p class="text-muted mb-0">Develop effective business strategies based on predictive analytics and growth forecasting models.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<div class="text-white py-5" style="background-color: #304251;">
+    <div class="container text-center">
+        <h2 class="fw-bold mb-4">Ready to Grow Your Business?</h2>
+        <p class="lead mb-4">Join thousands of SMEs that trust GrowTrack to provide actionable insights and drive business growth.</p>
+        <a asp-controller="Login" asp-action="Login" class="btn btn-lg px-5 rounded-pill" style="background-color: #F3993E; color: white;">
+            <i class="fas fa-sign-in-alt me-2"></i>Login Now
+        </a>
+    </div>
+</div>
+
+<style>
+    .wave-bottom {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        overflow: hidden;
+        line-height: 0;
+    }
+    
+    .hero-section {
+        padding-bottom: 100px;
+    }
+
+    *{
+        scroll-behavior: smooth;
+    }
+</style>

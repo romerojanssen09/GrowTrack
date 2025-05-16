@@ -1,0 +1,455 @@
+@model Project_Creation.DTO.ProfileViewModel
+
+@{
+    ViewData["Title"] = "Profile Management";
+    Layout = "_Layout";
+}
+
+<div class="profile-container py-4">
+    <div class="container">
+        <!-- Profile Header -->
+        <div class="card border-0 shadow-sm rounded-3 mb-4">
+            <div class="card-body p-0">
+                <div class="p-4 rounded-top d-flex align-items-center" style="background-color: #E9F3F6; color: #304251;">
+                    <div class="rounded-circle bg-white p-2 me-3 border" style="border-color: #F3993E !important;">
+                        <img src="https://ui-avatars.com/api/?name=@Model.FirstName+@Model.LastName&background=F3993E&color=fff&rounded=true&size=128" 
+                             alt="Profile" class="rounded-circle" width="60" height="60">
+                    </div>
+                    <div>
+                        <h3 class="mb-0 fw-bold">@Model.FirstName @Model.LastName</h3>
+                        <p class="mb-0 opacity-75">@Model.Email</p>
+                    </div>
+                    <div class="ms-auto">
+                        <span class="badge rounded-pill px-3 py-2 fs-6" style="background-color: #E9F3F6; border: 1px solid #F3993E; color: #304251;">
+                            <i class="fas fa-check-circle me-1" style="color: #F3993E;"></i> Verified Account
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- Status Indicators -->
+                <div class="d-flex justify-content-around py-3 border-bottom" style="background-color: #FFFFFF;">
+                    <div class="text-center px-3">
+                        <div class="rounded-circle p-3 mx-auto mb-2" style="width: 48px; height: 48px; background-color: #F7F5EF; color: #304251;">
+                            <i class="fas fa-building"></i>
+                        </div>
+                        <h6 class="fw-bold mb-0">@(string.IsNullOrEmpty(Model.BusinessName) ? "No Business" : Model.BusinessName)</h6>
+                        <small class="text-muted">Business Name</small>
+                    </div>
+                    <div class="text-center px-3">
+                        <div class="rounded-circle p-3 mx-auto mb-2" style="width: 48px; height: 48px; background-color: #E9F3F5; color: #304251;">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                        <h6 class="fw-bold mb-0">@(Model.NumberOfBusinessYearsOperation ?? "0")</h6>
+                        <small class="text-muted">Years in Operation</small>
+                    </div>
+                    <div class="text-center px-3">
+                        <div class="rounded-circle p-3 mx-auto mb-2" style="width: 48px; height: 48px; background-color: #F7F5EF; color: #304251;">
+                            <i class="fas fa-id-card"></i>
+                        </div>
+                        <h6 class="fw-bold mb-0">@(string.IsNullOrEmpty(Model.DTIRegistrationNumber) ? "Not Registered" : Model.DTIRegistrationNumber)</h6>
+                        <small class="text-muted">DTI Registration</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Success, Error and Warning Message Display -->
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert" style="background-color: #F7F5EF; border-left: 4px solid #304251; color: #304251;">
+                <div class="d-flex align-items-center">
+                    <div class="p-2 rounded-circle me-3" style="background-color: rgba(48, 66, 81, 0.1);">
+                        <i class="fas fa-check-circle" style="color: #304251;"></i>
+                    </div>
+                    <div>@TempData["SuccessMessage"]</div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert" style="background-color: #F7F5EF; border-left: 4px solid #F3993E; color: #304251;">
+                <div class="d-flex align-items-center">
+                    <div class="p-2 rounded-circle me-3" style="background-color: rgba(243, 153, 62, 0.1);">
+                        <i class="fas fa-exclamation-circle" style="color: #F3993E;"></i>
+                    </div>
+                    <div>@TempData["ErrorMessage"]</div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        @if (TempData["WarningMessage"] != null)
+        {
+            <div class="alert alert-warning alert-dismissible fade show shadow-sm" role="alert" style="background-color: #F7F5EF; border-left: 4px solid #F3993E; color: #304251;">
+                <div class="d-flex align-items-center">
+                    <div class="p-2 rounded-circle me-3" style="background-color: rgba(243, 153, 62, 0.1);">
+                        <i class="fas fa-exclamation-triangle" style="color: #F3993E;"></i>
+                    </div>
+                    <div>@TempData["WarningMessage"]</div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm rounded-3 h-100" style="background-color: #FFFFFF;">
+                <div class="card-header border-0 d-flex align-items-center" style="background-color: #E9F3F6;">
+                    <div class="rounded-circle p-2 me-3" style="background-color: #F7F5EF; color: #304251;">
+                        <i class="fas fa-user-edit"></i>
+                    </div>
+                    <h5 class="card-title mb-0 fw-bold" style="color: #304251;">Profile Management</h5>
+                </div>
+                <div class="card-body">
+                        <form asp-action="UpdateProfile" method="post" enctype="multipart/form-data">
+                            @Html.AntiForgeryToken()
+                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                            <input type="hidden" name="UserId" id="UserId" />
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label asp-for="FirstName" class="form-label"></label>
+                                    <input asp-for="FirstName" class="form-control" />
+                                    <span asp-validation-for="FirstName" class="text-danger"></span>
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="LastName" class="form-label"></label>
+                                    <input asp-for="LastName" class="form-control" />
+                                    <span asp-validation-for="LastName" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="Email" class="form-label"></label>
+                                <input asp-for="Email" class="form-control" readonly />
+                                <small class="text-muted">Email cannot be changed. Contact support for assistance.</small>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="PhoneNumber" class="form-label"></label>
+                                <input asp-for="PhoneNumber" class="form-control" />
+                                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="BusinessName" class="form-label"></label>
+                                <input asp-for="BusinessName" class="form-control" />
+                                <span asp-validation-for="BusinessName" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="BusinessAddress" class="form-label"></label>
+                                <textarea asp-for="BusinessAddress" class="form-control" rows="3"></textarea>
+                                <span asp-validation-for="BusinessAddress" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="DTIRegistrationNumber" class="form-label"></label>
+                                <input asp-for="DTIRegistrationNumber" class="form-control" />
+                                <span asp-validation-for="DTIRegistrationNumber" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="NumberOfBusinessYearsOperation" class="form-label"></label>
+                                <input asp-for="NumberOfBusinessYearsOperation" class="form-control" />
+                                <span asp-validation-for="NumberOfBusinessYearsOperation" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="CompanyBackground" class="form-label"></label>
+                                <textarea asp-for="CompanyBackground" class="form-control" rows="3"></textarea>
+                                <span asp-validation-for="CompanyBackground" class="text-danger"></span>
+                            </div>
+
+                            <div class="d-grid gap-2 mt-4">
+                                <button type="submit" class="btn btn-lg" style="background-color: #F3993E; color: white;">
+                                    <i class="fas fa-save me-2"></i> Save Changes
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm rounded-3 h-100" id="toAddedDanger" style="background-color: #FFFFFF;">
+                <div class="card-header border-0 d-flex align-items-center" style="background-color: #E9F3F6;">
+                    <div class="rounded-circle p-2 me-3" style="background-color: #F7F5EF; color: #304251;">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <div>
+                        <h5 class="card-title mb-0 fw-bold" style="color: #304251;">Business Credentials</h5>
+                        <small style="color: #F3993E;"><i class="fas fa-info-circle me-1"></i>Once submitted, documents cannot be changed</small>
+                    </div>
+                </div>
+                <div class="card-body">
+                        <form asp-action="ValidationForMarketplace" method="post" enctype="multipart/form-data">
+                            @Html.AntiForgeryToken()
+                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                            <input type="hidden" id="UserId2" name="UserId"/>
+
+                            <div class="row mb-3">
+                                <!-- Barangay Clearance -->
+                                <div class="form-group mb-4">
+                                    <label class="form-label fw-semibold">Barangay Clearance <span style="color: #F3993E;">*</span></label>
+                                    <div class="input-group mb-2">
+                                        <span class="input-group-text" style="background-color: #E9F3F6;"><i class="fas fa-file-pdf"></i></span>
+                                        <input type="file" name="BrgyClearanceFile" class="form-control" accept=".pdf,.jpg,.jpeg,.png" @(string.IsNullOrEmpty(Model.BrgyClearancePath) ? "required" : "disabled") />
+                                    </div>
+                                    <small class="form-text text-muted">Accepted formats: PDF, JPG, JPEG, PNG (Max 5MB)</small>
+                                    @if (Model.BrgyClearancePath != "")
+                                    {
+                                        <div class="mt-2 p-2 rounded d-flex align-items-center" style="background-color: #F7F5EF;">
+                                            <i class="fas fa-check-circle me-2" style="color: #304251;"></i>
+                                            <span class="me-2">Document uploaded</span>
+                                            <a href='@Model.BrgyClearancePath' target='_blank' class="btn btn-sm border ms-auto" style="background-color: #E9F3F6; color: #304251;">
+                                                <i class="fas fa-eye me-1"></i> View
+                                            </a>
+                                        </div>
+                                    }
+                                </div>
+
+                                <!-- Operation to Operate -->
+                                <div class="form-group mb-4">
+                                    <label class="form-label fw-semibold">Operation to Operate <span class="text-muted">(Optional)</span></label>
+                                    <div class="input-group mb-2">
+                                        <span class="input-group-text" style="background-color: #E9F3F6;"><i class="fas fa-file-pdf"></i></span>
+                                        <input type="file" name="OperationToOperate" class="form-control" accept=".pdf,.jpg,.jpeg,.png" @(string.IsNullOrEmpty(Model.OperationToOperate) ? "required" : "disabled") />
+                                    </div>
+                                    <small class="form-text text-muted">Accepted formats: PDF, JPG, JPEG, PNG (Max 5MB)</small>
+                                    @if (Model.OperationToOperate != "")
+                                    {
+                                        <div class="mt-2 p-2 rounded d-flex align-items-center" style="background-color: #F7F5EF;">
+                                            <i class="fas fa-check-circle me-2" style="color: #304251;"></i>
+                                            <span class="me-2">Document uploaded</span>
+                                            <a href='@Model.OperationToOperate' target='_blank' class="btn btn-sm ms-auto" style="color: #F3993E; border-color: #F3993E;">
+                                                <i class="fas fa-eye me-1"></i> View
+                                            </a>
+                                        </div>
+                                    }
+                                </div>
+
+                                <!-- Business Owner Valid ID -->
+                                <div class="form-group mb-4">
+                                    <label class="form-label fw-semibold">Valid ID (Business Owner) <span class="text-danger">*</span></label>
+                                    <div class="input-group mb-2">
+                                        <span class="input-group-text" style="background-color: #E9F3F6;"><i class="fas fa-id-card"></i></span>
+                                        <input type="file" name="OwnerIdFile" class="form-control" accept=".pdf,.jpg,.jpeg,.png" @(string.IsNullOrEmpty(Model.BusinessOwnerValidId) ? "required" : "disabled") />
+                                    </div>
+                                    <small class="form-text text-muted">Accepted formats: PDF, JPG, JPEG, PNG (Max 5MB)</small>
+                                    @if (Model.BusinessOwnerValidId != "")
+                                    {
+                                        <div class="mt-2 p-2 rounded d-flex align-items-center" style="background-color: #F7F5EF;">
+                                            <i class="fas fa-check-circle me-2" style="color: #304251;"></i>
+                                            <span class="me-2">Document uploaded</span>
+                                            <a href='@Model.BusinessOwnerValidId' target='_blank' class="btn btn-sm ms-auto" style="color: #F3993E; border-color: #F3993E;">
+                                                <i class="fas fa-eye me-1"></i> View
+                                            </a>
+                                        </div>
+                                    }
+                                </div>
+
+                                <!-- SEC Certificate -->
+                                <div class="form-group mb-4">
+                                    <label class="form-label fw-semibold">SEC Certificate <span class="text-danger">*</span></label>
+                                    <div class="input-group mb-2">
+                                        <span class="input-group-text" style="background-color: #E9F3F6;"><i class="fas fa-certificate"></i></span>
+                                        <input type="file" name="SecCertFile" class="form-control" accept=".pdf,.jpg,.jpeg,.png" @(string.IsNullOrEmpty(Model.SecCertPath) ? "required" : "disabled") />
+                                    </div>
+                                    <small class="form-text text-muted">Accepted formats: PDF, JPG, JPEG, PNG (Max 5MB)</small>
+                                    @if (Model.SecCertPath != "")
+                                    {
+                                        <div class="mt-2 p-2 rounded d-flex align-items-center" style="background-color: #F7F5EF;">
+                                            <i class="fas fa-check-circle me-2" style="color: #304251;"></i>
+                                            <span class="me-2">Document uploaded</span>
+                                            <a href='@Model.SecCertPath' target='_blank' class="btn btn-sm ms-auto" style="color: #F3993E; border-color: #F3993E;">
+                                                <i class="fas fa-eye me-1"></i> View
+                                            </a>
+                                        </div>
+                                    }
+                                </div>
+
+                                <!-- DTI Certificate -->
+                                <div class="form-group mb-4">
+                                    <label class="form-label fw-semibold">DTI Certificate <span class="text-danger">*</span></label>
+                                    <div class="input-group mb-2">
+                                        <span class="input-group-text" style="background-color: #E9F3F6;"><i class="fas fa-file-contract"></i></span>
+                                        <input type="file" name="DtiCertFile" class="form-control" accept=".pdf,.jpg,.jpeg,.png" @(string.IsNullOrEmpty(Model.DtiCertPath) ? "required" : "disabled") />
+                                    </div>
+                                    <small class="form-text text-muted">Accepted formats: PDF, JPG, JPEG, PNG (Max 5MB)</small>
+                                    @if (Model.DtiCertPath != "")
+                                    {
+                                        <div class="mt-2 p-2 rounded d-flex align-items-center" style="background-color: #F7F5EF;">
+                                            <i class="fas fa-check-circle me-2" style="color: #304251;"></i>
+                                            <span class="me-2">Document uploaded</span>
+                                            <a href='@Model.DtiCertPath' target='_blank' class="btn btn-sm ms-auto" style="color: #F3993E; border-color: #F3993E;">
+                                                <i class="fas fa-eye me-1"></i> View
+                                            </a>
+                                        </div>
+                                    }
+                                </div>
+
+                                <!-- Business Permit -->
+                                <div class="form-group mb-4">
+                                    <label class="form-label fw-semibold">Business Permit <span class="text-danger">*</span></label>
+                                    <div class="input-group mb-2">
+                                        <span class="input-group-text" style="background-color: #E9F3F6;"><i class="fas fa-stamp"></i></span>
+                                        <input type="file" name="BusinessPermitFile" class="form-control" accept=".pdf,.jpg,.jpeg,.png" @(string.IsNullOrEmpty(Model.BusinessPermitPath) ? "required" : "disabled") />
+                                    </div>
+                                    <small class="form-text text-muted">Accepted formats: PDF, JPG, JPEG, PNG (Max 5MB)</small>
+                                    @if (Model.BusinessPermitPath != "")
+                                    {
+                                        <div class="mt-2 p-2 rounded d-flex align-items-center" style="background-color: #F7F5EF;">
+                                            <i class="fas fa-check-circle me-2" style="color: #304251;"></i>
+                                            <span class="me-2">Document uploaded</span>
+                                            <a href='@Model.BusinessPermitPath' target='_blank' class="btn btn-sm ms-auto" style="color: #F3993E; border-color: #F3993E;">
+                                                <i class="fas fa-eye me-1"></i> View
+                                            </a>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                            <div class="d-grid gap-2 mt-4">
+                                @if (@Model.IsAllowedToMarketPlace == "Requesting")
+                                {
+                                    <button type="button" disabled class="btn btn-lg" style="background-color: #E9F3F6; color: #304251; border: 1px solid #F3993E;">
+                                        <i class="fas fa-clock me-2" style="color: #F3993E;"></i> Pending Approval
+                                    </button>
+                                }
+                                else if (@Model.IsAllowedToMarketPlace == "Pending")
+                                {
+                                    <button type="submit" class="btn btn-lg" style="background-color: #F3993E; color: white;">
+                                        <i class="fas fa-save me-2"></i> Save Changes
+                                    </button>
+                                }
+                                else if (@Model.IsAllowedToMarketPlace == "Approved")
+                                {
+                                    <button type="button" disabled class="btn btn-lg" style="background-color: #E9F3F6; color: #304251; border: 1px solid #304251;">
+                                        <i class="fas fa-check-circle me-2" style="color: #304251;"></i> Approved
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button type="submit" class="btn btn-lg" style="background-color: #F3993E; color: white;">
+                                        <i class="fas fa-upload me-2"></i> Rejected - Upload New & Submit
+                                    </button>
+                                }
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+                    </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+    <script>
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <text>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: '@Html.Raw(TempData["ErrorMessage"])'
+                });
+            </text>
+        }
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <text>
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: '@Html.Raw(TempData["SuccessMessage"])'
+                });
+            </text>
+        }
+
+        // Initialize dropdowns
+        // document.addEventListener('DOMContentLoaded', function() {
+        //     Dropdown initialization
+        //     const dropdownToggle = document.querySelector('#userDropdown');
+        //     const dropdownMenu = dropdownToggle.nextElementSibling;
+
+        //     dropdownToggle.addEventListener('click', function(e) {
+        //         e.preventDefault();
+        //         dropdownMenu.classList.toggle('show');
+        //     });
+
+        //     Close dropdown when clicking outside
+        //     document.addEventListener('click', function(e) {
+        //         if (!dropdownToggle.contains(e.target) && !dropdownMenu.contains(e.target)) {
+        //             dropdownMenu.classList.remove('show');
+        //         }
+        //     });
+        // });
+    </script>
+    @* business *@
+    <script>
+        // Auto-populate userId from query string
+        const urlParams = new URLSearchParams(window.location.search);
+        const userId = urlParams.get('userId');
+        document.getElementById("UserId").value = userId;
+        document.getElementById("UserId2").value = userId;
+
+        // File preview and validation
+        function setupFilePreview(inputElement, previewElementId) {
+            const previewElement = document.getElementById(previewElementId);
+
+            inputElement.addEventListener('change', function() {
+                previewElement.innerHTML = '';
+
+                if (this.files && this.files[0]) {
+                    const file = this.files[0];
+                    const fileType = file.type;
+                    const validImageTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+
+                    if (validImageTypes.includes(fileType)) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            const img = document.createElement('img');
+                            img.src = e.target.result;
+                            img.style.maxWidth = '200px';
+                            img.style.maxHeight = '200px';
+                            previewElement.appendChild(img);
+                        }
+                        reader.readAsDataURL(file);
+                    } else if (fileType === 'application/pdf') {
+                        const pdfIcon = document.createElement('div');
+                        pdfIcon.innerHTML = `
+                            <i class="fas fa-file-pdf fa-3x text-danger"></i>
+                            <p>${file.name}</p>
+                        `;
+                        previewElement.appendChild(pdfIcon);
+                    }
+
+                    // Validate file size (5MB max)
+                    if (file.size > 5 * 1024 * 1024) {
+                        alert('File size exceeds 5MB limit');
+                        this.value = '';
+                        previewElement.innerHTML = '';
+                    }
+                }
+            });
+        }
+
+        // Setup previews for all file inputs
+        setupFilePreview(document.querySelector('input[name="BrgyClearanceFile"]'), 'brgyClearancePreview');
+        setupFilePreview(document.querySelector('input[name="OwnerIdFile"]'), 'ownerIdPreview');
+        setupFilePreview(document.querySelector('input[name="SecCertFile"]'), 'secCertPreview');
+        setupFilePreview(document.querySelector('input[name="DtiCertFile"]'), 'dtiCertPreview');
+        setupFilePreview(document.querySelector('input[name="BusinessPermitFile"]'), 'businessPermitPreview');
+    </script>
+    <script>
+        if(userId != null){
+            document.getElementById("toAddedDanger").classList.add("border");
+            document.getElementById("toAddedDanger").classList.add("border-danger");
+        }
+    </script>
+}

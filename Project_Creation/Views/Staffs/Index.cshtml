@@ -1,0 +1,410 @@
+﻿@model IEnumerable<Project_Creation.Models.Entities.Staff>
+
+@{
+    ViewData["Title"] = "Staff Management";
+    @using Project_Creation.Models.Entities
+}
+
+<div class="container">
+    <div class="d-flex align-items-center justify-content-between">
+        <h1>Staff Management</h1>
+
+        <button type="button" class="btn btn-primary mb-4" data-bs-toggle="modal" data-bs-target="#createStaffModal">
+            <i class="fas fa-plus me-2"></i>Add New Staff
+        </button>
+    </div>
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="staffTable" class="table table-striped table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Staff Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Status</th>
+                            <th>Access Level</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@Html.DisplayFor(modelItem => item.StaffName)</td>
+                                <td>@Html.DisplayFor(modelItem => item.StaffSEmail)</td>
+                                <td>@Html.DisplayFor(modelItem => item.StaffPhone)</td>
+                                <td>
+                                    <span class="badge rounded-pill @(item.IsActive == AccountStatus.Active ? "bg-success" :
+                                        item.IsActive == AccountStatus.Pending ? "bg-warning" : "bg-danger")"
+                                    @if (item.IsActive == AccountStatus.Pending)
+                                    {
+                                        @:title="Pending status can change to Active when staff creates their password, or it can be manually set to active."
+                                    }>
+                                        @item.IsActive
+                                    </span>
+                                </td>
+                                <td>
+                                    @foreach (var accessLevel in Enum.GetValues(typeof(StaffAccessLevel)))
+                                    {
+                                        if ((int)accessLevel > 0 && item.StaffAccessLevel.HasFlag((StaffAccessLevel)accessLevel))
+                                        {
+                                            <span class="badge bg-info me-1">@accessLevel</span>
+                                        }
+                                    }
+                                </td>
+                                <td class="text-end">
+                                    <div class="btn-group" role="group">
+                                        <button class="btn btn-sm btn-outline-info details-btn" data-id="@item.Id" title="Details">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-warning edit-btn" data-id="@item.Id" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger delete-btn" data-id="@item.Id" title="Delete">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Staff Modal -->
+<div class="modal fade" id="createStaffModal" tabindex="-1" aria-labelledby="createStaffModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="createStaffModalLabel">Add New Staff Member</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="createStaffForm" asp-action="Create">
+                <div class="modal-body">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                    <div class="mb-3">
+                        <label class="form-label">Staff Name</label>
+                        <input name="StaffName" class="form-control" required />
+                        <span class="text-danger" data-valmsg-for="StaffName"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input name="StaffSEmail" type="email" class="form-control" required />
+                        <span class="text-danger" data-valmsg-for="StaffSEmail"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Phone</label>
+                        <input name="StaffPhone" class="form-control" required />
+                        <span class="text-danger" data-valmsg-for="StaffPhone"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Access Permissions</label>
+                        <div class="row g-3">
+                            @foreach (var accessLevel in Enum.GetValues(typeof(StaffAccessLevel)))
+                            {
+                                if ((int)accessLevel > 0)
+                                {
+                                    <div class="col-md-6">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input access-checkbox" type="checkbox"
+                                                   id="create_@accessLevel" name="StaffAccessLevel" value="@((int)accessLevel)">
+                                            <label class="form-check-label" for="create_@accessLevel">@accessLevel</label>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary" id="createSubmitBtn">
+                        <span id="createSubmitText">Create</span>
+                        <span id="createSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Details Modal -->
+<div class="modal fade" id="detailsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title">Staff Details</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="detailsContent">
+                <!-- Content will be loaded here via AJAX -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-white">
+                <h5 class="modal-title">Edit Staff Member</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editStaffForm" asp-action="Edit">
+                <div class="modal-body" id="editContent">
+                    <!-- Content will be loaded here via AJAX -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary" id="editSubmitBtn">
+                        <span id="editSubmitText">Save Changes</span>
+                        <span id="editSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@section Styles {
+    <style>
+        .form-switch .form-check-input {
+            width: 2.5em;
+            height: 1.5em;
+            cursor: pointer;
+            background-color: #adb5bd;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e");
+            background-position: left center;
+            transition: background-position 0.15s ease-in-out;
+        }
+
+        .form-switch .form-check-input:checked {
+            background-color: #0d6efd;
+            background-position: right center;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e");
+        }
+
+        .form-switch .form-check-input:focus {
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+
+            // Handle create form submission
+            $('#createStaffForm').submit(function (e) {
+                e.preventDefault();
+                var form = $(this);
+                var submitBtn = $('#createSubmitBtn');
+                var submitText = $('#createSubmitText');
+                var spinner = $('#createSpinner');
+
+                // Show loading state
+                submitBtn.prop('disabled', true);
+                submitText.text('Creating and sending email...');
+                spinner.removeClass('d-none');
+
+                var formData = {
+                    StaffName: $('input[name="StaffName"]').val(),
+                    StaffSEmail: $('input[name="StaffSEmail"]').val(),
+                    StaffPhone: $('input[name="StaffPhone"]').val(),
+                    StaffAccessLevel: getSelectedAccessLevels('access-checkbox')
+                };
+
+                $.post('@Url.Action("Create", "Staffs")', formData)
+                    .done(function() {
+                        $('#createStaffModal').modal('hide');
+                        Swal.fire(
+                            'Success!',
+                            'Staff member created successfully. An email has been sent to the staff member.',
+                            'success'
+                        ).then(() => {
+                            location.reload();
+                        });
+                    })
+                    .fail(function(response) {
+                        if (response.responseJSON) {
+                            $('[data-valmsg-for]').text('');
+                            $.each(response.responseJSON, function(key, errors) {
+                                $('[data-valmsg-for="' + key + '"]').text(errors.join(' '));
+                            });
+                        } else {
+                            Swal.fire('Error', 'An error occurred while creating staff member', 'error');
+                        }
+                    })
+                    .always(function() {
+                        // Reset button state
+                        submitBtn.prop('disabled', false);
+                        submitText.text('Create');
+                        spinner.addClass('d-none');
+                    });
+            });
+
+            // Handle edit form submission
+            $(document).on('submit', '#editStaffForm', function (e) {
+                e.preventDefault();
+                var form = $(this);
+                var submitBtn = $('#editSubmitBtn');
+                var submitText = $('#editSubmitText');
+                var spinner = $('#editSpinner');
+
+                // Show loading state
+                submitBtn.prop('disabled', true);
+                submitText.text('Updating...');
+                spinner.removeClass('d-none');
+
+                // Force update of access level before submission
+                const checkboxes = $('#editContent .access-checkbox');
+                const accessLevelField = $('#editContent #StaffAccessLevel');
+                let value = 0;
+                checkboxes.each(function() {
+                    if ($(this).is(':checked')) {
+                        value |= parseInt($(this).val());
+                    }
+                });
+                accessLevelField.val(value);
+
+                // Get all form data including the updated access level
+                var formData = $(this).serialize();
+
+                $.post(form.attr('action'), formData)
+                    .done(function() {
+                        $('#editModal').modal('hide');
+                        Swal.fire(
+                            'Success!',
+                            'Staff member updated successfully.',
+                            'success'
+                        ).then(() => {
+                            location.reload();
+                        });
+                    })
+                    .fail(function(response) {
+                        if (response.responseJSON) {
+                            $('#editContent').find('[data-valmsg-for]').text('');
+                            $.each(response.responseJSON, function(key, errors) {
+                                $('#editContent').find('[data-valmsg-for="' + key + '"]').text(errors.join(' '));
+                            });
+                        } else {
+                            Swal.fire('Error', 'An error occurred while updating staff member', 'error');
+                        }
+                    })
+                    .always(function() {
+                        // Reset button state
+                        submitBtn.prop('disabled', false);
+                        submitText.text('Save Changes');
+                        spinner.addClass('d-none');
+                    });
+            });
+
+            // Helper function to get selected access levels
+            function getSelectedAccessLevels(checkboxClass) {
+                var selectedValue = 0;
+                $('.' + checkboxClass + ':checked').each(function() {
+                    selectedValue |= parseInt($(this).val());
+                });
+                return selectedValue;
+            }
+
+            $('#staffTable').DataTable({
+                responsive: true,
+                language: {
+                    search: "_INPUT_",
+                    searchPlaceholder: "Search...",
+                },
+                dom: '<"top"f>rt<"bottom"lip><"clear">'
+            });
+
+            // Details button click handler
+            $(document).on('click', '.details-btn', function () {
+                var id = $(this).data('id');
+                $.get('@Url.Action("Details", "Staffs")/' + id, function (data) {
+                    $('#detailsContent').html(data);
+                    // Initialize modal after content is loaded
+                    var detailsModal = new bootstrap.Modal(document.getElementById('detailsModal'), {
+                        backdrop: true,
+                        keyboard: true
+                    });
+                    detailsModal.show();
+                }).fail(function () {
+                    Swal.fire('Error', 'Could not load details', 'error');
+                });
+            });
+
+            // Edit button click handler
+            $(document).on('click', '.edit-btn', function () {
+                var id = $(this).data('id');
+                $.get('@Url.Action("Edit", "Staffs")/' + id, function (data) {
+                    $('#editContent').html(data);
+
+                    // Initialize modal after content is loaded
+                    var editModal = new bootstrap.Modal(document.getElementById('editModal'), {
+                        backdrop: true,
+                        keyboard: true
+                    });
+
+                    // Force re-render of switches after modal shows
+                    editModal.show();
+
+                    // Initialize the checkboxes and hidden field
+                    const checkboxes = $('#editContent .edit-access-checkbox');
+                    const accessLevelField = $('#editContent #StaffAccessLevel');
+                    const currentAccessLevel = parseInt(accessLevelField.val());
+
+                    checkboxes.each(function() {
+                        const value = parseInt($(this).val());
+                        $(this).prop('checked', (currentAccessLevel & value) === value);
+
+                        // Trigger change to update the switch UI
+                        $(this).trigger('change');
+                    });
+
+                }).fail(function () {
+                    Swal.fire('Error', 'Could not load edit form', 'error');
+                });
+            });
+
+            $(document).on('click', '.delete-btn', function () {
+                var id = $(this).data('id');
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "You won't be able to revert this!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.post('@Url.Action("Delete", "Staffs")/' + id)
+                            .done(function() {
+                                Swal.fire(
+                                    'Deleted!',
+                                    'Staff member has been deleted.',
+                                    'success'
+                                ).then(() => {
+                                    location.reload();
+                                });
+                            })
+                            .fail(function() {
+                                Swal.fire(
+                                    'Error!',
+                                    'Something went wrong.',
+                                    'error'
+                                );
+                            });
+                    }
+                });
+            });
+        });
+    </script>
+}

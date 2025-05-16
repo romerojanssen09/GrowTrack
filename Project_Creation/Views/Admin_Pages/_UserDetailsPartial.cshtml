@@ -1,0 +1,248 @@
+@using Microsoft.AspNetCore.Html
+@model Project_Creation.DTO.UserDetailsViewModel
+
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col-12 text-center">
+            <span class="badge bg-primary fs-5 p-2 mb-2"><i class="bi bi-person-circle"></i> User Profile</span>
+        </div>
+    </div>
+    <!-- Step badges for visual workflow -->
+    <div class="row mb-3">
+        <div class="col-12 text-center">
+            <span class="badge bg-secondary mx-1">Step 1: Accept & Send Link</span>
+            <span class="badge bg-info mx-1">Step 2: Confirm & Allow Marketplace</span>
+            <span class="badge bg-success mx-1">Step 3: Status Overview</span>
+        </div>
+    </div>
+    <div class="d-flex flex-row gap-4 flex-wrap mb-3">
+        <div class="card shadow-sm mb-3 flex-fill" style="min-width:320px;max-width:420px;">
+            <div class="card-header bg-light fw-bold"><i class="bi bi-person"></i> Personal Information</div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-5">Full Name:</dt>
+                    <dd class="col-sm-7">@Model.User.FirstName @Model.User.LastName</dd>
+                    <dt class="col-sm-5">Email:</dt>
+                    <dd class="col-sm-7">@Model.User.Email</dd>
+                    <dt class="col-sm-5">Phone:</dt>
+                    <dd class="col-sm-7">@Model.User.PhoneNumber</dd>
+                    <dt class="col-sm-5">Registered Date:</dt>
+                    <dd class="col-sm-7">@Model.User.RegistrationDate.ToString("MMMM dd, yyyy")</dd>
+                </dl>
+            </div>
+        </div>
+        <div class="card shadow-sm mb-3 flex-fill" style="min-width:420px;max-width:700px;">
+            <div class="card-header bg-light fw-bold"><i class="bi bi-building"></i> Business Information</div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-5">Business Name:</dt>
+                    <dd class="col-sm-7">@Model.User.BusinessName</dd>
+                    <dt class="col-sm-5">DTI Registration:</dt>
+                    <dd class="col-sm-7">@Model.User.DTIReqistrationNumber</dd>
+                    <dt class="col-sm-5">Business Address:</dt>
+                    <dd class="col-sm-7">@Model.User.BusinessAddress</dd>
+                    <dt class="col-sm-5">Years in Operation:</dt>
+                    <dd class="col-sm-7">@Model.User.NumberOfBusinessYearsOperation</dd>
+                    <dt class="col-sm-5">Scope of Business:</dt>
+                    <dd class="col-sm-7">@Model.User.CategoryOfBusiness</dd>
+                    <dt class="col-sm-5">Business Permit:</dt>
+                    <dd class="col-sm-7">
+                        @if (!string.IsNullOrEmpty(Model.User.BusinessPermitPath))
+                        {
+                            var ext = System.IO.Path.GetExtension(Model.User.BusinessPermitPath).ToLower();
+                            if (ext == ".pdf")
+                            {
+                                <embed src="@Model.User.BusinessPermitPath" type="application/pdf" width="100%" height="900px" class="border rounded" />
+                            }
+                            else if (ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".gif")
+                            {
+                                <img src="@Model.User.BusinessPermitPath" style="max-width:650px;max-height:900px;" class="img-thumbnail border" />
+                            }
+                            else
+                            {
+                                <a href="@Model.User.BusinessPermitPath" target="_blank" class="btn btn-outline-primary btn-sm"><i class="bi bi-file-earmark"></i> View File</a>
+                            }
+                        }
+                        else
+                        {
+                            <span class="text-muted">No file</span>
+                        }
+                    </dd>
+                    <dt class="col-sm-5">Logo:</dt>
+                    <dd class="col-sm-7">
+                        @if (!string.IsNullOrEmpty(Model.User.LogoPath))
+                        {
+                            <img src="@Model.User.LogoPath" style="max-width:150px;max-height:150px;" class="img-thumbnail border" />
+                        }
+                        else
+                        {
+                            <span class="text-muted">No logo</span>
+                        }
+                    </dd>
+                    <dt class="col-sm-5">Status:</dt>
+                    <dd class="col-sm-7">
+                        <span class="badge @(Model.User.IsVerified ? "bg-success" : "bg-warning") text-white me-1">
+                            @(Model.User.IsVerified ? "Verified" : "Unverified")
+                        </span>
+                        <span class="badge
+                            @(Model.User.MarkerPlaceStatus.ToString() == "Approved" ? "bg-success" :
+                              (Model.User.MarkerPlaceStatus.ToString() == "Requesting" ? "bg-warning" :
+                              (Model.User.MarkerPlaceStatus.ToString() == "Pending" ? "bg-secondary" : "bg-danger")))
+                            text-white">
+                            @if (Model.User.MarkerPlaceStatus.ToString() == "Approved")
+                            {
+                                @:Marketplace Allowed
+                            }
+                            else if (Model.User.MarkerPlaceStatus.ToString() == "Requesting")
+                            {
+                                @:Marketplace Requesting
+                            }
+                            else if (Model.User.MarkerPlaceStatus.ToString() == "Pending")
+                            {
+                                @:Marketplace Pending
+                            }
+                            else
+                            {
+                                @:Marketplace Not Allowed
+                            }
+                        </span>
+
+                    </dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light fw-bold"><i class="bi bi-info-circle"></i> Company Background</div>
+                <div class="card-body">
+                    @Model.User.CompanyBackground
+                </div>
+            </div>
+        </div>
+    </div>
+    @if (Model.AdditionInfo != null)
+    {
+        <div class="row mb-3">
+            <div class="col-12 text-center">
+                <span class="badge bg-info fs-5 p-2 mb-2"><i class="bi bi-file-earmark-check"></i> Second Registration Information</span>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card shadow-sm mb-3">
+                    <div class="card-header bg-light fw-bold"><i class="bi bi-file-earmark-medical"></i> Business Documents</div>
+                    <div class="card-body">
+                        <dl class="row mb-0">
+                            <dt class="col-sm-6">Barangay Clearance:</dt>
+                            <dd class="col-sm-6">@DisplayFile(Model.AdditionInfo.BrgyClearancePath)</dd>
+                            <dt class="col-sm-6">SEC Certificate:</dt>
+                            <dd class="col-sm-6">@DisplayFile(Model.AdditionInfo.SecCertPath)</dd>
+                            <dt class="col-sm-6">DTI Certificate:</dt>
+                            <dd class="col-sm-6">@DisplayFile(Model.AdditionInfo.DtiCertPath)</dd>
+                            <dt class="col-sm-6">Business Owner Valid ID:</dt>
+                            <dd class="col-sm-6">@DisplayFile(Model.AdditionInfo.BusinessOwnerValidId)</dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card shadow-sm mb-3">
+                    <div class="card-header bg-light fw-bold"><i class="bi bi-journal-check"></i> Additional Info</div>
+                    <div class="card-body">
+                        <dl class="row mb-0">
+                            <dt class="col-sm-6">Operation to Operate:</dt>
+                            <dd class="col-sm-6">@DisplayFile(Model.AdditionInfo.OperationToOperate)</dd>
+                            <dt class="col-sm-6">Submitted On:</dt>
+                            <dd class="col-sm-6">@Model.AdditionInfo.SubmissionDate.ToString("MMMM dd, yyyy")</dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@functions {
+    public IHtmlContent DisplayFile(string path)
+    {
+        if (string.IsNullOrEmpty(path)) return new HtmlString("<span class='text-muted'>No file uploaded</span>");
+        var ext = System.IO.Path.GetExtension(path).ToLower();
+        if (ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".gif")
+        {
+            return new HtmlString($"<img src='{path}' style='max-width:150px;max-height:150px;' class='img-thumbnail border' />");
+        }
+        else if (ext == ".pdf")
+        {
+            return new HtmlString($"<embed src='{path}' type='application/pdf' width='120' height='150' class='border rounded' />");
+        }
+        else
+        {
+            return new HtmlString($"<a href='{path}' target='_blank' class='btn btn-outline-primary btn-sm'><i class='bi bi-file-earmark'></i> View File</a>");
+        }
+    }
+}
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Toggle verification status
+            $('#btn-verify-toggle').click(function () {
+                var userId = '@Model.User.Id';
+                var isVerified = '@Model.User.IsVerified' === 'True' ? false : true;
+                $.ajax({
+                    url: '/Admin/ChangeUserStatus',
+                    type: 'POST',
+                    headers: {
+                        "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val(),
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                    data: {
+                        id: userId,
+                        isVerified: isVerified,
+                        isAllowedToMarketPlace: '@Model.User.MarkerPlaceStatus'
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            location.reload();
+                        } else {
+                            alert(response.message || 'Failed to update status');
+                        }
+                    },
+                    error: function () {
+                        alert('An error occurred while updating status');
+                    }
+                });
+            });
+            // Toggle marketplace status
+            $('#btn-marketplace-toggle').click(function () {
+                var userId = '@Model.User.Id';
+                var isAllowed = '@Model.User.MarkerPlaceStatus' === 'True' ? false : true;
+                $.ajax({
+                    url: '/Admin/ChangeUserStatus',
+                    type: 'POST',
+                    headers: {
+                        "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val(),
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                    data: {
+                        id: userId,
+                        isVerified: '@Model.User.IsVerified',
+                        isAllowedToMarketPlace: isAllowed
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            location.reload();
+                        } else {
+                            alert(response.message || 'Failed to update status');
+                        }
+                    },
+                    error: function () {
+                        alert('An error occurred while updating status');
+                    }
+                });
+            });
+        });
+    </script>
+}

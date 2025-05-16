@@ -1,0 +1,160 @@
+@model Project_Creation.Models.ViewModels.ProductDetailsViewModel
+
+@{
+    ViewData["Title"] = Model.Name;
+}
+
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Marketplace" asp-action="Index">Marketplace</a></li>
+            <li class="breadcrumb-item"><a asp-controller="Marketplace" asp-action="Index" asp-route-category="@Model.CategoryName">@Model.CategoryName</a></li>
+            <li class="breadcrumb-item active" aria-current="page">@Model.Name</li>
+        </ol>
+    </nav>
+
+    <div class="card shadow">
+        <div class="card-body">
+            <div class="row">
+                <!-- Product Images -->
+                <div class="col-md-6 mb-4">
+                    <div id="productCarousel" class="carousel slide" data-bs-ride="carousel">
+                        <div class="carousel-inner">
+                            @if (Model.Images.Any())
+                            {
+                                for (int i = 0; i < Model.Images.Count; i++)
+                                {
+                                    <div class="carousel-item @(i == 0 ? "active" : "")">
+                                        <img src="@Model.Images[i]" class="d-block w-100" alt="@Model.Name" style="height: 400px; object-fit: contain;">
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <div class="carousel-item active">
+                                    <img src="/images/no-image.png" class="d-block w-100" alt="No Image" style="height: 400px; object-fit: contain;">
+                                </div>
+                            }
+                        </div>
+                        @if (Model.Images.Count > 1)
+                        {
+                            <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Previous</span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#productCarousel" data-bs-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Next</span>
+                            </button>
+                        }
+                    </div>
+                    
+                    <!-- Thumbnail Navigation -->
+                    @if (Model.Images.Count > 1)
+                    {
+                        <div class="row mt-2">
+                            @for (int i = 0; i < Model.Images.Count; i++)
+                            {
+                                <div class="col-3 mb-2">
+                                    <img src="@Model.Images[i]" 
+                                        class="img-thumbnail" 
+                                        alt="Thumbnail"
+                                        style="cursor: pointer; height: 80px; object-fit: cover;"
+                                        onclick="$('#productCarousel').carousel(@i)">
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+                
+                <!-- Product Info -->
+                <div class="col-md-6">
+                    <h1 class="mb-2">@Model.Name</h1>
+                    
+                    <div class="mb-3">
+                        <span class="badge bg-primary me-2">
+                            <i class="fas fa-tags me-1"></i> @Model.CategoryName
+                        </span>
+                        <span class="badge bg-secondary">
+                            <i class="fas fa-store me-1"></i> Sold by: @Model.BusinessName
+                        </span>
+                    </div>
+                    
+                    <h3 class="text-primary mb-3">@Html.DisplayFor(model => model.Price)</h3>
+                    
+                    <div class="mb-4">
+                        @if (Model.InStock)
+                        {
+                            <div class="badge bg-success p-2">
+                                <i class="fas fa-check-circle me-1"></i> In Stock (@Model.QuantityInStock available)
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="badge bg-danger p-2">
+                                <i class="fas fa-times-circle me-1"></i> Out of Stock
+                            </div>
+                        }
+                    </div>
+                    
+                    <p class="mb-4">@Html.Raw(Model.Description)</p>
+                    
+                    <div class="d-grid gap-2">
+                        <a asp-controller="Chat" asp-action="Index" asp-route-userId="@Model.BusinessOwnerId" class="btn btn-primary btn-lg">
+                            <i class="bi bi-chat-dots"></i> Message
+                        </a>
+                        <a asp-controller="BOBusinessProfile"
+                           asp-action="BusinessProfile"
+                           asp-route-id="@Model.BusinessOwnerId"
+                           asp-route-category="@Model.CategoryName"
+                           class="btn btn-outline-primary">
+                            <i class="fas fa-store me-2"></i> Visit @Model.BusinessName Store
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Related Products -->
+    @if (Model.RelatedProducts.Any())
+    {
+        <div class="card shadow mt-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Related Products</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    @foreach (var product in Model.RelatedProducts)
+                    {
+                        <div class="col-md-3 mb-3">
+                            <div class="card h-100 shadow-sm">
+                                <img src="@product.MainImageUrl" class="card-img-top" alt="@product.Name" style="height: 150px; object-fit: cover;">
+                                <div class="card-body">
+                                    <h6 class="card-title">@product.Name</h6>
+                                    <p class="fw-bold text-primary">@Html.DisplayFor(m => product.Price)</p>
+                                </div>
+                                <div class="card-footer text-center">
+                                    <a href="@Url.Action("Details", "Marketplace", new { id = product.Id })" class="btn btn-sm btn-primary">
+                                        View Details
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Initialize product carousel
+            var carousel = new bootstrap.Carousel(document.getElementById('productCarousel'), {
+                interval: 5000
+            });
+        });
+    </script>
+} 

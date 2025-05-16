@@ -1,0 +1,389 @@
+{
+  "Files": [
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\css\\site.css",
+      "PackagePath": "staticwebassets\\css\\site.css"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\css\\theme.css",
+      "PackagePath": "staticwebassets\\css\\theme.css"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\default\\background.jpg",
+      "PackagePath": "staticwebassets\\default\\background.jpg"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\default\\default-profile.png",
+      "PackagePath": "staticwebassets\\default\\default-profile.png"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\default\\growchart.png",
+      "PackagePath": "staticwebassets\\default\\growchart.png"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\default\\logo.png",
+      "PackagePath": "staticwebassets\\default\\logo.png"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\default\\product-placeholder.jpg",
+      "PackagePath": "staticwebassets\\default\\product-placeholder.jpg"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\default\\product.jpg",
+      "PackagePath": "staticwebassets\\default\\product.jpg"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\favicon.ico",
+      "PackagePath": "staticwebassets\\favicon.ico"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\js\\site.js",
+      "PackagePath": "staticwebassets\\js\\site.js"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\bootstrap\\LICENSE",
+      "PackagePath": "staticwebassets\\lib\\bootstrap"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.css"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.css.map"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.min.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.min.css"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.min.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.min.css.map"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.css"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.css.map"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.min.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.min.css"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.min.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.min.css.map"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.css"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.css.map"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.min.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.min.css"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.min.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.min.css.map"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.css"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.css.map"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.min.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.min.css"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.min.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.min.css.map"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.css"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.css.map"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.min.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.min.css"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.min.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.min.css.map"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.css"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.css.map"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.min.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.min.css"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.min.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.min.css.map"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.css"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.css.map"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.min.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.min.css"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.min.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.min.css.map"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.css"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.css.map"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.min.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.min.css"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.min.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.min.css.map"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.js",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.js"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.js.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.js.map"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.min.js",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.min.js"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.min.js.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.min.js.map"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.esm.js",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.esm.js"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.esm.js.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.esm.js.map"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.esm.min.js",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.esm.min.js"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.esm.min.js.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.esm.min.js.map"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.js",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.js"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.js.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.js.map"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.min.js",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.min.js"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.min.js.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.min.js.map"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\jquery-validation-unobtrusive\\LICENSE.txt",
+      "PackagePath": "staticwebassets\\lib\\jquery-validation-unobtrusive\\LICENSE.txt"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\jquery-validation-unobtrusive\\jquery.validate.unobtrusive.js",
+      "PackagePath": "staticwebassets\\lib\\jquery-validation-unobtrusive\\jquery.validate.unobtrusive.js"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\jquery-validation-unobtrusive\\jquery.validate.unobtrusive.min.js",
+      "PackagePath": "staticwebassets\\lib\\jquery-validation-unobtrusive\\jquery.validate.unobtrusive.min.js"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\jquery-validation\\LICENSE.md",
+      "PackagePath": "staticwebassets\\lib\\jquery-validation\\LICENSE.md"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\jquery-validation\\dist\\additional-methods.js",
+      "PackagePath": "staticwebassets\\lib\\jquery-validation\\dist\\additional-methods.js"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\jquery-validation\\dist\\additional-methods.min.js",
+      "PackagePath": "staticwebassets\\lib\\jquery-validation\\dist\\additional-methods.min.js"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\jquery-validation\\dist\\jquery.validate.js",
+      "PackagePath": "staticwebassets\\lib\\jquery-validation\\dist\\jquery.validate.js"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\jquery-validation\\dist\\jquery.validate.min.js",
+      "PackagePath": "staticwebassets\\lib\\jquery-validation\\dist\\jquery.validate.min.js"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\jquery\\LICENSE.txt",
+      "PackagePath": "staticwebassets\\lib\\jquery\\LICENSE.txt"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\jquery\\dist\\jquery.js",
+      "PackagePath": "staticwebassets\\lib\\jquery\\dist\\jquery.js"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\jquery\\dist\\jquery.min.js",
+      "PackagePath": "staticwebassets\\lib\\jquery\\dist\\jquery.min.js"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\jquery\\dist\\jquery.min.map",
+      "PackagePath": "staticwebassets\\lib\\jquery\\dist\\jquery.min.map"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\BrgyClearance\\WAR_Janssen_Rey_E__Romero_Week_14_dd8215f8-ba13-4ab2-b95e-9143209b4346.pdf",
+      "PackagePath": "staticwebassets\\uploads\\1\\BrgyClearance\\WAR_Janssen_Rey_E__Romero_Week_14_dd8215f8-ba13-4ab2-b95e-9143209b4346.pdf"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\BusinessOwnerValidId\\WAR_Janssen_Rey_E__Romero_Week_14_381be66e-375f-4f43-9d81-1e36ecff67ed.pdf",
+      "PackagePath": "staticwebassets\\uploads\\1\\BusinessOwnerValidId\\WAR_Janssen_Rey_E__Romero_Week_14_381be66e-375f-4f43-9d81-1e36ecff67ed.pdf"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\BusinessPermits\\WAR_Janssen_Rey_E__Romero_Week_14_4a768f03-3a42-4ad1-ae2b-c373f5b4a954.pdf",
+      "PackagePath": "staticwebassets\\uploads\\1\\BusinessPermits\\WAR_Janssen_Rey_E__Romero_Week_14_4a768f03-3a42-4ad1-ae2b-c373f5b4a954.pdf"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\BusinessPermits\\WAR_Janssen_Rey_E__Romero_Week_14_9ccd12ee-50f0-4d32-9066-0867dc755d25.pdf",
+      "PackagePath": "staticwebassets\\uploads\\1\\BusinessPermits\\WAR_Janssen_Rey_E__Romero_Week_14_9ccd12ee-50f0-4d32-9066-0867dc755d25.pdf"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\DtiCertPath\\WAR_Janssen_Rey_E__Romero_Week_14_4b15c51c-4593-44bd-a56f-5b44b25bb1af.pdf",
+      "PackagePath": "staticwebassets\\uploads\\1\\DtiCertPath\\WAR_Janssen_Rey_E__Romero_Week_14_4b15c51c-4593-44bd-a56f-5b44b25bb1af.pdf"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\Logos\\image_7122c81f-20de-4bf9-b450-9a4b2a4f2c50.png",
+      "PackagePath": "staticwebassets\\uploads\\1\\Logos\\image_7122c81f-20de-4bf9-b450-9a4b2a4f2c50.png"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\SecCertPath\\WAR_Janssen_Rey_E__Romero_Week_14_6346c72a-c9a3-4a08-9e6b-e6610be3d04c.pdf",
+      "PackagePath": "staticwebassets\\uploads\\1\\SecCertPath\\WAR_Janssen_Rey_E__Romero_Week_14_6346c72a-c9a3-4a08-9e6b-e6610be3d04c.pdf"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\barcodes\\barcode_BAL-OFF-39471_20250515053638.png",
+      "PackagePath": "staticwebassets\\uploads\\1\\barcodes\\barcode_BAL-OFF-39471_20250515053638.png"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\barcodes\\barcode_BAT-ELE-33988_20250514190544.png",
+      "PackagePath": "staticwebassets\\uploads\\1\\barcodes\\barcode_BAT-ELE-33988_20250514190544.png"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\barcodes\\barcode_BAT-ELE-49208_20250514194337.png",
+      "PackagePath": "staticwebassets\\uploads\\1\\barcodes\\barcode_BAT-ELE-49208_20250514194337.png"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\barcodes\\barcode_BAT-ELE-7012_20250514191355.png",
+      "PackagePath": "staticwebassets\\uploads\\1\\barcodes\\barcode_BAT-ELE-7012_20250514191355.png"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\barcodes\\barcode_CEM-CON-60402_20250515053126.png",
+      "PackagePath": "staticwebassets\\uploads\\1\\barcodes\\barcode_CEM-CON-60402_20250515053126.png"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\barcodes\\barcode_DEL-ELE-51210_20250515053556.png",
+      "PackagePath": "staticwebassets\\uploads\\1\\barcodes\\barcode_DEL-ELE-51210_20250515053556.png"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\barcodes\\barcode_EPS-ELE-18622_20250515053511.png",
+      "PackagePath": "staticwebassets\\uploads\\1\\barcodes\\barcode_EPS-ELE-18622_20250515053511.png"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\barcodes\\barcode_FOL-FUR-59444_20250515053309.png",
+      "PackagePath": "staticwebassets\\uploads\\1\\barcodes\\barcode_FOL-FUR-59444_20250515053309.png"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\barcodes\\barcode_HP -ELE-52280_20250515052836.png",
+      "PackagePath": "staticwebassets\\uploads\\1\\barcodes\\barcode_HP -ELE-52280_20250515052836.png"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\barcodes\\barcode_LOG-IT -81045_20250515052928.png",
+      "PackagePath": "staticwebassets\\uploads\\1\\barcodes\\barcode_LOG-IT -81045_20250515052928.png"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\barcodes\\barcode_QWE-QWE-76174_20250515092629.png",
+      "PackagePath": "staticwebassets\\uploads\\1\\barcodes\\barcode_QWE-QWE-76174_20250515092629.png"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\barcodes\\barcode_SAF-CON-20124_20250515053433.png",
+      "PackagePath": "staticwebassets\\uploads\\1\\barcodes\\barcode_SAF-CON-20124_20250515053433.png"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\barcodes\\barcode_SAM-IT -41046_20250515053205.png",
+      "PackagePath": "staticwebassets\\uploads\\1\\barcodes\\barcode_SAM-IT -41046_20250515053205.png"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\barcodes\\barcode_WHI-OFF-71071_20250515053034.png",
+      "PackagePath": "staticwebassets\\uploads\\1\\barcodes\\barcode_WHI-OFF-71071_20250515053034.png"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\products\\ChatGPT Image Apr 17, 2025, 05_45_51 PM_4f1f930c-2fe9-4db3-b513-10c220018380.png",
+      "PackagePath": "staticwebassets\\uploads\\1\\products\\ChatGPT Image Apr 17, 2025, 05_45_51 PM_4f1f930c-2fe9-4db3-b513-10c220018380.png"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\products\\ChatGPT Image Apr 18, 2025, 12_29_39 PM_9dd54fe8-e483-4cff-99bf-5b502f090d64.png",
+      "PackagePath": "staticwebassets\\uploads\\1\\products\\ChatGPT Image Apr 18, 2025, 12_29_39 PM_9dd54fe8-e483-4cff-99bf-5b502f090d64.png"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\products\\ChatGPT_Image_Apr_18__2025__12_24_20_PM-removebg-preview_a3d5f06e-230b-4e85-afad-19e5c3ed9563.png",
+      "PackagePath": "staticwebassets\\uploads\\1\\products\\ChatGPT_Image_Apr_18__2025__12_24_20_PM-removebg-preview_a3d5f06e-230b-4e85-afad-19e5c3ed9563.png"
+    },
+    {
+      "Id": "obj\\Release\\net8.0\\staticwebassets\\msbuild.Project_Creation.Microsoft.AspNetCore.StaticWebAssetEndpoints.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssetEndpoints.props"
+    },
+    {
+      "Id": "obj\\Release\\net8.0\\staticwebassets\\msbuild.Project_Creation.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Release\\net8.0\\staticwebassets\\msbuild.build.Project_Creation.props",
+      "PackagePath": "build\\Project_Creation.props"
+    },
+    {
+      "Id": "obj\\Release\\net8.0\\staticwebassets\\msbuild.buildMultiTargeting.Project_Creation.props",
+      "PackagePath": "buildMultiTargeting\\Project_Creation.props"
+    },
+    {
+      "Id": "obj\\Release\\net8.0\\staticwebassets\\msbuild.buildTransitive.Project_Creation.props",
+      "PackagePath": "buildTransitive\\Project_Creation.props"
+    }
+  ],
+  "ElementsToRemove": []
+}

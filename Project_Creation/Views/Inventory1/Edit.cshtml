@@ -1,0 +1,187 @@
+﻿@model Project_Creation.DTO.ProductDto
+
+@{
+    ViewData["Title"] = "Edit Product";
+}
+
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header">
+            <h2>Edit Product</h2>
+        </div>
+        <div class="card-body">
+            <form asp-action="Edit" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <input type="hidden" asp-for="Id" />
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="ProductName" class="form-label">Product Name</label>
+                        <input asp-for="ProductName" class="form-control" required />
+                        <span asp-validation-for="ProductName" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="SupplierId" class="form-label">Supplier</label>
+                        <select asp-for="SupplierId" class="form-select">
+                            <option disabled>-- Select Supplier --</option>
+                            @foreach (var supplier in Model.Suppliers)
+                            {
+                                <option value="@supplier.SupplierID" selected="@(supplier.SupplierID == Model.SupplierId)">
+                                    @supplier.SupplierName
+                                </option>
+                            }
+                        </select>
+                        <span asp-validation-for="SupplierId" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <!-- Category Dropdown -->
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Category</label>
+                        <select class="form-control" id="CategorySelect" required>
+                            <option disabled>-- Select Category --</option>
+                            @foreach (var category in Model.Category)
+                            {
+                                <option value="@category.CategoryName"
+                                        selected="@(category.CategoryName == Model.NewCategoryName)">
+                                    @category.CategoryName
+                                </option>
+                            }
+                        </select>
+                        <input type="hidden" asp-for="NewCategoryName" id="NewCategoryName" />
+                        <span asp-validation-for="NewCategoryName" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6 mb-3 d-flex gap-2">
+                        <div class="col-md-6">
+                            <label asp-for="SKU" class="form-label">SKU</label>
+                            <input asp-for="SKU" class="form-control" readonly />
+                            <span asp-validation-for="SKU" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Barcode</label>
+                            <div id="barcodeContainer">
+                                @if (!string.IsNullOrEmpty(Model.Barcode))
+                                {
+                                    <img src="@Model.Barcode" alt="Barcode" style="max-height: 50px;" />
+                                }
+                            </div>
+                            <input type="hidden" asp-for="Barcode" />
+                        </div>
+                    </div>
+                    <div class="alert alert-warning">
+                        <i class="bi bi-info-circle"></i> Note: Changing product details will not affect the SKU or Barcode.
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="PurchasePrice" class="form-label">Purchase Price</label>
+                        <input asp-for="PurchasePrice" class="form-control" type="number" step="0.01" required />
+                        <span asp-validation-for="PurchasePrice" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="SellingPrice" class="form-label">Selling Price</label>
+                        <input asp-for="SellingPrice" class="form-control" type="number" step="0.01" required />
+                        <span asp-validation-for="SellingPrice" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="QuantityInStock" class="form-label">Current Stock</label>
+                        <input asp-for="QuantityInStock" class="form-control" type="number" required />
+                        <span asp-validation-for="QuantityInStock" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="ReorderLevel" class="form-label">Reorder Level</label>
+                        <input asp-for="ReorderLevel" class="form-control" type="number" required />
+                        <span asp-validation-for="ReorderLevel" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Description" class="form-label">Description</label>
+                    <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        /* Select2 Customization */
+        .select2-container--default .select2-selection--single {
+            height: 38px;
+            padding: 6px 12px;
+            border: 1px solid #ced4da;
+        }
+
+            .select2-container--default .select2-selection--single .select2-selection__arrow {
+                height: 36px;
+            }
+
+        .select2-container--open {
+            z-index: 99999 !important;
+        }
+
+        .select2-dropdown {
+            z-index: 99999 !important;
+        }
+
+        .select2-results__option--highlighted {
+            background-color: #0d6efd !important;
+        }
+    </style>
+}
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        $(document).ready(function() {
+            // Initialize Select2 for category selection
+            $('#CategorySelect').select2({
+                tags: true,
+                width: '100%',
+                placeholder: "Select or create a category",
+                createTag: function(params) {
+                    return {
+                        id: params.term,
+                        text: params.term,
+                        isNew: true
+                    };
+                },
+                templateResult: function(data) {
+                    var $result = $('<span></span>');
+                    $result.text(data.text);
+                    if (data.isNew) {
+                        $result.append(' <span class="badge bg-info">new</span>');
+                    }
+                    return $result;
+                }
+            }).on('select2:select', function(e) {
+                var selectedValue = e.params.data.text;
+                $('#NewCategoryName').val(selectedValue);
+            });
+
+            // Set initial value
+            var currentCategory = '@Html.Raw(Model.NewCategoryName)';
+            if (currentCategory) {
+                $('#CategorySelect').val(currentCategory).trigger('change');
+                $('#NewCategoryName').val(currentCategory);
+            }
+        });
+    </script>
+}

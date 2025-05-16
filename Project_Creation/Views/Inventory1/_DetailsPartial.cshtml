@@ -1,0 +1,80 @@
+﻿@using Project_Creation.Models.Entities;
+@model Project_Creation.Models.Entities.Product2
+
+<div class="row">
+    <div class="col-md-6">
+        <dl class="row">
+            <dt class="col-sm-4">Product Name</dt>
+            <dd class="col-sm-8">@Model.ProductName</dd>
+
+            <dt class="col-sm-4">Category</dt>
+            <dd class="col-sm-8">@Model.Category</dd>
+
+            <dt class="col-sm-4">Supplier</dt>
+            <dd class="col-sm-8">
+                @{
+                    var supplier = ViewBag.Suppliers as List<Supplier2>;
+                    // Changed to use Supplier2SupplierID instead of SupplierId
+                    var currentSupplier = supplier?.FirstOrDefault(s => s.SupplierID.ToString() == Model.SupplierId);
+                }
+                @if (currentSupplier != null)
+                {
+                    @currentSupplier.SupplierName
+                }
+                else
+                {
+                    <span class="text-muted">No supplier</span>
+                }
+            </dd>
+
+            <dt class="col-sm-4">Purchase Price</dt>
+            <dd class="col-sm-8">@Model.PurchasePrice.ToString("C")</dd>
+
+            <dt class="col-sm-4">Selling Price</dt>
+            <dd class="col-sm-8">@Model.SellingPrice.ToString("C")</dd>
+        </dl>
+    </div>
+    <div class="col-md-6">
+        <dl class="row">
+            <dt class="col-sm-4">Current Stock</dt>
+            <dd class="col-sm-8 @(Model.ReorderLevel.HasValue && Model.QuantityInStock <= Model.ReorderLevel.Value ? "text-danger fw-bold" : "")">
+                @Model.QuantityInStock
+                @if (Model.ReorderLevel.HasValue && Model.QuantityInStock <= Model.ReorderLevel.Value)
+                {
+                    <span class="badge bg-warning text-dark">Low Stock</span>
+                }
+            </dd>
+
+            <dt class="col-sm-4">Reorder Level</dt>
+            <dd class="col-sm-8">@Model.ReorderLevel</dd>
+
+            <dt class="col-sm-4">SKU</dt>
+            <dd class="col-sm-8">@Model.SKU</dd>
+
+            <dt class="col-sm-4">Barcode</dt>
+            <dd class="col-sm-8">
+                <img src="@Model.Barcode" alt="Barcode" style="max-height: 50px;" />
+            </dd>
+        </dl>
+    </div>
+</div>
+
+<div class="row mt-3">
+    <div class="col-12">
+        <h5>Description</h5>
+        <p>@(string.IsNullOrEmpty(Model.Description) ? "No description provided" : Model.Description)</p>
+    </div>
+</div>
+
+<div class="row mt-3">
+    <div class="col-12">
+        <h5>Additional Information</h5>
+        <dl class="row">
+            <dt class="col-sm-3">Created</dt>
+            <dd class="col-sm-9">@Model.CreatedAt?.ToString("g")</dd>
+
+            <dt class="col-sm-3">Last Updated</dt>
+            <dd class="col-sm-9">@Model.UpdatedAt?.ToString("g")</dd>
+        </dl>
+    </div>
+</div>

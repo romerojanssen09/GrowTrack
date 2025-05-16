@@ -1,0 +1,40 @@
+﻿@{
+    ViewData["Title"] = "Reports";
+}
+
+<div class="container">
+    <h1>Reports</h1>
+    <hr />
+
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Sales Report</h5>
+                    <p class="card-text">View sales transactions by date range.</p>
+                    <a asp-action="Sales" class="btn btn-primary">View Sales</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Inventory Report</h5>
+                    <p class="card-text">View current inventory status.</p>
+                    <a asp-action="Inventory" class="btn btn-primary">View Inventory</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Stock Movements</h5>
+                    <p class="card-text">View all inventory movements.</p>
+                    <a asp-action="Movements" class="btn btn-primary">View Movements</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

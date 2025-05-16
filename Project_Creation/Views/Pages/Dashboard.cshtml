@@ -1,0 +1,951 @@
+@using System.Security.Claims
+
+@{
+    ViewData["Title"] = "Business Dashboard";
+}
+
+<div class="container-fluid">
+    <!-- Header Row -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">Business Dashboard</h1>
+            <p class="mb-0">Welcome back, @User.Identity.Name!</p>
+        </div>
+        <div class="btn-group">
+            <a asp-controller="Inventory1" asp-action="Create" class="btn btn-primary">
+                <i class="fas fa-plus-circle me-2"></i>Add Product
+            </a>
+            <a asp-controller="Inventory1" asp-action="QuickSale" class="btn btn-success">
+                <i class="fas fa-cash-register me-2"></i>
+                Quick Sale
+            </a>
+        </div>
+    </div>
+
+    <!-- Key Metrics Row -->
+    <div class="row mb-4">
+        <!-- Total Inventory Value -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-uppercase mb-1">
+                                Inventory Value
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="inventoryValue">₱0.00</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-peso-sign fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Low Stock Items -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Low Stock Items
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="lowStockCount">0</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Sales -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Today's Sales
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="todaysSales">₱0.00</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-receipt fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Products -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Total Products
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="totalProducts">0</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-boxes fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Row -->
+    <div class="row">
+        <!-- Inventory1 Overview -->
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">Inventory1 Overview</h6>
+                    <div>
+                        <a href="/Inventory1" class="btn btn-sm btn-outline-primary">View All</a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm" id="inventoryOverview">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Category</th>
+                                    <th>Stock</th>
+                                    <th>Value</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Will be populated by JavaScript -->
+                                <tr>
+                                    <td colspan="5" class="text-center">Loading inventory...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions & Alerts -->
+        <div class="col-lg-4">
+            <!-- Quick Actions Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Quick Actions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        <a href="/Inventory1/Create" class="list-group-item list-group-item-action">
+                            <i class="fas fa-plus-circle me-2 text-primary"></i>Add New Product
+                        </a>
+                        <a href="/Inventory1/QuickSale" class="list-group-item list-group-item-action">
+                            <i class="fas fa-cash-register me-2 text-success"></i>Process Sale
+                        </a>
+                        <a href="/Inventory1/StockIn" class="list-group-item list-group-item-action">
+                            <i class="fas fa-arrow-down me-2 text-info"></i>Record Stock In
+                        </a>
+                        <a href="/Reports" class="list-group-item list-group-item-action">
+                            <i class="fas fa-chart-bar me-2 text-warning"></i>View Reports
+                        </a>
+                        <a asp-controller="Leads" asp-action="Index" class="list-group-item list-group-item-action">
+                            <i class="bi bi-people-fill me-2 text-secondary"></i>View Leads
+                        </a>
+                        <a asp-controller="Campaigns" asp-action="Index" class="list-group-item list-group-item-action">
+                            <i class="fas fa-bullhorn me-2 text-danger"></i>Create Campaign
+                        </a>
+                        <a asp-controller="Staffs" asp-action="Index" class="list-group-item list-group-item-action">
+                            <i class="bi bi-person-badge-fill me-2 text-dark"></i> Staff
+                        </a>
+                        <a asp-controller="Calendar" asp-action="Index" class="list-group-item list-group-item-action">
+                            <i class="bi bi-calendar-event me-2 text-info"></i> Calendar
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Low Stock Alerts -->
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center bg-warning">
+                    <h6 class="m-0 font-weight-bold text-primary">Low Stock Alerts</h6>
+                    <span class="badge bg-danger" id="lowStockBadge">0</span>
+                </div>
+                <div class="card-body">
+                    <div class="list-group" id="lowStockList">
+                        <!-- Will be populated by JavaScript -->
+                        <div class="text-center py-3">Loading alerts...</div>
+                    </div>
+                    <a href="/Inventory1?filter=lowstock" class="btn btn-sm btn-block btn-warning mt-2">
+                        View All Low Stock
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Second Row - Charts -->
+    <div class="row mt-4">
+        <div class="col-lg-6 d-flex gap-2 flex-column">
+            <!-- Marketplace -->
+            <div class="col-lg-12">
+                <div class="col-lg-12 mb-4">
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3 bg-primary text-white">
+                            <h6 class="m-0 font-weight-bold">Marketplace Management</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="me-3">
+                                    <i class="fas fa-store fa-3x text-primary"></i>
+                                </div>
+                                <div>
+                                    <h5 class="mb-1">Sell Your Products</h5>
+                                    <p class="mb-0 text-muted">Publish your inventory to the marketplace to reach more customers.</p>
+                                </div>
+                            </div>
+                            <div class="d-grid">
+                                <a asp-controller="Marketplace" asp-action="Index" class="btn btn-primary">
+                                    <i class="fas fa-shopping-cart me-1"></i> Browse Marketplace
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Sales Trend -->
+            <div class="col-lg-12">
+                <div class="card shadow mb-4">
+                    <div class="d-flex justify-content-between align-items-center px-4 py-2">
+                        <h4 id="trend">7-Day Sales Trend</h4>
+                        <div class="d-flex align-items-center">
+                            <!-- Days Options -->
+                            <select id="trendDaysSelect" class="form-select form-select-sm me-2" style="width: auto;" onchange="handleTrendDaysChange(this.value)">
+                                <option value="7">7-Day</option>
+                                <option value="30">30-Day</option>
+                                <option value="365">365-Day</option>
+                                <option value="custom">Custom</option>
+                            </select>
+                            <div id="customDaysInput" class="input-group input-group-sm" style="width: 100px; display: none;">
+                                <input type="text" id="customDays" class="form-control" placeholder="Days"
+                                       oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                                       onkeypress="if(event.key === 'Enter') { applyCustomDays(); }">
+                                <button class="btn btn-outline-primary" type="button" onclick="applyCustomDays()">Go</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-area">
+                            <canvas id="salesTrendChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stock Distribution -->
+        <div class="col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Stock Distribution</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-pie pt-4 pb-2">
+                        <canvas id="stockDistributionChart"></canvas>
+                    </div>
+                    <div class="mt-4 text-center small">
+                        <span class="mr-2">
+                            <i class="fas fa-circle text-success"></i> Healthy
+                        </span>
+                        <span class="mr-2">
+                            <i class="fas fa-circle text-warning"></i> Low Stock
+                        </span>
+                        <span class="mr-2">
+                            <i class="fas fa-circle text-danger"></i> Out of Stock
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">Recent Activity</h6>
+                    <div class="dropdown no-arrow">
+                        <a class="dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in">
+                            <a class="dropdown-item" href="#" id="showSales">Sales Only</a>
+                            <a class="dropdown-item" href="#" id="showStock">Stock Movements</a>
+                            <a class="dropdown-item" href="#" id="showAll">Show All</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="activity-feed" id="recentActivity">
+                        <!-- Will be populated by JavaScript -->
+                        <div class="text-center py-4">Loading recent activity...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* message to supplier *@
+<div class="modal fade" id="messageModal" tabindex="-1" aria-labelledby="messageModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="messageModalLabel">Message Supplier</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="sendMessageForm" asp-controller="Dashboard" asp-action="SendMessageToSupplier" method="post">
+                <div class="modal-body">
+                    <p><strong>Name:</strong> <span id="supplierName"></span></p>
+                    <p><strong>Email:</strong> <span id="supplierEmail"></span></p>
+
+                    <div class="mb-3">
+                        <label for="subject" class="form-label">Subject</label>
+                        <input type="text" class="form-control" id="subject" name="subject" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="message" class="form-label">Message</label>
+                        <textarea class="form-control" id="message" name="message" rows="4" required></textarea>
+                    </div>
+
+                    <input type="hidden" name="supplierId" id="supplierId">
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Send Message</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@* message to supplier *@
+<div class="modal fade" id="messageModal" tabindex="-1" aria-labelledby="messageModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="messageModalLabel">Message Supplier</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="sendMessageForm" asp-controller="Dashboard" asp-action="SendMessageToSupplier" method="post">
+                <div class="modal-body">
+                    <p><strong>Name:</strong> <span id="supplierName"></span></p>
+                    <p><strong>Email:</strong> <span id="supplierEmail"></span></p>
+
+                    <div class="mb-3">
+                        <label for="subject" class="form-label">Subject</label>
+                        <input type="text" class="form-control" id="subject" name="subject" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="message" class="form-label">Message</label>
+                        <textarea class="form-control" id="message" name="message" rows="4" required></textarea>
+                    </div>
+
+                    <input type="hidden" name="supplierId" id="supplierId">
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Send Message</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Handle trend days dropdown change
+        function handleTrendDaysChange(value) {
+            if (value === 'custom') {
+                document.getElementById('customDaysInput').style.display = 'flex';
+                document.getElementById('customDays').focus();
+            } else {
+                document.getElementById('customDaysInput').style.display = 'none';
+                loadSalesTrendByDays(parseInt(value));
+            }
+        }
+        
+        // Apply custom days from input
+        function applyCustomDays() {
+            const customDays = document.getElementById('customDays').value;
+            if (customDays && parseInt(customDays) > 0) {
+                loadSalesTrendByDays(parseInt(customDays));
+            } else {
+                // Show error for invalid input
+                alert('Please enter a valid number of days greater than 0');
+            }
+        }
+
+        // Load sales trend data by days
+        function loadSalesTrendByDays(days) {
+            if (isNaN(days) || days <= 0) {
+                console.error('Invalid days value:', days);
+                return;
+            }
+
+            // Update trend title
+            document.getElementById('trend').textContent = `${days}-Day Sales Trend`;
+
+            fetch(`/Dashboard/GetSalesTrend?type=days&days=${days}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        createSalesTrendChart(data, 'Daily Sales');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading sales trend by days:', error);
+                });
+        }
+
+        // For backward compatibility
+        function loadSalesTrend(value) {
+            loadSalesTrendByDays(parseInt(value));
+        }
+
+        // Create the sales trend chart with the provided data
+        function createSalesTrendChart(data, labelText) {
+            const ctx = document.getElementById('salesTrendChart').getContext('2d');
+
+            // Safely destroy existing chart if it exists
+            if (window.salesTrendChart && typeof window.salesTrendChart.destroy === 'function') {
+                window.salesTrendChart.destroy();
+            }
+
+            window.salesTrendChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: labelText,
+                        data: data.values,
+                        backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: 'rgba(54, 162, 235, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverRadius: 5,
+                        pointHoverBackgroundColor: 'rgba(54, 162, 235, 1)',
+                        pointHoverBorderColor: '#fff',
+                        pointHitRadius: 10,
+                        pointBorderWidth: 2,
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return '₱' + context.raw.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+
+                                }
+                            }
+                        },
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '₱' + value.toLocaleString();
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+                // Function to fetch supplier data and populate modal
+        function messageSupplier(supplierId) {
+            // Show loading state
+            const modalTitle = document.getElementById('messageModalLabel');
+            modalTitle.innerHTML = 'Loading supplier... <i class="fas fa-spinner fa-spin"></i>';
+
+            fetch(`/Dashboard/GetSupplierData?id=${supplierId}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        // Populate modal fields
+                        document.getElementById('supplierName').textContent = data.data.name || 'N/A';
+                        document.getElementById('supplierEmail').textContent = data.data.email || 'N/A';
+                        document.getElementById('supplierId').value = supplierId;
+
+                        // Reset modal title
+                        modalTitle.innerHTML = 'Message Supplier';
+
+                        // Show the modal
+                        const messageModal = new bootstrap.Modal(document.getElementById('messageModal'));
+                        messageModal.show();
+                    } else {
+                        throw new Error(data.message || 'Failed to load supplier data');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    modalTitle.innerHTML = 'Message Supplier';
+                    Swal.fire('Error', error.message, 'error');
+                });
+        }
+
+        // Form submission handler
+        document.getElementById('sendMessageForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // Get form data
+            const formData = {
+                supplierId: document.getElementById('supplierId').value,
+                subject: document.getElementById('subject').value,
+                message: document.getElementById('message').value
+            };
+
+            // Show loading state
+            Swal.fire({
+                title: 'Sending...',
+                html: 'Please wait while we send your message',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // Send the request
+            fetch('/Dashboard/SendMessageToSupplier', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                Swal.close();
+                if (data.success) {
+                    Swal.fire('Success', 'Message sent successfully!', 'success');
+                    // Close the modal
+                    bootstrap.Modal.getInstance(document.getElementById('messageModal')).hide();
+                    // Reset the form
+                    document.getElementById('sendMessageForm').reset();
+                } else {
+                    throw new Error(data.message || 'Failed to send message');
+                }
+            })
+            .catch(error => {
+                Swal.fire('Error', error.message, 'error');
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize dashboard
+            loadDashboardData();
+
+            // Set interval to refresh data every 5 minutes
+            setInterval(loadDashboardData, 300000);
+
+            // Format currency in PHP
+            function formatCurrency(amount) {
+                return '₱' + parseFloat(amount).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+            }
+
+            // Format numbers with commas
+            function formatNumber(num) {
+                return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            }
+
+            // Load all dashboard data
+            function loadDashboardData() {
+                loadSummaryMetrics();
+                loadInventoryOverview();
+                loadLowStockAlerts();
+                loadSalesTrendByDays(7); // Initialize with 7-day trend
+                loadStockDistribution();
+                loadRecentActivity();
+            }
+
+            // Load summary metrics
+            function loadSummaryMetrics() {
+                fetch('/Dashboard/GetBusinessMetrics')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            document.getElementById('inventoryValue').textContent = formatCurrency(data.inventoryValue);
+                            document.getElementById('lowStockCount').textContent = formatNumber(data.lowStockCount);
+                            document.getElementById('todaysSales').textContent = formatCurrency(data.todaysSales);
+                            document.getElementById('totalProducts').textContent = formatNumber(data.totalProducts);
+                        } else {
+                            console.error('Error loading metrics:', data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading metrics:', error);
+                    });
+            }
+
+            // Load inventory overview
+            function loadInventoryOverview() {
+                fetch('/Dashboard/GetInventoryOverview?limit=10')
+                    .then(response => response.json())
+                    .then(data => {
+                        const tableBody = document.querySelector('#inventoryOverview tbody');
+
+                        if (data.success && data.products.length > 0) {
+                            let html = '';
+
+                            data.products.forEach(product => {
+                                // Determine status badge
+                                let statusBadge = '';
+                                if (product.quantity <= 0) {
+                                    statusBadge = '<span class="badge bg-danger">Out of Stock</span>';
+                                } else if (product.quantity <= product.reorderLevel) {
+                                    statusBadge = '<span class="badge bg-warning">Low Stock</span>';
+                                } else {
+                                    statusBadge = '<span class="badge bg-success">In Stock</span>';
+                                }
+
+                                html += `
+                                <tr>
+                                    <td>${product.name}</td>
+                                    <td>${product.category}</td>
+                                    <td>${formatNumber(product.quantity)}</td>
+                                    <td>${formatCurrency(product.value)}</td>
+                                    <td>${statusBadge}</td>
+                                </tr>`;
+                            });
+
+                            tableBody.innerHTML = html;
+                        } else {
+                            tableBody.innerHTML = '<tr><td colspan="5" class="text-center">No inventory data available</td></tr>';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading inventory overview:', error);
+                    });
+            }
+
+            // Load low stock alerts
+            function loadLowStockAlerts() {
+                fetch('/Dashboard/GetLowStockAlerts?limit=5')
+                    .then(response => response.json())
+                    .then(data => {
+                        const alertList = document.getElementById('lowStockList');
+                        const alertBadge = document.getElementById('lowStockBadge');
+
+                        if (data.success && data.alerts.length > 0) {
+                            let html = '';
+
+                            data.alerts.forEach(alert => {
+
+                                // console.log('alert: ', alert);
+
+                                const percent = Math.round((alert.currentStock / alert.reorderLevel) * 100);
+
+                                const btnOrStockIn = alert.supplierId != null
+                                    ? `
+                                    <button onclick="messageSupplier(${alert.supplierId})" class="btn btn-sm btn-outline-secondary" title="Message Supplier">
+                                        <i class="bi bi-chat-left-dots-fill icon-hover"></i>
+                                    </button>
+                                    <a href="/Inventory1/StockIn?id=${alert.id}" class="btn btn-sm btn-outline-secondary" title="Stock In">
+                                        <i class="fas fa-arrow-down icon-hover"></i>
+                                    </a>`
+                                    : `<a href="/Inventory1/StockIn?id=${alert.id}" class="btn btn-sm btn-outline-secondary text-center stock-in-link" title="Stock In">
+                                            <i class="fas fa-arrow-down icon-hover"></i>
+                                        </a>`;
+
+                                html += `
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <strong>${alert.productName}</strong>
+                                        <div class="d-flex gap-2 align-items-center">
+                                            <span class="badge bg-${alert.currentStock <= 0 ? 'danger' : 'warning'}">
+                                                ${alert.currentStock <= 0 ? 'OUT' : alert.currentStock}
+                                            </span>
+                                            ${btnOrStockIn}
+                                        </div>
+                                    </div>
+                                    <div class="progress mt-2" style="height: 5px;">
+                                        <div class="progress-bar bg-${percent < 50 ? 'danger' : 'warning'}"
+                                             role="progressbar"
+                                             style="width: ${Math.min(percent, 100)}%">
+                                        </div>
+                                    </div>
+                                    <small class="text-muted">Reorder at ${alert.reorderLevel}</small>
+                                </div>`;
+                            });
+
+                            alertList.innerHTML = html;
+                            alertBadge.textContent = data.totalAlerts;
+                        } else {
+                            alertList.innerHTML = '<div class="text-center py-3">No low stock alerts</div>';
+                            alertBadge.textContent = '0';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading low stock alerts:', error);
+                    });
+            }
+
+            // Load stock distribution chart
+            function loadStockDistribution() {
+                fetch('/Dashboard/GetStockDistribution')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            const ctx = document.getElementById('stockDistributionChart').getContext('2d');
+
+                            // Safely destroy existing chart if it exists
+                            if (window.stockDistributionChart && typeof window.stockDistributionChart.destroy === 'function') {
+                                window.stockDistributionChart.destroy();
+                            }
+
+                            window.stockDistributionChart = new Chart(ctx, {
+                                type: 'doughnut',
+                                data: {
+                                    labels: ['Healthy Stock', 'Low Stock', 'Out of Stock'],
+                                    datasets: [{
+                                        data: [data.healthy, data.low, data.outOfStock],
+                                        backgroundColor: [
+                                            'rgba(40, 167, 69, 0.8)',
+                                            'rgba(255, 193, 7, 0.8)',
+                                            'rgba(220, 53, 69, 0.8)'
+                                        ],
+                                        hoverBackgroundColor: [
+                                            'rgba(40, 167, 69, 1)',
+                                            'rgba(255, 193, 7, 1)',
+                                            'rgba(220, 53, 69, 1)'
+                                        ],
+                                        hoverBorderColor: "rgba(234, 236, 244, 1)",
+                                        borderWidth: 1
+                                    }],
+                                },
+                                options: {
+                                    maintainAspectRatio: false,
+                                    plugins: {
+                                        legend: {
+                                            display: false
+                                        },
+                                        tooltip: {
+                                            callbacks: {
+                                                label: function(context) {
+                                                    return context.label + ': ' + context.raw;
+                                                }
+                                            }
+                                        }
+                                    },
+                                    cutout: '70%',
+                                }
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading stock distribution:', error);
+                    });
+            }
+
+            function loadRecentActivity() {
+                fetch('/Dashboard/GetRecentActivity?limit=10')
+                    .then(response => response.json())
+                    .then(data => {
+                        const activityFeed = document.getElementById('recentActivity');
+
+                        if (data.success) {
+                            if (data.activities && data.activities.length > 0) {
+                                let html = '';
+                                    // console.log('data: ',data);
+
+                                data.activities.forEach(activity => {
+                                    // Determine icon and color based on activity type
+                                    let icon = '';
+                                    let color = '';
+
+                                    switch(activity.type) {
+                                        case 'Sale':
+                                            icon = 'fa-cash-register';
+                                            color = 'text-success';
+                                            break;
+                                        case 'Stock In':
+                                            icon = 'fa-arrow-down';
+                                            color = 'text-primary';
+                                            break;
+                                        case 'StockOut':
+                                            icon = 'fa-arrow-up';
+                                            color = 'text-warning';
+                                            break;
+                                        case 'New Product':
+                                            icon = 'fa-plus-circle';
+                                            color = 'text-info';
+                                            break;
+                                        default:
+                                            icon = 'fa-info-circle';
+                                            color = 'text-secondary';
+                                    }
+
+                                    html += `
+                                    <div class="activity-item ${activity.type.toLowerCase()}">
+                                        <div class="d-flex align-items-start">
+                                            <div class="flex-shrink-0 me-3">
+                                                <i class="fas ${icon} ${color}"></i>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <div class="d-flex justify-content-between">
+                                                    <p class="mb-1">${activity.description}</p>
+                                                    <small class="text-muted">${activity.time}</small>
+                                                </div>
+                                                ${activity.details ? `<small class="text-muted">${activity.details}</small>` : ''}
+                                            </div>
+                                        </div>
+                                    </div>`;
+                                });
+                                activityFeed.innerHTML = html;
+                            } else {
+                                activityFeed.innerHTML = '<div class="text-center py-4">No recent activity found</div>';
+                            }
+                        } else {
+                            activityFeed.innerHTML = `<div class="text-center py-4 text-danger">${data.message || 'Error loading activity'}</div>`;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading recent activity:', error);
+                        document.getElementById('recentActivity').innerHTML =
+                            '<div class="text-center py-4 text-danger">Failed to load recent activity</div>';
+                    });
+            }
+
+            // Filter activity feed
+            document.getElementById('showSales').addEventListener('click', function(e) {
+                e.preventDefault();
+                document.querySelectorAll('.activity-item').forEach(item => {
+                    item.style.display = item.classList.contains('sale') ? '' : 'none';
+                });
+            });
+
+            document.getElementById('showStock').addEventListener('click', function(e) {
+                e.preventDefault();
+                document.querySelectorAll('.activity-item').forEach(item => {
+                    item.style.display = (item.classList.contains('stockin') || item.classList.contains('stockout')) ? '' : 'none';
+                });
+            });
+
+            document.getElementById('showAll').addEventListener('click', function(e) {
+                e.preventDefault();
+                document.querySelectorAll('.activity-item').forEach(item => {
+                    item.style.display = '';
+                });
+            });
+        });
+
+        // function MessageSupplier(id) {
+        //     $.ajax({
+        //         url: '/Dashboard/GetSupplierData',
+        //         type: 'GET',
+        //         data: { id: id },
+        //         dataType: 'json',
+        //         success: function(data) {
+        //             if (data.success) {
+        //                 $('#supplierName').text(data.data.supplierName);
+        //                 $('#supplierEmail').text(data.data.email);
+        //                 $('#hiddenSupplierId').val(id);
+
+        //                 Show the modal
+        //                 const messageModal = new bootstrap.Modal(document.getElementById('messageModal'));
+        //                 messageModal.show();
+        //             } else {
+        //                 alert(data.message || 'Failed to load supplier data');
+        //             }
+        //         },
+        //         error: function(xhr, status, error) {
+        //             console.error('Error fetching supplier data:', error);
+        //             alert('Error loading supplier information');
+        //         }
+        //     });
+        // }
+
+
+        // document.getElementById('sendMessageForm').addEventListener('submit', function (e) {
+        //     e.preventDefault();
+
+        //     const formData = {
+        //         supplierId: document.getElementById('hiddenSupplierId').value,
+        //         subject: document.getElementById('subject').value,
+        //         message: document.getElementById('message').value
+        //     };
+
+        //     Show SweetAlert2 "Please wait" dialog
+        //     Swal.fire({
+        //         title: 'Sending...',
+        //         text: 'Please wait while your message is being sent.',
+        //         allowOutsideClick: false,
+        //         allowEscapeKey: false,
+        //         didOpen: () => {
+        //             Swal.showLoading();
+        //         }
+        //     });
+
+        //     fetch('/Dashboard/SendMessageToSupplier', {
+        //         method: 'POST',
+        //         headers: { 'Content-Type': 'application/json' },
+        //         body: JSON.stringify(formData)
+        //     })
+        //     .then(response => response.json())
+        //     .then(result => {
+        //         Swal.close(); Close the loading Swal
+
+        //         if (result.success) {
+        //             Swal.fire('Success', 'Message sent successfully!', 'success');
+        //             bootstrap.Modal.getInstance(document.getElementById('messageModal')).hide();
+        //             document.getElementById('sendMessageForm').reset();
+        //         } else {
+        //             Swal.fire('Failed', result.message || 'Failed to send message.', 'error');
+        //         }
+        //     })
+        //     .catch(error => {
+        //         Swal.close();
+        //         console.error('Error sending message:', error);
+        //         Swal.fire('Error', 'An error occurred while sending the message.', 'error');
+        //     });
+        // });
+    </script>
+}

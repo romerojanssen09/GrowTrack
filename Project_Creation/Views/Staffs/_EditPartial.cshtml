@@ -1,0 +1,86 @@
+﻿@model Project_Creation.Models.Entities.Staff
+
+@{
+    @using Project_Creation.Models.Entities
+}
+
+<div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+<input type="hidden" asp-for="Id" />
+
+<!-- StaffName -->
+<div class="mb-3">
+    <label asp-for="StaffName" class="form-label"></label>
+    <input asp-for="StaffName" class="form-control" />
+    <span asp-validation-for="StaffName" class="text-danger"></span>
+</div>
+
+<!-- StaffSEmail -->
+<div class="mb-3">
+    <label asp-for="StaffSEmail" class="form-label"></label>
+    <input asp-for="StaffSEmail" class="form-control" />
+    <span asp-validation-for="StaffSEmail" class="text-danger"></span>
+</div>
+
+<!-- StaffPhone -->
+<div class="mb-3">
+    <label asp-for="StaffPhone" class="form-label"></label>
+    <input asp-for="StaffPhone" class="form-control" />
+    <span asp-validation-for="StaffPhone" class="text-danger"></span>
+</div>
+
+<!-- IsActive -->
+<div class="mb-3">
+    <label asp-for="IsActive" class="form-label"></label>
+    <select asp-for="IsActive" class="form-select" asp-items="Html.GetEnumSelectList<AccountStatus>()"></select>
+    <span asp-validation-for="IsActive" class="text-danger"></span>
+</div>
+
+<!-- Access Permissions -->
+<div class="mb-3">
+    <label class="form-label">Access Permissions</label>
+    <input type="hidden" asp-for="StaffAccessLevel" id="StaffAccessLevel" />
+    <div class="row g-3">
+        @foreach (var accessLevel in Enum.GetValues(typeof(StaffAccessLevel)))
+        {
+            if ((int)accessLevel > 0)
+            {
+                <div class="col-md-6">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input access-checkbox"
+                               type="checkbox"
+                               id="access_@accessLevel"
+                               value="@((int)accessLevel)"
+                               @(Model.StaffAccessLevel.HasFlag((StaffAccessLevel)accessLevel) ? "checked" : "") />
+                        <label class="form-check-label" for="access_@accessLevel">@accessLevel</label>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+<script>
+    // Update the hidden field whenever checkboxes change
+    document.addEventListener('DOMContentLoaded', function() {
+        const checkboxes = document.querySelectorAll('.access-checkbox');
+        const accessLevelField = document.getElementById('StaffAccessLevel');
+        
+        function updateAccessLevel() {
+            let value = 0;
+            checkboxes.forEach(checkbox => {
+                if (checkbox.checked) {
+                    value |= parseInt(checkbox.value);
+                }
+            });
+            accessLevelField.value = value;
+        }
+        
+        // Initialize with current value
+        updateAccessLevel();
+        
+        // Update on checkbox change
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', updateAccessLevel);
+        });
+    });
+</script>

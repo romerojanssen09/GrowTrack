@@ -1,0 +1,419 @@
+/* GrowTrack CRM Theme Colors
+-------------------------------------------------- */
+:root {
+  --primary-bg: #F7F5EF;     /* Light beige - main background */
+  --secondary-bg: #E9F3F6;   /* Light blue/teal - secondary elements */
+  --accent-color: #F3993E;   /* Orange - sparingly used for accents/actions */
+  --dark-color: #304251;     /* Navy blue - used for shadows and text */
+  --accent-hover: #e48a30;
+  --dark-hover: #263440;
+  --accent-light: rgba(243, 153, 62, 0.1);
+  --dark-light: rgba(48, 66, 81, 0.1);
+  --text-light: #ffffff;
+  --text-muted: #6c757d;
+  --text-dark: #304251;
+  --border-light: #dee2e6;
+}
+
+/* Body and Main Backgrounds 
+-------------------------------------------------- */
+body {
+  background-color: var(--primary-bg);
+  color: var(--text-dark);
+}
+
+/* Background Colors - Favor lighter backgrounds
+-------------------------------------------------- */
+.bg-primary {
+  background-color: var(--secondary-bg) !important;
+  color: var(--text-dark) !important;
+  border-color: var(--secondary-bg) !important;
+}
+
+.bg-secondary, .bg-dark {
+  background-color: var(--primary-bg) !important;
+  color: var(--text-dark) !important;
+  border-color: var(--primary-bg) !important;
+}
+
+.bg-light {
+  background-color: var(--primary-bg) !important;
+}
+
+.bg-info {
+  background-color: var(--secondary-bg) !important;
+  color: var(--text-dark) !important;
+}
+
+/* Accent Colors - Use sparingly */
+.bg-accent {
+  background-color: var(--accent-color) !important;
+  color: var(--text-light) !important;
+}
+
+.bg-dark-accent {
+  background-color: var(--dark-color) !important;
+  color: var(--text-light) !important;
+}
+
+/* Button Styles - Primary buttons with accent color
+-------------------------------------------------- */
+.btn-primary {
+  background-color: var(--accent-color) !important;
+  border-color: var(--accent-color) !important;
+  color: var(--text-light) !important;
+}
+
+.btn-primary:hover, .btn-primary:focus, .btn-primary:active {
+  background-color: var(--accent-hover) !important;
+  border-color: var(--accent-hover) !important;
+}
+
+/* Secondary and info buttons with muted style */
+.btn-secondary, .btn-info {
+  background-color: var(--secondary-bg) !important;
+  border-color: var(--border-light) !important;
+  color: var(--text-dark) !important;
+}
+
+.btn-secondary:hover, .btn-secondary:focus, .btn-secondary:active,
+.btn-info:hover, .btn-info:focus, .btn-info:active {
+  background-color: #d8e8ec !important;
+  border-color: var(--border-light) !important;
+  color: var(--text-dark) !important;
+}
+
+/* Success and important buttons with dark accent */
+.btn-success, .btn-dark {
+  background-color: var(--dark-color) !important;
+  border-color: var(--dark-color) !important;
+  color: var(--text-light) !important;
+}
+
+.btn-success:hover, .btn-success:focus, .btn-success:active,
+.btn-dark:hover, .btn-dark:focus, .btn-dark:active {
+  background-color: var(--dark-hover) !important;
+  border-color: var(--dark-hover) !important;
+}
+
+/* Outlined buttons */
+.btn-outline-primary {
+  color: var(--accent-color) !important;
+  border-color: var(--accent-color) !important;
+  background-color: transparent !important;
+}
+
+.btn-outline-primary:hover, .btn-outline-primary:focus, .btn-outline-primary:active {
+  background-color: var(--accent-light) !important;
+  color: var(--accent-color) !important;
+}
+
+.btn-outline-secondary {
+  color: var(--text-dark) !important;
+  border-color: var(--border-light) !important;
+  background-color: transparent !important;
+}
+
+.btn-outline-secondary:hover, .btn-outline-secondary:focus, .btn-outline-secondary:active {
+  background-color: var(--secondary-bg) !important;
+  color: var(--text-dark) !important;
+}
+
+/* Text Colors 
+-------------------------------------------------- */
+.text-primary {
+  color: var(--dark-color) !important;
+}
+
+.text-secondary, .text-muted {
+  color: var(--text-muted) !important;
+}
+
+.text-accent {
+  color: var(--accent-color) !important;
+}
+
+/* Nav and Sidebar
+-------------------------------------------------- */
+.sidebar {
+  background-color: var(--dark-color) !important;
+}
+
+.nav-link, .nav-item {
+  color: var(--text-dark) !important;
+}
+
+.nav-link:hover, .nav-item:hover {
+  color: var(--accent-color) !important;
+}
+
+.nav-link.active, .nav-item.active {
+  color: var(--accent-color) !important;
+}
+
+/* Cards - Focus on light backgrounds
+-------------------------------------------------- */
+.card {
+  background-color: #FFFFFF;
+  border-color: var(--border-light);
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.card-header {
+  background-color: var(--secondary-bg) !important;
+  color: var(--text-dark) !important;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.card-footer {
+  background-color: var(--primary-bg) !important;
+  border-top: 1px solid var(--border-light);
+}
+
+/* Tables - Clean and simple
+-------------------------------------------------- */
+.table th, .thead-dark th, .table-dark th {
+  background-color: var(--secondary-bg) !important;
+  color: var(--text-dark) !important;
+  border-color: var(--border-light) !important;
+  font-weight: 600;
+  padding: 12px 15px;
+}
+
+.table td {
+  padding: 10px 15px;
+  border-color: rgba(222, 226, 230, 0.6);
+  vertical-align: middle;
+}
+
+.table {
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+  margin-bottom: 1.5rem;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+  background-color: #FFFFFF !important;
+}
+
+.table-striped tbody tr:nth-of-type(even) {
+  background-color: var(--primary-bg) !important;
+}
+
+.table-hover tbody tr:hover {
+  background-color: rgba(233, 243, 246, 0.5) !important;
+  transition: background-color 0.2s ease;
+}
+
+/* Highlight certain table cells */
+.table .highlight {
+  color: var(--accent-color);
+  font-weight: 600;
+}
+
+/* Responsive tables */
+@media (max-width: 768px) {
+  .table-responsive {
+    border-radius: 8px;
+    overflow: hidden;
+  }
+}
+
+/* Modals - Clean and focused
+-------------------------------------------------- */
+.modal-content {
+  background-color: #FFFFFF;
+  border: none;
+}
+
+.modal-header {
+  background-color: var(--secondary-bg) !important;
+  color: var(--text-dark) !important;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.modal-footer {
+  background-color: var(--primary-bg) !important;
+  border-top: 1px solid var(--border-light);
+}
+
+/* Form Elements
+-------------------------------------------------- */
+.form-control {
+  border-color: var(--border-light);
+}
+
+.form-control:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 0.25rem var(--accent-light);
+}
+
+.input-group-text {
+  background-color: var(--secondary-bg);
+  border-color: var(--border-light);
+  color: var(--text-dark);
+}
+
+.form-check-input:checked {
+  background-color: var(--accent-color) !important;
+  border-color: var(--accent-color) !important;
+}
+
+/* Alerts and Badges - Reduced visual intensity
+-------------------------------------------------- */
+.alert {
+  border: none;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.badge {
+  font-weight: 500;
+}
+
+.badge.bg-primary {
+  background-color: var(--secondary-bg) !important;
+  color: var(--text-dark) !important;
+}
+
+.badge.bg-secondary {
+  background-color: var(--primary-bg) !important;
+  color: var(--text-dark) !important;
+}
+
+.badge.bg-success {
+  background-color: var(--dark-color) !important;
+  color: var(--text-light) !important;
+}
+
+.badge.bg-warning, .badge.bg-accent {
+  background-color: var(--accent-color) !important;
+  color: var(--text-light) !important;
+}
+
+.badge.bg-info {
+  background-color: var(--secondary-bg) !important;
+  color: var(--text-dark) !important;
+}
+
+/* Navigation Tabs - Simple and clean
+-------------------------------------------------- */
+.nav-tabs {
+  border-bottom: 1px solid var(--border-light);
+}
+
+.nav-tabs .nav-link {
+  color: var(--text-dark) !important;
+  border: none;
+}
+
+.nav-tabs .nav-link:hover {
+  border-color: transparent;
+  color: var(--accent-color) !important;
+}
+
+.nav-tabs .nav-link.active {
+  color: var(--accent-color) !important;
+  background-color: transparent;
+  border-bottom: 2px solid var(--accent-color) !important;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+}
+
+/* DataTables - Consistency with rest of UI
+-------------------------------------------------- */
+.dataTables_wrapper .dataTables_paginate .paginate_button.current, 
+.dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+  background: var(--secondary-bg) !important;
+  color: var(--text-dark) !important;
+  border-color: var(--border-light) !important;
+  border-radius: 4px;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+  background: var(--accent-light) !important;
+  color: var(--text-dark) !important;
+  border-color: var(--border-light) !important;
+}
+
+.dataTables_wrapper .dataTables_filter input,
+.dataTables_wrapper .dataTables_length select {
+  border: 1px solid var(--border-light);
+  border-radius: 4px;
+  padding: 6px 10px;
+}
+
+.dataTables_wrapper .dataTables_filter input:focus,
+.dataTables_wrapper .dataTables_length select:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 0.2rem var(--accent-light);
+  outline: none;
+}
+
+.dataTables_wrapper .dataTables_length, 
+.dataTables_wrapper .dataTables_filter, 
+.dataTables_wrapper .dataTables_info, 
+.dataTables_wrapper .dataTables_processing, 
+.dataTables_wrapper .dataTables_paginate {
+  color: var(--text-dark);
+  margin-bottom: 10px;
+}
+
+/* Custom Component-specific Styles
+-------------------------------------------------- */
+.top-navbar {
+  background-color: #FFFFFF !important;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.footer {
+  background-color: var(--primary-bg) !important;
+  color: var(--text-dark) !important;
+  border-top: 1px solid var(--border-light);
+}
+
+/* External Library Overrides
+-------------------------------------------------- */
+/* Override SweetAlert colors */
+.swal2-confirm {
+  background-color: var(--accent-color) !important;
+}
+
+/* Override Select2 colors */
+.select2-container--default .select2-results__option--highlighted[aria-selected] {
+  background-color: var(--secondary-bg) !important;
+  color: var(--text-dark) !important;
+}
+
+/* Icon Utilities - Consistent sizing and spacing
+-------------------------------------------------- */
+.icon-circle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+}
+
+.icon-circle-primary {
+  background-color: var(--secondary-bg);
+  color: var(--text-dark);
+}
+
+.icon-circle-secondary {
+  background-color: var(--primary-bg);
+  color: var(--text-dark);
+}
+
+.icon-circle-accent {
+  background-color: var(--accent-light);
+  color: var(--accent-color);
+}
+
+.icon-circle-dark {
+  background-color: var(--dark-light);
+  color: var(--dark-color);
+} 
