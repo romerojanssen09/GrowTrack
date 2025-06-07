@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Project_Creation.Data;
 using Project_Creation.DTO;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 using static NHibernate.Engine.Query.CallableParser;
 
 namespace Project_Creation.Controllers
@@ -132,19 +134,24 @@ namespace Project_Creation.Controllers
             try
             {
                 if (string.IsNullOrWhiteSpace(email))
-                    return Json(new { success = false, message = "Email is required" });
+                    return BadRequest(new { success = false, message = "Email is required" });
 
-                if (!email.Contains("@") || !email.Contains("."))
-                    return Json(new { success = false, message = "Invalid email format" });
+                _logger.LogInformation($"Looking for user with email: {email}");
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == email.ToLower());
 
-                var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
                 if (user == null)
                     return Json(new { success = false, message = "Email not found in our system" });
 
-                // Clean up expired codes before generating new one
-                var expiredUsers = await _context.Users
-                    .Where(u => u.ResetCodeExpiry < TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Singapore")))
-                    .ToListAsync();
+                // Calculate Singapore time first
+                var singaporeTime = TimeZoneInfo.ConvertTimeFromUtc(
+                    DateTime.UtcNow,
+                    TimeZoneInfo.FindSystemTimeZoneById("Singapore"));
+
+                // Get expired users (evaluated client-side)
+                var allUsers = await _context.Users.ToListAsync();
+                var expiredUsers = allUsers
+                    .Where(u => u.ResetCodeExpiry < singaporeTime)
+                    .ToList();
 
                 foreach (var expiredUser in expiredUsers)
                 {
@@ -153,9 +160,8 @@ namespace Project_Creation.Controllers
                 }
 
                 var code = GenerateVerificationCode();
-                var expiry = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Singapore")).AddMinutes(15);
+                var expiry = singaporeTime.AddMinutes(15);
 
-                // Store in database
                 user.ResetCode = code;
                 user.ResetCodeExpiry = expiry;
                 await _context.SaveChangesAsync();
@@ -168,7 +174,7 @@ namespace Project_Creation.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error sending verification code");
-                return Json(new { success = false, message = "An error occurred while sending the code" });
+                return StatusCode(500, new { success = false, message = "An internal server error occurred" });
             }
         }
 
@@ -181,22 +187,26 @@ namespace Project_Creation.Controllers
                 if (string.IsNullOrWhiteSpace(code) || code.Length != 6 || !int.TryParse(code, out int codeValue))
                     return Json(new { success = false, message = "Invalid code format" });
 
-                var user = await _context.Users.FirstOrDefaultAsync(u =>
+                // Calculate Singapore time first
+                var singaporeTime = TimeZoneInfo.ConvertTimeFromUtc(
+                    DateTime.UtcNow,
+                    TimeZoneInfo.FindSystemTimeZoneById("Singapore"));
+
+                // Get all users first, then filter in memory
+                var allUsers = await _context.Users.ToListAsync();
+                var user = allUsers.FirstOrDefault(u =>
                     u.ResetCode == codeValue &&
-                    u.ResetCodeExpiry > TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Singapore")));
+                    u.ResetCodeExpiry > singaporeTime);
 
                 if (user == null)
                     return Json(new { success = false, message = "Invalid or expired code" });
 
-                return new JsonResult(new
+                return Json(new
                 {
                     success = true,
                     userId = user.Id,
                     email = user.Email
-                })
-                {
-                    ContentType = "application/json"
-                };
+                });
             }
             catch (Exception ex)
             {

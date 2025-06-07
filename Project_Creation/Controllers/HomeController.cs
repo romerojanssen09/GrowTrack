@@ -15,11 +15,13 @@ namespace Project_Creation.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly AuthDbContext _context;
+        private readonly IEmailService _emailService;
 
-        public HomeController(ILogger<HomeController> logger, AuthDbContext context)
+        public HomeController(ILogger<HomeController> logger, AuthDbContext context, IEmailService emailService)
         {
             _context = context;
             _logger = logger;
+            _emailService = emailService;
         }
 
         public IActionResult Index()
@@ -39,6 +41,67 @@ namespace Project_Creation.Controllers
         }
 
         public IActionResult Privacy()
+        {
+            return View();
+        }
+
+        public IActionResult Contact()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Contact(ContactMessage model)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    // Save the contact message to the database
+                    model.CreatedAt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Singapore"));
+                    _context.ContactMessages.Add(model);
+                    await _context.SaveChangesAsync();
+
+                    // Get admin email for notification
+                    var admin = await _context.Admin.FirstOrDefaultAsync();
+                    if (admin != null)
+                    {
+                        // Create email body
+                        string emailBody = $@"
+                            <h2>New Contact Form Submission</h2>
+                            <p><strong>From:</strong> {model.Name}</p>
+                            <p><strong>Email:</strong> {model.Email}</p>
+                            <p><strong>Subject:</strong> {model.Subject}</p>
+                            <p><strong>Message:</strong></p>
+                            <p>{model.Message}</p>
+                            <hr>
+                            <p>You can view this message in your admin dashboard.</p>
+                        ";
+
+                        // Send email notification to admin
+                        await _emailService.SendEmail(admin.Email, "New Contact Form Submission - GrowTrack", emailBody, true);
+                    }
+
+                    TempData["SuccessMessage"] = "Your message has been sent successfully. We'll get back to you soon!";
+                    return RedirectToAction(nameof(Contact));
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error processing contact form");
+                    ModelState.AddModelError("", "An error occurred while sending your message. Please try again later.");
+                }
+            }
+
+            return View(model);
+        }
+
+        public IActionResult Features()
+        {
+            return View();
+        }
+
+        public IActionResult About()
         {
             return View();
         }
@@ -106,7 +169,8 @@ namespace Project_Creation.Controllers
                     LastName = model.LastName,
                     Email = model.Email,
                     Password = BCrypt.Net.BCrypt.HashPassword(model.Password),
-                    Role = "Admin"
+                    Role = "Admin",
+                    AllowEmailNotifications = true
                 };
 
                 _context.Admin.Add(admin);

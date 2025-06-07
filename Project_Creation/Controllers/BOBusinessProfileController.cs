@@ -42,6 +42,27 @@ namespace Project_Creation.Controllers
                 return NotFound();
             }
 
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId != null)
+            {
+                var currentUser = await _context.Users.FirstOrDefaultAsync(u => u.Id == Convert.ToInt32(userId));
+                if (currentUser != null && currentUser.MarkerPlaceStatus.ToString() == "Pending")
+                {
+                    TempData["WarningMessage"] = "Please fill the form to send a request to the admin!";
+                    return RedirectToAction("Index", "Profile", new { userId = userId });
+                }
+                else if (currentUser != null && currentUser.MarkerPlaceStatus.ToString() == "Rejected")
+                {
+                    TempData["WarningMessage"] = "Please wait for the admin to approve your Marketplace access.";
+                    return RedirectToAction("Dashboard", "Pages");
+                }
+                else if (currentUser != null && currentUser.MarkerPlaceStatus.ToString() == "AwaitingApproval")
+                {
+                    TempData["WarningMessage"] = "Please wait for the admin to approve your Marketplace access.";
+                    return RedirectToAction("Dashboard", "Pages");
+                }
+            }
+
             // Check if business profile exists
             var existingProfile = await _context.BOBusinessProfiles
                     .Where(bp => bp.UserId == id)
@@ -93,9 +114,8 @@ namespace Project_Creation.Controllers
                 })
                 .ToList();
 
-            var hotSalesProducts = await GetTopHotSellingProducts(id);
+            //var hotSalesProducts = await GetTopHotSellingProducts(id);
 
-            //var featuredProducts = await GetTopHotSellingProducts(id);
             var featuredProductsQuery = _context.Products2
                 .Include(p => p.Images)
                 .Where(p => p.BOId == id && p.IsPublished && p.DisplayFeatured);
@@ -109,6 +129,9 @@ namespace Project_Creation.Controllers
                     SellingPrice = p.SellingPrice
                 })
                 .ToListAsync();
+
+            var links = await _context.UserSocialMediaLinks
+                .FirstOrDefaultAsync(u => u.UserId == userData.Id);
 
             // Create view model regardless of whether profile exists
             var viewModel = new BusinessProfileViewModel
@@ -150,14 +173,7 @@ namespace Project_Creation.Controllers
                     .ToListAsync(),
                 GroupedProductsByCategory = groupedProducts,
                 FeaturedProductViewModel = featuredProductsList,
-                HotSalesProducts = hotSalesProducts.Select(h => new ProductDto
-                {
-                    Id = h.ProductId,
-                    ProductName = h.ProductName,
-                    Images = h.Images?.ToList(),
-                    QuantityInStock = h.QuantityInStock,
-                    SellingPrice = h.SellingPrice
-                }).ToList()
+                UserLinks = links
             };
 
             // Pass any messages from TempData to ViewBag
@@ -565,40 +581,40 @@ namespace Project_Creation.Controllers
             return RedirectToAction("BusinessProfile", new { id = model.UserId });
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetShopFilters()
-        {
-            try
-            {
-                // Get actual categories from database
-                var categories = await _context.Categories
-                    .OrderBy(c => c.CategoryName)
-                    .Select(c => new { Id = c.Id, Name = c.CategoryName })
-                    .ToListAsync();
+        //[HttpGet]
+        //public async Task<IActionResult> GetShopFilters()
+        //{
+        //    try
+        //    {
+        //        // Get actual categories from database
+        //        var categories = await _context.Categories
+        //            .OrderBy(c => c.CategoryName)
+        //            .Select(c => new { Id = c.Id, Name = c.CategoryName })
+        //            .ToListAsync();
 
-                // If no categories exist yet, return sample ones
-                if (!categories.Any())
-                {
-                    var sampleCategories = new[]
-                    {
-                        new { Id = 1, Name = "Clothing" },
-                        new { Id = 2, Name = "Electronics" },
-                        new { Id = 3, Name = "Home & Living" },
-                        new { Id = 4, Name = "Beauty" },
-                        new { Id = 5, Name = "Sports" },
-                        new { Id = 6, Name = "Toys" }
-                    };
-                    return Json(sampleCategories);
-                }
+        //        // If no categories exist yet, return sample ones
+        //        if (!categories.Any())
+        //        {
+        //            var sampleCategories = new[]
+        //            {
+        //                new { Id = 1, Name = "Clothing" },
+        //                new { Id = 2, Name = "Electronics" },
+        //                new { Id = 3, Name = "Home & Living" },
+        //                new { Id = 4, Name = "Beauty" },
+        //                new { Id = 5, Name = "Sports" },
+        //                new { Id = 6, Name = "Toys" }
+        //            };
+        //            return Json(sampleCategories);
+        //        }
 
-                return Json(categories);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting shop filters");
-                return Json(new object[0]);
-            }
-        }
+        //        return Json(categories);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, "Error getting shop filters");
+        //        return Json(new object[0]);
+        //    }
+        //}
 
         [HttpGet]
         public async Task<IActionResult> GetBusinessProducts(int businessId, int? categoryId)
@@ -626,14 +642,48 @@ namespace Project_Creation.Controllers
 
         private string DefaultLogo()
         {
-            return "/default/logo.png";
+            try
+            {
+                int userId = GetCurrentUserId();
+                string firstName = GetUserDataById(userId, "FirstName") ?? string.Empty;
+                string lastName = GetUserDataById(userId, "LastName") ?? string.Empty;
+
+                string fullName = $"{firstName} {lastName}".Trim();
+                if (string.IsNullOrEmpty(fullName))
+                {
+                    fullName = "User"; // Fallback if no name is available
+                }
+
+                return $"https://ui-avatars.com/api/?name={Uri.EscapeDataString(fullName)}&background=fff&color=6366f1&rounded=true&size=256";
+            }
+            catch
+            {
+                // Fallback to a generic avatar if something goes wrong
+                return "https://ui-avatars.com/api/?name=User&background=fff&color=6366f1&rounded=true&size=256";
+            }
         }
 
         private string DefaultBackground()
         {
-            return "/default/background.jpg";
+            try
+            {
+                int userId = GetCurrentUserId();
+                string businessName = GetUserDataById(userId, "BusinessName") ?? string.Empty;
+
+                if (string.IsNullOrEmpty(businessName))
+                {
+                    businessName = "Business"; // Fallback if no business name is available
+                }
+
+                return $"https://ui-avatars.com/api/?name={Uri.EscapeDataString(businessName)}&background=fff&color=6366f1&rounded=true&size=256";
+            }
+            catch
+            {
+                // Fallback to a generic background if something goes wrong
+                return "https://ui-avatars.com/api/?name=Business&background=fff&color=6366f1&rounded=true&size=256";
+            }
         }
-        
+
         // Helper method to get the main product image
         private string GetProductMainImage(int productId)
         {
@@ -660,17 +710,16 @@ namespace Project_Creation.Controllers
         private int GetCurrentUserId()
         {
             var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userIdClaim))
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
             {
-                return 0;
+                _logger.LogWarning("Invalid or missing user ID claim");
+                throw new InvalidOperationException("User is not authenticated");
             }
 
-            if (int.TryParse(userIdClaim, out int userId))
-            {
-                return userId;
-            }
-
-            return 0;
+            var currentUserRole = User.FindFirstValue(ClaimTypes.Role);
+            int boId = int.TryParse(User.FindFirstValue("BOId"), out var tempBoId) ? tempBoId : 0;
+            int who = currentUserRole == "Staff" ? boId : userId;
+            return who;
         }
 
         private string GetUserDataById(int userId, string columnName)

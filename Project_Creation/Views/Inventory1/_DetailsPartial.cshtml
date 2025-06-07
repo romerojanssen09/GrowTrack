@@ -1,5 +1,5 @@
 ﻿@using Project_Creation.Models.Entities;
-@model Project_Creation.Models.Entities.Product2
+@model Project_Creation.Models.Entities.Product
 
 <div class="row">
     <div class="col-md-6">
@@ -13,7 +13,7 @@
             <dt class="col-sm-4">Supplier</dt>
             <dd class="col-sm-8">
                 @{
-                    var supplier = ViewBag.Suppliers as List<Supplier2>;
+                    var supplier = ViewBag.Suppliers as List<Supplier>;
                     // Changed to use Supplier2SupplierID instead of SupplierId
                     var currentSupplier = supplier?.FirstOrDefault(s => s.SupplierID.ToString() == Model.SupplierId);
                 }

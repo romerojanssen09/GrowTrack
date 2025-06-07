@@ -1,6 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-
 
 namespace Project_Creation.Models.Entities
 {
@@ -10,7 +9,7 @@ namespace Project_Creation.Models.Entities
         public int Id { get; set; }
 
         [ForeignKey("Sale")]
-        public int SaleId { get; set; }   // FK to Sale
+        public int SaleId { get; set; } // FK to Sale
 
         [ForeignKey("Product")]
         public int ProductId { get; set; } // FK to Product2
@@ -20,9 +19,10 @@ namespace Project_Creation.Models.Entities
         public decimal UnitPrice { get; set; }
         public decimal TotalPrice { get; set; }
         public string Notes { get; set; }
+        public int? ItemPoints { get; set; } // Points earned for this specific item
 
         // Navigation properties
         public Sale Sale { get; set; }
-        public Product2 Product { get; set; }
+        public Product Product { get; set; }
     }
 }

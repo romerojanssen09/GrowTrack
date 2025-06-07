@@ -4,18 +4,498 @@
     ViewData["Title"] = "Login - GrowTrack";
 }
 
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-6">
-            <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
-                <div class="card-header text-white p-4 border-0 text-center" style="background-color: #304251;">
-                    <div class="rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; background-color: rgba(255, 255, 255, 0.1);">
-                        <i class="fas fa-chart-line fa-2x"></i>
+<style>
+    :root {
+        --main-bg-color: #304251;
+        --primary-color: #F3993E;
+        --text-color: #304251;
+        --light-text: rgba(255, 255, 255, 0.9);
+        --border-color: rgba(255, 255, 255, 0.2);
+        --input-bg: rgba(255, 255, 255, 0.9);
+    }
+
+    html, body {
+        background: var(--main-bg-color) !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        min-height: 100vh !important;
+        height: 100% !important;
+        position: relative;
+    }
+
+    .content-container {
+        position: relative;
+        z-index: 1;
+    }
+
+    .animated-background {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+        background: var(--main-bg-color) !important;
+        overflow: hidden;
+    }
+
+    .circle {
+        position: absolute;
+        border-radius: 50%;
+        background: linear-gradient(45deg, rgba(228, 138, 48, 0.1), rgba(228, 138, 48, 0.05));
+        animation: float 12s infinite ease-in-out;
+    }
+
+    .circle:nth-child(1) {
+        width: 250px;
+        height: 250px;
+        top: -5%;
+        right: 8%;
+        animation-delay: 0s;
+    }
+
+    .circle:nth-child(2) {
+        width: 150px;
+        height: 150px;
+        bottom: 12%;
+        left: 5%;
+        animation-delay: 2s;
+    }
+
+    .circle:nth-child(3) {
+        width: 80px;
+        height: 80px;
+        top: 28%;
+        right: 22%;
+        animation-delay: 4s;
+    }
+
+    .circle:nth-child(4) {
+        width: 180px;
+        height: 180px;
+        bottom: 38%;
+        right: 12%;
+        animation-delay: 1s;
+    }
+
+    .circle:nth-child(5) {
+        width: 120px;
+        height: 120px;
+        top: 42%;
+        left: 18%;
+        animation-delay: 3s;
+    }
+
+    .circle:nth-child(6) {
+        width: 200px;
+        height: 200px;
+        bottom: 8%;
+        right: 28%;
+        animation-delay: 2.5s;
+    }
+
+    .circle:nth-child(7) {
+        width: 100px;
+        height: 100px;
+        top: 65%;
+        left: 12%;
+        animation-delay: 1.5s;
+    }
+
+    .circle:nth-child(8) {
+        width: 160px;
+        height: 160px;
+        top: 18%;
+        left: 22%;
+        animation-delay: 3.5s;
+    }
+
+    .circle:nth-child(9) {
+        width: 140px;
+        height: 140px;
+        bottom: 22%;
+        left: 32%;
+        animation-delay: 2.8s;
+    }
+
+    .circle:nth-child(10) {
+        width: 90px;
+        height: 90px;
+        top: 32%;
+        right: 38%;
+        animation-delay: 1.8s;
+    }
+
+    .circle:nth-child(11) {
+        width: 170px;
+        height: 170px;
+        bottom: 42%;
+        left: 3%;
+        animation-delay: 3.2s;
+    }
+
+    .circle:nth-child(12) {
+        width: 110px;
+        height: 110px;
+        top: 52%;
+        right: 6%;
+        animation-delay: 2.2s;
+    }
+
+    .wavy-line {
+        position: absolute;
+        border: 3px solid rgba(228, 138, 48, 0.15);
+        animation: moveAround 15s infinite ease-in-out;
+        z-index: 1;
+    }
+
+    .wavy-line:nth-child(13) {
+        width: 180px;
+        height: 60px;
+        top: 15%;
+        left: 12%;
+        border-radius: 40% 60% 60% 40% / 40% 40% 60% 60%;
+        animation-delay: 0s;
+    }
+
+    .wavy-line:nth-child(14) {
+        width: 140px;
+        height: 45px;
+        bottom: 25%;
+        right: 8%;
+        border-radius: 60% 40% 40% 60% / 60% 60% 40% 40%;
+        animation-delay: 2s;
+    }
+
+    .wavy-line:nth-child(15) {
+        width: 120px;
+        height: 35px;
+        top: 45%;
+        right: 25%;
+        border-radius: 50% 50% 30% 70% / 50% 50% 70% 30%;
+        animation-delay: 4s;
+    }
+
+    .wavy-line:nth-child(16) {
+        width: 160px;
+        height: 50px;
+        bottom: 32%;
+        left: 28%;
+        border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+        animation-delay: 1s;
+    }
+
+    .wavy-line:nth-child(17) {
+        width: 130px;
+        height: 40px;
+        top: 58%;
+        right: 35%;
+        border-radius: 70% 30% 30% 70% / 70% 70% 30% 30%;
+        animation-delay: 3s;
+    }
+
+    .wavy-line:nth-child(18) {
+        width: 150px;
+        height: 55px;
+        top: 22%;
+        left: 38%;
+        border-radius: 45% 55% 65% 35% / 35% 45% 55% 65%;
+        animation-delay: 2.5s;
+    }
+
+    .wavy-line:nth-child(19) {
+        width: 170px;
+        height: 45px;
+        bottom: 18%;
+        right: 32%;
+        border-radius: 55% 45% 35% 65% / 65% 35% 45% 55%;
+        animation-delay: 1.5s;
+    }
+
+    .wavy-line:nth-child(20) {
+        width: 140px;
+        height: 50px;
+        top: 68%;
+        left: 15%;
+        border-radius: 35% 65% 45% 55% / 55% 45% 65% 35%;
+        animation-delay: 3.5s;
+    }
+
+    @@keyframes moveAround {
+        0% {
+            transform: translate(0, 0) rotate(0deg) scale(1);
+            border-radius: 40% 60% 60% 40% / 40% 40% 60% 60%;
+        }
+
+        25% {
+            transform: translate(50px, 30px) rotate(90deg) scale(1.1);
+            border-radius: 60% 40% 40% 60% / 60% 60% 40% 40%;
+        }
+
+        50% {
+            transform: translate(0, 60px) rotate(180deg) scale(1);
+            border-radius: 40% 60% 60% 40% / 40% 40% 60% 60%;
+        }
+
+        75% {
+            transform: translate(-50px, 30px) rotate(270deg) scale(1.1);
+            border-radius: 60% 40% 40% 60% / 60% 60% 40% 40%;
+        }
+
+        100% {
+            transform: translate(0, 0) rotate(360deg) scale(1);
+            border-radius: 40% 60% 60% 40% / 40% 40% 60% 60%;
+        }
+    }
+
+    @@keyframes float {
+        0% {
+            transform: translate(0, 0) rotate(0deg) scale(1);
+        }
+
+        25% {
+            transform: translate(20px, 15px) rotate(5deg) scale(1.05);
+        }
+
+        50% {
+            transform: translate(-20px, 30px) rotate(-5deg) scale(1);
+        }
+
+        75% {
+            transform: translate(-15px, 15px) rotate(3deg) scale(1.05);
+        }
+
+        100% {
+            transform: translate(0, 0) rotate(0deg) scale(1);
+        }
+    }
+
+    .glass-container {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37), 0 8px 32px rgba(228, 138, 48, 0.15);
+        border-radius: 20px;
+        overflow: hidden;
+    }
+
+    .content-wrapper {
+        min-height: calc(100vh - 60px);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .content-container {
+        flex: 1;
+        opacity: 1;
+        transition: opacity 0.3s ease-out;
+        display: flex;
+        align-items: center;
+    }
+
+    .form-container {
+        background-color: white;
+        border-radius: 0 20px 20px 0;
+        padding: 2.5rem;
+        height: 100%;
+    }
+    
+    .image-container {
+        background-image: url('/images/login.png');
+        background-size: cover;
+        background-position: center;
+        border-radius: 20px 0 0 20px;
+        min-height: 500px;
+    }
+    
+    .form-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-subtitle {
+        color: #6c757d;
+        margin-bottom: 2rem;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 0.5rem;
+    }
+    
+    .input-group {
+        margin-bottom: 0.5rem;
+        position: relative;
+    }
+    
+    .input-group-text {
+        background-color: #f8f9fa;
+        border-color: #ced4da;
+        color: #6c757d;
+    }
+    
+    .form-control {
+        border-color: #ced4da;
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+    }
+    
+    .form-control:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.25rem rgba(243, 153, 62, 0.25);
+    }
+    
+    .btn-primary {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        border-radius: 50px;
+        box-shadow: 0 4px 10px rgba(243, 153, 62, 0.3);
+        transition: all 0.3s ease;
+    }
+    
+    .btn-primary:hover {
+        background-color: #e48a30;
+        border-color: #e48a30;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(243, 153, 62, 0.4);
+    }
+    
+    .form-check-input:checked {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+    
+    .forgot-password {
+        color: var(--text-color);
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: color 0.3s ease;
+    }
+    
+    .forgot-password:hover {
+        color: var(--primary-color);
+    }
+    
+    .register-link {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.3s ease;
+    }
+    
+    .register-link:hover {
+        color: #e48a30;
+        text-decoration: underline;
+    }
+    
+    .terms-text {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    
+    .terms-link {
+        color: var(--primary-color);
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+    
+    .terms-link:hover {
+        color: #e48a30;
+        text-decoration: underline;
+    }
+    
+    /* Responsive adjustments */
+    @@media (max-width: 991px) {
+        .glass-container {
+            margin: 2rem 1rem;
+        }
+        
+        .image-container {
+            min-height: 300px;
+            border-radius: 20px 20px 0 0;
+        }
+        
+        .form-container {
+            border-radius: 0 0 20px 20px;
+        }
+    }
+    
+    @@media (max-width: 767px) {
+        .content-container {
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+        }
+        
+        .form-container {
+            padding: 2rem 1.5rem;
+        }
+        
+        .form-title {
+            font-size: 1.75rem;
+        }
+    }
+    
+    @@media (max-width: 575px) {
+        .glass-container {
+            margin: 1rem 0.5rem;
+        }
+        
+        .form-container {
+            padding: 1.5rem 1rem;
+        }
+        
+        .image-container {
+            min-height: 200px;
+        }
+        
+        .form-title {
+            font-size: 1.5rem;
+        }
+    }
+
+    footer {
+        display: none;
+    }
+</style>
+
+<!-- Include the auth navbar -->
+<partial name="_AuthNavbar" />
+
+<div class="animated-background">
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+</div>
+
+<div class="content-wrapper">
+    <div class="container content-container">
+        <div class="row glass-container shadow-lg w-100 mx-auto" style="max-width: 1000px;">
+            <div class="col-lg-6 p-0">
+                <div class="image-container"></div>
+            </div>
+            <div class="col-lg-6 p-0">
+                <div class="form-container">
+                    <div class="text-center mb-4">
+                        <h1 class="form-title">Welcome Back!</h1>
+                        <p class="form-subtitle">Sign in to access your business insights</p>
                     </div>
-                    <h3 class="fw-bold mb-2">Welcome to GrowTrack</h3>
-                    <p class="mb-0 opacity-75">Sign in to access your business insights</p>
-                </div>
-                <div class="card-body p-4 p-lg-5">
+                    
                     <form asp-action="Login" method="post">
                         <input type="hidden" name="returnUrl" value="@ViewData["ReturnUrl"]" />
 
@@ -27,52 +507,58 @@
                             </div>
                         }
 
-                        <div class="form-group mb-4">
-                            <label asp-for="Email" class="form-label fw-semibold">Email Address</label>
-                            <div class="input-group mb-2">
-                                <span class="input-group-text" style="background-color: #f5f8fa; border-color: #dee2e6;"><i class="fas fa-envelope" style="color: #304251; font-size: 0.9rem;"></i></span>
-                                <input asp-for="Email" class="form-control" placeholder="Enter your email" style="border-color: #dee2e6;" />
+                        <div class="mb-4">
+                            <label asp-for="Email" class="form-label">Email Address</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                <input asp-for="Email" class="form-control" placeholder="Enter your email" />
                             </div>
                             <span asp-validation-for="Email" class="text-danger small"></span>
                         </div>
 
-                        <div class="form-group mb-4">
-                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                <label asp-for="Password" class="form-label fw-semibold mb-0">Password</label>
-                                <a asp-action="Index" asp-controller="ForgotPassword" class="text-decoration-none small" style="color: #304251;">Forgot password?</a>
-                            </div>
-                            <div class="input-group mb-2">
-                                <span class="input-group-text" style="background-color: #f5f8fa; border-color: #dee2e6;"><i class="fas fa-lock" style="color: #304251; font-size: 0.9rem;"></i></span>
-                                <input asp-for="Password" class="form-control" id="password" placeholder="Enter your password" style="border-color: #dee2e6;" />
-                                <button class="btn" type="button" id="togglePassword" style="background-color: #f5f8fa; border-color: #dee2e6;">
-                                    <i class="fas fa-eye" id="toggleIcon" style="color: #304251; font-size: 0.9rem;"></i>
+                        <div class="mb-4">
+                            <label asp-for="Password" class="form-label">Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                <input asp-for="Password" class="form-control" id="password" placeholder="Enter your password" />
+                                <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                    <i class="fas fa-eye" id="toggleIcon"></i>
                                 </button>
                             </div>
                             <span asp-validation-for="Password" class="text-danger small"></span>
                         </div>
 
-                        <div class="form-check mb-4">
-                            <input asp-for="RememberMe" class="form-check-input" style="border-color: rgba(48, 66, 81, 0.3);" />
-                            <label asp-for="RememberMe" class="form-check-label">Keep me signed in</label>
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <div class="form-check">
+                                <input asp-for="RememberMe" class="form-check-input" />
+                                <label asp-for="RememberMe" class="form-check-label">Keep me signed in</label>
+                            </div>
+                            <a asp-action="Index" asp-controller="ForgotPassword" class="forgot-password">Forgot password?</a>
                         </div>
 
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-lg text-white" style="background-color: #F3993E; border: none; box-shadow: 0 4px 10px rgba(48, 66, 81, 0.3);">
+                        <div class="d-grid mb-4">
+                            <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-sign-in-alt me-2"></i>Sign In
                             </button>
                         </div>
+
+                        <div class="text-center mb-3">
+                            <p class="mb-0">
+                                Don't have an account?
+                                <a asp-action="Register" asp-controller="Register" class="register-link">
+                                    Register now
+                                </a>
+                            </p>
+                        </div>
+                        
+                        <div class="text-center">
+                            <p class="terms-text mb-0">
+                                By signing in, you agree to our <a href="#" class="terms-link">Terms of Service</a> and
+                                <a asp-controller="Home" asp-action="Privacy" class="terms-link">Privacy Policy</a>.
+                            </p>
+                        </div>
                     </form>
-
-                    
-
-                    <div class="mt-4 pt-3 text-center">
-                        <p class="mb-0">Don't have an account? <a asp-action="Register" asp-controller="Register" class="text-decoration-none fw-semibold" style="color: #F3993E;">Register now</a></p>
-                    </div>
                 </div>
-            </div>
-            
-            <div class="text-center mt-4 text-muted small">
-                <p>By signing in, you agree to our <a href="#" class="text-decoration-none fw-semibold" style="color: #304251;">Terms of Service</a> and <a asp-controller="Home" asp-action="Privacy" class="text-decoration-none fw-semibold" style="color: #304251;">Privacy Policy</a>.</p>
             </div>
         </div>
     </div>
@@ -81,22 +567,46 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
-        // Password visibility toggle
         document.addEventListener('DOMContentLoaded', function() {
+            // Password visibility toggle
             const togglePassword = document.getElementById('togglePassword');
             const password = document.getElementById('password');
             const toggleIcon = document.getElementById('toggleIcon');
-            
+
             if (togglePassword && password && toggleIcon) {
                 togglePassword.addEventListener('click', function() {
-                    // Toggle password visibility
                     const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
                     password.setAttribute('type', type);
-                    
-                    // Toggle icon
                     toggleIcon.classList.toggle('fa-eye');
                     toggleIcon.classList.toggle('fa-eye-slash');
                 });
+            }
+
+            // Remember Me functionality
+            const rememberMe = document.querySelector('input[name="RememberMe"]');
+            const emailInput = document.querySelector('input[name="Email"]');
+
+            // Load saved credentials if Remember Me was checked
+            if (localStorage.getItem('rememberMe') === 'true') {
+                rememberMe.checked = true;
+                emailInput.value = localStorage.getItem('savedEmail') || '';
+            }
+
+            // Save credentials when Remember Me is checked
+            rememberMe.addEventListener('change', function() {
+                if (this.checked && emailInput.value) {
+                    localStorage.setItem('rememberMe', 'true');
+                    localStorage.setItem('savedEmail', emailInput.value);
+                } else {
+                    localStorage.removeItem('rememberMe');
+                    localStorage.removeItem('savedEmail');
+                }
+            });
+
+            // Auto-check Remember Me if email exists in storage
+            if (localStorage.getItem('savedEmail') && emailInput.value === '') {
+                emailInput.value = localStorage.getItem('savedEmail');
+                rememberMe.checked = true;
             }
         });
     </script>

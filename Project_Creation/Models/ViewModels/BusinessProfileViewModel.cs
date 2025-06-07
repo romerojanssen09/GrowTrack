@@ -26,5 +26,6 @@ namespace Project_Creation.Models.ViewModels
         public List<ProductDto>? HotSalesProducts { get; set; }
         public List<ProductGroupViewModel>? GroupedProductsByCategory { get; set; }
         public List<ProductDto>? FeaturedProductViewModel { get; set; }
+        public UserSocialMediaLinks? UserLinks { get; set; }
     }
 }

@@ -5,9 +5,17 @@ using System.Security.Claims;
 using Project_Creation.Models.ViewModels;
 using Project_Creation.DTO;
 using static Project_Creation.Controllers.Inventory1Controller;
+using Project_Creation.Models.Authorization;
+using Project_Creation.Models.Entities;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication;
+using System.Text.Json;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Project_Creation.Controllers
 {
+    [Authorize(Roles = "BusinessOwner,Staff")]
     public class DashboardController : Controller
     {
         private readonly AuthDbContext _context;
@@ -23,19 +31,35 @@ namespace Project_Creation.Controllers
 
         private int GetCurrentUserId()
         {
-            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+            var userIdClaim = "0";
+            if (User.FindFirstValue(ClaimTypes.Role) == "Staff")
             {
-                _logger.LogWarning("Invalid or missing user ID claim");
-                throw new InvalidOperationException("User is not authenticated");
+                userIdClaim = User.FindFirstValue("BOId");
             }
-            return userId;
+            else
+            {
+                userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            }
+
+            if (string.IsNullOrEmpty(userIdClaim))
+            {
+                return 0;
+            }
+
+            if (int.TryParse(userIdClaim, out int userId))
+            {
+                return userId;
+            }
+
+            return 0;
         }
 
         [HttpGet]
+        [StaffAccess(StaffAccessLevel.Inventory | StaffAccessLevel.PublishedProducts)]
         public async Task<IActionResult> GetQuantity(int id)
         {
-            var product = await _context.Products2.FindAsync(id);
+            var userId = GetCurrentUserId();
+            var product = await _context.Products2.FindAsync(userId);
             if (product == null)
             {
                 return NotFound();
@@ -45,40 +69,29 @@ namespace Project_Creation.Controllers
         }
 
         [HttpGet]
+        [StaffAccess(StaffAccessLevel.Inventory | StaffAccessLevel.PublishedProducts)]
         public async Task<IActionResult> GetBusinessMetrics()
         {
             try
             {
                 var userId = GetCurrentUserId();
-                //var threshold = await GetUserLowStockThreshold(userId);
-
-                // Calculate inventory value (sum of purchase price * quantity)
-                var inventoryValue = await _context.Products2
+                decimal inventoryValue = await _context.Products2
                     .Where(p => p.BOId == userId)
                     .SumAsync(p => p.PurchasePrice * p.QuantityInStock);
 
-                // Count low stock items
-                var lowStockCount = await _context.Products2
+                int lowStockCount = await _context.Products2
                     .Where(p => p.BOId == userId && p.QuantityInStock <= p.ReorderLevel)
                     .CountAsync();
 
-                // Calculate today's sales (handle case where Sales table doesn't exist)
-                decimal todaysSales = 0;
-                try
-                {
-                    todaysSales = await _context.Sales
-                        .Where(s => s.BOId == userId && s.SaleDate.Date == DateTime.Today)
-                        .SumAsync(s => s.TotalAmount);
-                }
-                catch { /* Table might not exist yet */ }
+                decimal todaysSales = await _context.Sales
+                    .Where(s => s.BOId == userId && s.SaleDate.Date == DateTime.Today)
+                    .SumAsync(s => s.TotalAmount);
 
-                // Count total products
-                var totalProducts = await _context.Products2
+                int totalProducts = await _context.Products2
                     .Where(p => p.BOId == userId)
                     .CountAsync();
 
-                return Json(new
-                {
+                return Json(new {
                     success = true,
                     inventoryValue,
                     lowStockCount,
@@ -88,27 +101,28 @@ namespace Project_Creation.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error getting business metrics");
                 return Json(new
                 {
                     success = false,
                     message = ex.Message,
-                    inventoryValue = 0,
+                    inventoryValue = 0m,
                     lowStockCount = 0,
-                    todaysSales = 0,
+                    todaysSales = 0m,
                     totalProducts = 0
                 });
             }
         }
 
         [HttpGet]
+        [StaffAccess(StaffAccessLevel.Inventory | StaffAccessLevel.PublishedProducts)]
         public async Task<IActionResult> GetInventoryOverview(int limit = 10)
         {
             try
             {
                 var userId = GetCurrentUserId();
-
                 var products = await _context.Products2
-                    .Where(p => p.BOId == userId)
+                    .Where(p => p.BOId == userId && p.IsDeleted == false)
                     .OrderByDescending(p => p.QuantityInStock)
                     .Take(limit)
                     .Select(p => new {
@@ -128,118 +142,20 @@ namespace Project_Creation.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error getting inventory overview");
                 return Json(new { success = false, message = ex.Message });
             }
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetSupplierData(int id)
-        {
-            try
-            {
-                var supplier = await _context.Supplier2
-                    .Where(s => s.SupplierID == id)
-                    .Select(s => new {
-                        id = s.SupplierID,
-                        name = s.SupplierName,
-                        email = s.Email,
-                        phone = s.Phone
-                    })
-                    .FirstOrDefaultAsync();
-
-                if (supplier == null)
-                {
-                    return Json(new { success = false, message = "Supplier not found" });
-                }
-
-                return Json(new { success = true, data = supplier });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting supplier data");
-                return Json(new { success = false, message = "Error retrieving supplier data" });
-            }
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> SendMessageToSupplier([FromBody] SupplierMessageDto messageDto)
-        {
-            try
-            {
-                // Validate input
-                if (string.IsNullOrWhiteSpace(messageDto.Subject) ||
-                    string.IsNullOrWhiteSpace(messageDto.Message))
-                {
-                    return Json(new { success = false, message = "Subject and message are required" });
-                }
-
-                // Get supplier details
-                var supplier = await _context.Supplier2
-                    .FirstOrDefaultAsync(s => s.SupplierID == messageDto.SupplierId);
-
-                if (supplier == null)
-                {
-                    return Json(new { success = false, message = "Supplier not found" });
-                }
-
-                if (string.IsNullOrWhiteSpace(supplier.Email))
-                {
-                    return Json(new { success = false, message = "Supplier email is not available" });
-                }
-
-                // Get current user (sender) details
-                var currentUser = await _context.Users
-                    .FirstOrDefaultAsync(u => u.Id == GetCurrentUserId());
-
-                // Send email
-                var emailSubject = $"Message from {currentUser?.FirstName} {currentUser?.LastName}: {messageDto.Subject}";
-                var emailBody = $@"
-                    <h3>Message from {currentUser?.FirstName} {currentUser?.LastName}</h3>
-                    <p><strong>Subject:</strong> {messageDto.Subject}</p>
-                    <p><strong>Message:</strong></p>
-                    <p>{messageDto.Message}</p>
-                    <p>You can reply to this email directly to contact the sender.</p>
-                ";
-
-                await _emailService.SendEmail2(
-                    User.FindFirstValue(ClaimTypes.Email),
-                    User.FindFirstValue(ClaimTypes.Name),
-                    supplier.Email,
-                    emailSubject,
-                    emailBody,
-                    true);
-
-                return Json(new { success = true, message = "Message sent successfully" });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error sending message to supplier");
-                return Json(new { success = false, message = "Error sending message" });
-            }
-        }
-
-        //[HttpPost]
-        //public async Task<IActionResult> SendMessageToSupplier([FromBody] SupplierMessageDto dto)
-        //{
-        //    var supplier = await _context.Supplier2.FindAsync(dto.SupplierId);
-        //    if (supplier == null) return NotFound(new { success = false, message = "Supplier not found." });
-        //    if (supplier.Email == null) return BadRequest(new { success = false, message = "Supplier email is not Set." });
-
-        //    await _emailService.SendEmail(supplier.Email, $"Your Customer: {dto.Subject}", dto.Message);
-
-        //    return Ok(new { success = true, message = "Message sent successfully." });
-        //}
-
-        [HttpGet]
+        [StaffAccess(StaffAccessLevel.Inventory | StaffAccessLevel.PublishedProducts)]
         public async Task<IActionResult> GetLowStockAlerts(int limit = 5)
         {
             try
             {
                 var userId = GetCurrentUserId();
-                //var threshold = await GetUserLowStockThreshold(userId);
-
                 var alerts = await _context.Products2
-                    .Where(p => p.BOId == userId && p.QuantityInStock <= p.ReorderLevel)
+                    .Where(p => p.BOId == userId && p.QuantityInStock <= p.ReorderLevel && p.IsDeleted == false)
                     .OrderBy(p => p.QuantityInStock)
                     .Take(limit)
                     .Select(p => new {
@@ -260,11 +176,13 @@ namespace Project_Creation.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error getting low stock alerts");
                 return Json(new { success = false, message = ex.Message });
             }
         }
 
         [HttpGet]
+        [StaffAccess(StaffAccessLevel.QuickSales)]
         public async Task<IActionResult> GetSalesTrend(string type = "days", int days = 7, int weeks = 0, int month = 0, int year = 0)
         {
             try
@@ -279,8 +197,7 @@ namespace Project_Creation.Controllers
                 switch (type.ToLower())
                 {
                     case "days":
-                        // Handle days filter
-                        startDate = endDate.AddDays(-days + 1); // Include today
+                        startDate = endDate.AddDays(-days + 1);
                         dateRange = Enumerable.Range(0, days)
                             .Select(offset => startDate.AddDays(offset))
                             .ToList();
@@ -288,9 +205,8 @@ namespace Project_Creation.Controllers
                         break;
 
                     case "weeks":
-                        // Handle weeks filter
-                        if (weeks <= 0) weeks = 1; // Default to 1 week if invalid
-                        startDate = endDate.AddDays(-(weeks * 7) + 1); // Include today
+                        if (weeks <= 0) weeks = 1;
+                        startDate = endDate.AddDays(-(weeks * 7) + 1);
                         dateRange = Enumerable.Range(0, weeks * 7)
                             .Select(offset => startDate.AddDays(offset))
                             .ToList();
@@ -298,15 +214,12 @@ namespace Project_Creation.Controllers
                         break;
 
                     case "months":
-                        // Handle month/year filter
                         if (month <= 0 || month > 12) month = DateTime.Today.Month;
                         if (year <= 0) year = DateTime.Today.Year;
 
-                        // Get the first and last day of the selected month
                         startDate = new DateTime(year, month, 1);
                         endDate = startDate.AddMonths(1).AddDays(-1);
 
-                        // Generate all days in the month
                         int daysInMonth = DateTime.DaysInMonth(year, month);
                         dateRange = Enumerable.Range(1, daysInMonth)
                             .Select(day => new DateTime(year, month, day))
@@ -315,24 +228,20 @@ namespace Project_Creation.Controllers
                         break;
 
                     case "years":
-                        // Handle year filter
                         if (year <= 0) year = DateTime.Today.Year;
 
-                        // Get the first and last day of the selected year
                         startDate = new DateTime(year, 1, 1);
                         endDate = new DateTime(year, 12, 31);
 
-                        // Generate all months in the year
                         dateRange = Enumerable.Range(1, 12)
                             .Select(month => new DateTime(year, month, 1))
                             .ToList();
-                        dateFormat = "yyyy-MM-01"; // First day of each month
-                        labelFormat = "MMM"; // Just show month name for year view
+                        dateFormat = "yyyy-MM-01";
+                        labelFormat = "MMM";
                         break;
 
                     default:
-                        // Default to days filter
-                        startDate = endDate.AddDays(-7 + 1); // Default to 7 days
+                        startDate = endDate.AddDays(-7 + 1);
                         dateRange = Enumerable.Range(0, 7)
                             .Select(offset => startDate.AddDays(offset))
                             .ToList();
@@ -340,11 +249,9 @@ namespace Project_Creation.Controllers
                         break;
                 }
 
-                // Get sales data grouped by date
                 var query = _context.Sales
                     .Where(s => s.BOId == userId && s.SaleDate.Date >= startDate && s.SaleDate.Date <= endDate);
 
-                // For year view, group by month instead of day
                 var salesData = type.ToLower() == "years"
                     ? await query
                         .GroupBy(s => new { s.SaleDate.Year, s.SaleDate.Month })
@@ -363,7 +270,6 @@ namespace Project_Creation.Controllers
                         })
                         .ToListAsync();
 
-                // Create complete data set with zero values for days/months without sales
                 var result = dateRange.Select(date => new
                 {
                     Date = date.ToString(dateFormat),
@@ -380,44 +286,23 @@ namespace Project_Creation.Controllers
                     success = true,
                     labels = result.Select(r => r.FormattedDate).ToList(),
                     values = result.Select(r => r.Amount).ToList(),
-                    rawDates = result.Select(r => r.Date).ToList() // Include raw dates for additional processing if needed
+                    rawDates = result.Select(r => r.Date).ToList()
                 });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting sales trend data");
-
-                // Fallback to sample data if there's an error
-                var random = new Random();
-                var endDate = DateTime.Today;
-                var startDate = endDate.AddDays(-7);
-
-                var labels = Enumerable.Range(0, 7)
-                    .Select(i => startDate.AddDays(i).ToString("MMM dd"))
-                    .ToList();
-
-                var values = Enumerable.Range(0, 7)
-                    .Select(i => (decimal)random.Next(1000, 5000))
-                    .ToList();
-
-                return Json(new
-                {
-                    success = false,
-                    message = ex.Message,
-                    labels,
-                    values
-                });
+                return Json(new { success = false, message = ex.Message });
             }
         }
 
         [HttpGet]
+        [StaffAccess(StaffAccessLevel.Inventory | StaffAccessLevel.PublishedProducts)]
         public async Task<IActionResult> GetStockDistribution()
         {
             try
             {
                 var userId = GetCurrentUserId();
-                //var threshold = await GetUserLowStockThreshold(userId);
-
                 var totalProducts = await _context.Products2
                     .Where(p => p.BOId == userId)
                     .CountAsync();
@@ -444,11 +329,23 @@ namespace Project_Creation.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error getting stock distribution");
                 return Json(new { success = false, message = ex.Message });
             }
         }
 
         [HttpGet]
+        public async Task<IActionResult> GetSupplierData(int id)
+        {
+            var supplier = await _context.Supplier2.FindAsync(id);
+
+            if (supplier == null) return NotFound(new { success = false, message = "Supplier not found." });
+
+            return Ok(new { success = true, data = supplier });
+        }
+
+        [HttpGet]
+        [StaffAccess(StaffAccessLevel.Inventory | StaffAccessLevel.QuickSales | StaffAccessLevel.PublishedProducts | StaffAccessLevel.Leads)]
         public async Task<IActionResult> GetRecentActivity(int limit = 10)
         {
             try
@@ -456,78 +353,89 @@ namespace Project_Creation.Controllers
                 var userId = GetCurrentUserId();
                 var activities = new List<object>();
 
-                // Check if Sales table exists and has records
-                try
+                // Get leads created or updated in the last 30 days
+                if (User.IsInRole("BusinessOwner") || User.FindFirstValue("AccessLevel").Contains(StaffAccessLevel.Leads.ToString()))
                 {
-                    // Get sales with their items
-                    var sales = await _context.Sales
-                        .Where(s => s.BOId == userId)
-                        .Include(s => s.SaleItems)
-                        .OrderByDescending(s => s.SaleDate)
+                    var recentLeads = await _context.Leads
+                        .Where(l => l.CreatedById == userId && 
+                            (l.CreatedAt >= DateTime.Now.AddDays(-30) || l.UpdatedAt >= DateTime.Now.AddDays(-30)))
+                        .OrderByDescending(l => l.CreatedAt ?? DateTime.MinValue)
                         .Take(limit)
                         .ToListAsync();
 
-                    foreach (var sale in sales)
+                    foreach (var lead in recentLeads)
                     {
-                        // Group sale items by product name for a cleaner display
-                        var groupedItems = sale.SaleItems
-                            .GroupBy(si => si.ProductName)
-                            .Select(g => new {
-                                ProductName = g.Key,
-                                Quantity = g.Sum(si => si.Quantity)
-                            })
-                            .ToList();
+                        bool isNew = lead.CreatedAt >= DateTime.Now.AddDays(-7);
+                        string description = isNew 
+                            ? $"New lead: {lead.LeadName}" 
+                            : $"Updated lead: {lead.LeadName}";
 
-                        // Create a comma-separated list of products (e.g., "Product1 (2), Product2 (1)")
-                        var productsString = string.Join(", ",
-                            groupedItems.Select(g => $"{g.ProductName} ({g.Quantity})"));
+                        string details = $"Status: {lead.Status}";
+                        //if (!string.IsNullOrEmpty(lead.SelectedProductIds))
+                        //{
+                        //    details += $", Interested in: {lead.InterestedIn}";
+                        //}
 
-                        // Add to activities
                         activities.Add(new
                         {
-                            type = "Sale",
-                            description = $"Sale to {sale.CustomerName}",
-                            details = $"Products: - {productsString}",
-                            amount = $"Total: {sale.TotalAmount:C}",
-                            time = sale.SaleDate.ToString("MM/dd/yyyy hh:mm tt"),
-                            sortTime = sale.SaleDate // For sorting
+                            type = "Lead",
+                            description = description,
+                            details = details,
+                            amount = "",
+                            time = (lead.CreatedAt ?? DateTime.Now).ToString("MM/dd/yyyy hh:mm tt"),
+                            sortTime = lead.CreatedAt ?? DateTime.Now
                         });
                     }
                 }
-                catch (Exception ex)
+
+                var sales = await _context.Sales
+                    .Where(s => s.BOId == userId)
+                    .Include(s => s.SaleItems)
+                    .OrderByDescending(s => s.SaleDate)
+                    .Take(limit)
+                    .ToListAsync();
+
+                foreach (var sale in sales)
                 {
-                    // Log error but continue
-                    _logger.LogError(ex, "Error accessing Sales table");
+                    var groupedItems = sale.SaleItems
+                        .GroupBy(si => si.ProductName)
+                        .Select(g => new {
+                            ProductName = g.Key,
+                            Quantity = g.Sum(si => si.Quantity)
+                        })
+                        .ToList();
+
+                    var productsString = string.Join(", ",
+                        groupedItems.Select(g => $"{g.ProductName} ({g.Quantity})"));
+
+                    activities.Add(new
+                    {
+                        type = "Sale",
+                        description = $"Sale to {sale.CustomerName}",
+                        details = $"Products: - {productsString}",
+                        amount = $"Total: {sale.TotalAmount:C}",
+                        time = sale.SaleDate.ToString("MM/dd/yyyy hh:mm tt"),
+                        sortTime = sale.SaleDate
+                    });
                 }
 
-                // Check if InventoryLogs table exists and has records
-                try
-                {
-                    var inventoryActivities = await _context.InventoryLogs
-                        .Where(l => l.BOId == userId)
-                        .OrderByDescending(l => l.Timestamp)
-                        .Take(limit)
-                        .ToListAsync(); // First materialize the query
+                var inventoryActivities = await _context.InventoryLogs
+                    .Where(l => l.BOId == userId)
+                    .OrderByDescending(l => l.Timestamp)
+                    .Take(limit)
+                    .ToListAsync();
 
-                    // Then apply the transformation in memory
-                    var transformedActivities = inventoryActivities.Select(l => new {
-                        type = l.MovementType,
-                        description = GetMovementDescription(l.MovementType, l.ProductName, l.Notes),
-                        details = $"Quantity: {Sign(l.MovementType)}{Math.Abs(l.QuantityChange)}",
-                        amount = "",
-                        time = l.Timestamp.ToString("MM/dd/yyyy hh:mm tt"),
-                        sortTime = l.Timestamp // For sorting
-                    }).ToList();
+                var transformedActivities = inventoryActivities.Select(l => new {
+                    type = l.MovementType,
+                    description = GetMovementDescription(l.MovementType, l.ProductName, l.Notes),
+                    details = $"Quantity: {Sign(l.MovementType)}{Math.Abs(l.QuantityChange)}",
+                    amount = "",
+                    time = l.Timestamp.ToString("MM/dd/yyyy hh:mm tt"),
+                    sortTime = l.Timestamp
+                }).ToList();
 
-                    activities.AddRange(transformedActivities);
-                }
-                catch (Exception ex)
-                {
-                    // Log error but continue
-                    _logger.LogError(ex, "Error accessing InventoryLogs table");
-                }
+                activities.AddRange(transformedActivities);
 
-                // Combine and order all activities by time
                 var result = activities
                     .OrderByDescending(a => ((dynamic)a).sortTime)
                     .Take(limit)
@@ -566,7 +474,6 @@ namespace Project_Creation.Controllers
             };
         }
 
-        // Make this method static since it doesn't use any instance members
         private static string GetMovementDescription(string movementType, string productName, string notes)
         {
             return movementType switch
@@ -578,10 +485,304 @@ namespace Project_Creation.Controllers
                 InventoryMovementTypes.NewProduct => $"Added new product: {productName}",
                 InventoryMovementTypes.EditProduct => $"Updated product: {productName}",
                 InventoryMovementTypes.DeleteProduct => $"Removed product: {productName}",
-                //InventoryMovementTypes.Return => $"Returned {productName}: {notes}",
-                //InventoryMovementTypes.Damaged => $"Marked {productName} as damaged: {notes}",
                 _ => $"Inventory movement for {productName}"
             };
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Staff")]
+        public async Task<IActionResult> RefreshClaims()
+        {
+            try
+            {
+                _logger.LogInformation("RefreshClaims called for user");
+                
+                // Get the staff ID from claims
+                var staffIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                _logger.LogInformation($"Staff ID from claim: {staffIdClaim}");
+                
+                if (string.IsNullOrEmpty(staffIdClaim) || !int.TryParse(staffIdClaim, out int staffId))
+                {
+                    _logger.LogWarning("Invalid or missing staff ID in claims");
+                    return BadRequest("Invalid staff ID");
+                }
+                
+                // Find the staff in the database
+                _logger.LogInformation($"Looking up staff with ID: {staffId}");
+                var staff = await _context.Staff.FirstOrDefaultAsync(s => s.Id == staffId);
+                
+                if (staff == null)
+                {
+                    _logger.LogWarning($"Staff with ID {staffId} not found in database");
+                    return Unauthorized("Staff not found");
+                }
+                
+                _logger.LogInformation($"Found staff: {staff.StaffName}, Access Level: {staff.StaffAccessLevel}");
+                
+                // Refresh the claims
+                await RefreshUserClaims(staff);
+                _logger.LogInformation($"Claims refreshed successfully for staff ID {staffId}");
+                
+                return Ok(new { success = true, message = "Claims refreshed successfully", accessLevel = staff.StaffAccessLevel.ToString() });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error refreshing claims");
+                return StatusCode(500, new { success = false, message = "Error refreshing claims" });
+            }
+        }
+
+        public async Task RefreshUserClaims(Staff staff)
+        {
+            var claims = new List<Claim>
+            {
+                new(ClaimTypes.NameIdentifier, staff.Id.ToString()),
+                new(ClaimTypes.Email, staff.StaffSEmail),
+                new(ClaimTypes.Name, staff.StaffName),
+                new(ClaimTypes.Role, staff.Role),
+                new("AccessLevel", staff.StaffAccessLevel.ToString()),
+                new("AccountType", "Staff"),
+                new("BOId", staff.BOId.ToString()),
+                new("IsVerified", staff.IsActive.ToString())
+            };
+
+            var claimsIdentity = new ClaimsIdentity(
+                claims, CookieAuthenticationDefaults.AuthenticationScheme);
+
+            var authProperties = new AuthenticationProperties
+            {
+                IsPersistent = true,
+                ExpiresUtc = DateTimeOffset.UtcNow.AddDays(30),
+                AllowRefresh = true
+            };
+
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                new ClaimsPrincipal(claimsIdentity),
+                authProperties
+            );
+        }
+
+        [HttpGet]
+        [StaffAccess(StaffAccessLevel.Leads)]
+        public async Task<IActionResult> GetLeadsSummary()
+        {
+            try
+            {
+                var userId = GetCurrentUserId();
+                
+                // Get total leads count
+                int totalLeads = await _context.Leads
+                    .Where(l => l.CreatedById == userId)
+                    .CountAsync();
+                    
+                // Get new leads count (not contacted)
+                int newLeads = await _context.Leads
+                    .Where(l => l.CreatedById == userId && l.Status == Leads.LeadStatus.New)
+                    .CountAsync();
+                    
+                // Get contacted leads count
+                int contactedLeads = await _context.Leads
+                    .Where(l => l.CreatedById == userId && l.Status == Leads.LeadStatus.Hot)
+                    .CountAsync();
+                    
+                // Get recent leads (last 7 days)
+                int recentLeads = await _context.Leads
+                    .Where(l => l.CreatedById == userId && l.CreatedAt >= DateTime.Now.AddDays(-7))
+                    .CountAsync();
+                    
+                return Json(new
+                {
+                    success = true,
+                    totalLeads,
+                    newLeads,
+                    contactedLeads,
+                    recentLeads
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting leads summary");
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        [StaffAccess(StaffAccessLevel.Chat)]
+        public async Task<IActionResult> GetProductRequests(int limit = 20)
+        {
+            try
+            {
+                var userId = GetCurrentUserId();
+
+                // Fetch chat messages with Status = ProductRequest (Status == 1)
+                var productRequests = await _context.Chats
+                    .Where(c => c.ReceiverId == userId && c.Status == ChatStatus.Request)
+                    .OrderByDescending(c => c.CreatedAt)
+                    .Take(limit)
+                    .Select(c => new {
+                        c.Id,
+                        c.SenderId,
+                        c.CreatedAt,
+                        FullMessage = c.JSONString
+                    })
+                    .ToListAsync();
+
+                _logger.LogInformation($"Found {productRequests.Count} product requests for user {userId}");
+
+                var groupedRequests = new Dictionary<int, List<object>>();
+                var customerNames = new Dictionary<int, string>();
+
+                foreach (var request in productRequests)
+                {
+                    if (string.IsNullOrWhiteSpace(request.FullMessage))
+                        continue;
+
+                    try
+                    {
+                        // Deserialize JSON string safely
+                        var requestData = JsonSerializer.Deserialize<Dictionary<string, object>>(request.FullMessage);
+
+                        // Cache customer names to avoid repetitive DB calls
+                        if (!customerNames.ContainsKey(request.SenderId))
+                        {
+                            var customer = await _context.Users.FindAsync(request.SenderId);
+                            customerNames[request.SenderId] = customer != null
+                                ? $"{customer.FirstName} {customer.LastName}"
+                                : "Unknown Customer";
+                        }
+
+                        requestData.TryGetValue("productName", out var productNameObj);
+                        requestData.TryGetValue("quantity", out var quantityObj);
+                        requestData.TryGetValue("message", out var messageObj);
+
+                        var requestInfo = new
+                        {
+                            messageId = request.Id,
+                            productName = productNameObj?.ToString() ?? "",
+                            quantity = quantityObj?.ToString() ?? "",
+                            message = messageObj?.ToString() ?? "",
+                            createdAt = request.CreatedAt,
+                            customerId = request.SenderId,
+                            customerName = customerNames[request.SenderId]
+                        };
+
+                        if (!groupedRequests.ContainsKey(request.SenderId))
+                            groupedRequests[request.SenderId] = new List<object>();
+
+                        groupedRequests[request.SenderId].Add(requestInfo);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, $"Error parsing product request JSON: {request.FullMessage}");
+                    }
+                }
+
+                var response = groupedRequests.Select(gr => new {
+                    customerId = gr.Key,
+                    customerName = customerNames.ContainsKey(gr.Key) ? customerNames[gr.Key] : "Unknown Customer",
+                    requests = gr.Value.OrderByDescending(r => ((DateTime)((dynamic)r).createdAt)).ToList()
+                });
+
+                return Json(new { success = true, groupedRequests = response });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting product requests");
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        [StaffAccess(StaffAccessLevel.Chat)]
+        public async Task<IActionResult> GetLeadRequests(int limit = 20)
+        {
+            try
+            {
+                var userId = GetCurrentUserId();
+
+                var leadRequests = await _context.Chats
+                    .Where(c => c.ReceiverId == userId && c.Status == ChatStatus.LeadRequest)
+                    .OrderByDescending(c => c.CreatedAt)
+                    .Take(limit)
+                    .Select(c => new {
+                        c.Id,
+                        c.SenderId,
+                        c.CreatedAt,
+                        FullMessage = c.JSONString
+                    })
+                    .ToListAsync();
+
+                var groupedRequests = new Dictionary<int, List<object>>();
+                var customerNames = new Dictionary<int, string>();
+                var leadNames = new Dictionary<int, string>();
+
+                foreach (var request in leadRequests)
+                {
+                    if (string.IsNullOrWhiteSpace(request.FullMessage))
+                        continue;
+
+                    try
+                    {
+                        var requestData = JsonSerializer.Deserialize<Dictionary<string, object>>(request.FullMessage);
+
+                        if (!customerNames.ContainsKey(request.SenderId))
+                        {
+                            var customer = await _context.Users.FindAsync(request.SenderId);
+                            customerNames[request.SenderId] = customer != null
+                                ? $"{customer.FirstName} {customer.LastName}"
+                                : "Unknown Customer";
+                        }
+
+                        requestData.TryGetValue("LeadId", out var leadIdObj);
+                        requestData.TryGetValue("leadName", out var leadNameObj);
+                        requestData.TryGetValue("RequesterName", out var requesterNameObj);
+                        requestData.TryGetValue("Message", out var messageObj);
+
+                        var leadId = leadIdObj != null ? int.Parse(leadIdObj.ToString()) : 0;
+
+                        if (leadId > 0 && !leadNames.ContainsKey(leadId))
+                        {
+                            var lead = await _context.Leads.FindAsync(leadId);
+                            leadNames[leadId] = lead?.LeadName ?? "Unknown Lead";
+                        }
+
+                        var requestInfo = new
+                        {
+                            messageId = request.Id,
+                            leadId,
+                            leadName = leadId > 0 ? leadNames[leadId] : leadNameObj?.ToString() ?? "",
+                            requesterName = requesterNameObj?.ToString() ?? customerNames[request.SenderId],
+                            message = messageObj?.ToString() ?? "",
+                            createdAt = request.CreatedAt,
+                            customerId = request.SenderId,
+                            customerName = customerNames[request.SenderId]
+                        };
+
+                        if (!groupedRequests.ContainsKey(request.SenderId))
+                            groupedRequests[request.SenderId] = new List<object>();
+
+                        groupedRequests[request.SenderId].Add(requestInfo);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, $"Error parsing lead request JSON: {request.FullMessage}");
+                    }
+                }
+
+                var response = groupedRequests.Select(gr => new {
+                    customerId = gr.Key,
+                    customerName = customerNames.ContainsKey(gr.Key) ? customerNames[gr.Key] : "Unknown Customer",
+                    requests = gr.Value.OrderByDescending(r => ((DateTime)((dynamic)r).createdAt)).ToList()
+                });
+
+                return Json(new { success = true, groupedRequests = response });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting lead requests");
+                return Json(new { success = false, message = ex.Message });
+            }
         }
     }
 }

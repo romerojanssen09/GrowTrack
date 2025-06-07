@@ -1,0 +1,347 @@
+﻿@model Project_Creation.Models.Entities.Leads
+@using Project_Creation.Models.Entities
+@using System.Security.Claims
+@{
+    ViewData["Title"] = "Lead Details";
+    var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+}
+
+<div class="container mt-4">
+    <div class="card shadow-sm mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h4 class="mb-0 text-accent">Lead Details</h4>
+            <div>
+                @if (currentUserId == Model.CreatedById)
+                {
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary me-2">
+                        <i class="fas fa-edit me-1"></i> Edit
+                    </a>
+                }
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i> Back to List
+                </a>
+            </div>
+        </div>
+        
+        <div class="card-body">
+            <div class="row">
+                <!-- Lead Details -->
+                <div class="col-md-6">
+                    <h5 class="border-bottom pb-2 mb-3">Basic Information</h5>
+                    
+                    <div class="row mb-2">
+                        <div class="col-md-4 fw-bold">Name:</div>
+                        <div class="col-md-8">@Model.LeadName</div>
+                    </div>
+                    
+                    <div class="row mb-2">
+                        <div class="col-md-4 fw-bold">Email:</div>
+                        <div class="col-md-8">@Model.LeadEmail</div>
+                    </div>
+                    
+                    <div class="row mb-2">
+                        <div class="col-md-4 fw-bold">Phone:</div>
+                        <div class="col-md-8">@Model.LeadPhone</div>
+                    </div>
+                    
+                    <div class="row mb-2">
+                        <div class="col-md-4 fw-bold">Created By:</div>
+                        <div class="col-md-8">@(Model.CreatedBy?.BusinessName ?? "-")</div>
+                    </div>
+                    
+                    <div class="row mb-2">
+                        <div class="col-md-4 fw-bold">Status:</div>
+                        <div class="col-md-8">
+                            @{
+                                // Calculate the transaction value points (1 per ₱1,000)
+                                decimal totalSpend30Days = 0;
+                                int spendPoints = 0;
+                                DateTime past30Days2 = DateTime.Now.AddDays(-30);
+                                
+                                if (Model.PurchaseHistory != null && Model.PurchaseHistory.Any())
+                                {
+                                    var recentPurchases = Model.PurchaseHistory.Where(p => p.Sale?.SaleDate >= past30Days2);
+                                    if (recentPurchases.Any())
+                                    {
+                                        totalSpend30Days = recentPurchases.Sum(p => p.TotalPrice);
+                                        spendPoints = (int)(totalSpend30Days / 1000);
+                                    }
+                                }
+                                
+                                // The base points stored in the database (product variety only)
+                                int basePoints2 = Model.LeadPoints ?? 0;
+                                
+                                // Total display points (base + spend points)
+                                int totalPoints2 = basePoints2 + spendPoints;
+                                
+                                string statusClass = "";
+                                string statusText = Model.Status.ToString();
+                                
+                                // Check if the lead has purchase history but hasn't purchased in the last 30 days
+                                bool hasOldPurchases = Model.LastPurchaseDate.HasValue && 
+                                                      Model.LastPurchaseDate.Value < DateTime.Now.AddDays(-30) &&
+                                                      Model.PurchaseHistory != null && 
+                                                      Model.PurchaseHistory.Any();
+                                
+                                if (totalPoints2 >= 30) {
+                                    statusClass = "bg-danger text-white";
+                                    statusText = "Hot";
+                                } else if (totalPoints2 >= 15) {
+                                    statusClass = "bg-warning text-dark";
+                                    statusText = "Warm";
+                                } else if (totalPoints2 >= 5) {
+                                    statusClass = "bg-info text-white";
+                                    statusText = "Cold";
+                                } else if (hasOldPurchases) {
+                                    statusClass = "bg-secondary text-white";
+                                    statusText = "Lost";
+                                } else {
+                                    statusClass = "bg-light text-dark border border-secondary";
+                                    statusText = "New";
+                                }
+                            }
+                            <span class="badge @statusClass">@statusText</span>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-2">
+                        <div class="col-md-4 fw-bold">Lead Points:</div>
+                        <div class="col-md-8">
+                            @{
+                                // Ensure we use EXACTLY the same calculation as the "Points Added in Past 30 Days" section
+                                int basePointsForTotal = Model.LeadPoints ?? 0;
+                                
+                                // Calculate transaction value points using exactly the same method
+                                decimal totalSpendForPoints = 0;
+                                int spendPointsForTotal = 0;
+                                
+                                if (Model.PurchaseHistory != null && Model.PurchaseHistory.Any())
+                                {
+                                    var recentPurchasesForTotal = Model.PurchaseHistory.Where(p => p.Sale?.SaleDate >= past30Days2);
+                                    if (recentPurchasesForTotal.Any())
+                                    {
+                                        totalSpendForPoints = recentPurchasesForTotal.Sum(p => p.TotalPrice);
+                                        spendPointsForTotal = (int)(totalSpendForPoints / 1000);
+                                    }
+                                }
+                                
+                                // Total display points
+                                int totalPointsForDisplay = basePointsForTotal + spendPointsForTotal;
+                            }
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="badge bg-dark me-2 px-3 py-2">@totalPointsForDisplay points total</span>
+                                
+                                @if (basePointsForTotal > 0 || spendPointsForTotal > 0)
+                                {
+                                    <div class="progress flex-grow-1 ms-2" style="height: 10px;">
+                                        @{
+                                            int pointsPercent = Math.Min(100, (int)(totalPointsForDisplay * 100 / 30));
+                                            string progressClass = totalPointsForDisplay >= 30 ? "bg-danger" : 
+                                                                 totalPointsForDisplay >= 15 ? "bg-warning" : 
+                                                                 "bg-info";
+                                        }
+                                        <div class="progress-bar @progressClass" role="progressbar" 
+                                             style="width: @pointsPercent%;" 
+                                             aria-valuenow="@pointsPercent" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-2">
+                        <div class="col-md-4 fw-bold">Points Added in<br/> Past 30 Days:</div>
+                        <div class="col-md-8">
+                            @{
+                                // Get product variety points from the past 30 days - use past30Days2 for consistency
+                                int productPointsPast30Days = 0;
+                                
+                                if (Model.PurchaseHistory != null && Model.PurchaseHistory.Any())
+                                {
+                                    productPointsPast30Days = Model.PurchaseHistory
+                                        .Where(p => p.Sale?.SaleDate >= past30Days2 && p.Sale.EarnedPoints.HasValue)
+                                        .Sum(p => p.Sale.EarnedPoints.Value);
+                                }
+                                
+                                // Total points in past 30 days = product points + spend points
+                                // We're using spendPointsForTotal from the Lead Points section for consistency
+                                int totalPointsPast30Days = productPointsPast30Days + spendPointsForTotal;
+                            }
+                            <div>
+                                <span class="badge bg-success px-3 py-2">@totalPointsPast30Days points total</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-2">
+                        <div class="col-md-4 fw-bold">Last Purchase:</div>
+                        <div class="col-md-8">
+                            @if (Model.LastPurchaseDate.HasValue)
+                            {
+                                <span>@Model.LastPurchaseDate?.ToString("MMM dd, yyyy")</span>
+                                @if (Model.LastPurchaseDate.Value < DateTime.Now.AddDays(-30))
+                                {
+                                    <span class="badge bg-secondary ms-2">Inactive</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success ms-2">Active</span>
+                                }
+                            }
+                            else
+                            {
+                                <span>None</span>
+                            }
+                        </div>
+                    </div>
+                    
+                    @if (!string.IsNullOrEmpty(Model.Notes))
+                    {
+                        <div class="alert alert-light mt-3">
+                            <h6 class="fw-bold">Notes:</h6>
+                            <p class="mb-0">@Model.Notes</p>
+                        </div>
+                    }
+                </div>
+                
+                <!-- Interested Products -->
+                <div class="col-md-6">
+                    <h5 class="border-bottom pb-2 mb-3">Interested Products</h5>
+                    
+                    @if (Model.InterestedProductNames != null && Model.InterestedProductNames.Any())
+                    {
+                        <ul class="list-group">
+                            @foreach (var product in Model.InterestedProductNames)
+                            {
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    @product
+                                    <span class="badge bg-primary rounded-pill">Interested</span>
+                                </li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <div class="alert alert-light">
+                            <p class="mb-0">This lead has not expressed interest in any products yet.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+            
+            <!-- Purchase History -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <h5 class="border-bottom pb-2 mb-3">
+                        Purchase History
+                        @if (Model.PurchaseHistory != null && Model.PurchaseHistory.Any())
+                        {
+                            <span class="badge bg-success ms-2">@Model.PurchaseHistory.Count Purchase(s)</span>
+                        }
+                    </h5>
+                    
+                    @if (Model.PurchaseHistory != null && Model.PurchaseHistory.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped">
+                                <thead class="table-primary">
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Product</th>
+                                        <th>Quantity</th>
+                                        <th>Price</th>
+                                        <th>Total</th>
+                                        <th>Points Earned</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.PurchaseHistory)
+                                    {
+                                        <tr>
+                                            <td>
+                                                @if (item.Sale?.SaleDate != null)
+                                                {
+                                                    <span>@item.Sale.SaleDate.ToString("MMM dd, yyyy")</span>
+                                                    
+                                                    @if (item.Sale.SaleDate > DateTime.Now.AddDays(-30))
+                                                    {
+                                                        <span class="badge bg-success ms-1">Recent</span>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <span>-</span>
+                                                }
+                                            </td>
+                                            <td>@item.ProductName</td>
+                                            <td>@item.Quantity</td>
+                                            <td>@item.UnitPrice.ToString("C")</td>
+                                            <td>@item.TotalPrice.ToString("C")</td>
+                                            <td>
+                                                @if (item.Sale?.EarnedPoints != null)
+                                                {
+                                                    <span class="badge bg-info">+@item.Sale.EarnedPoints pts</span>
+                                                }
+                                                else
+                                                {
+                                                    <span>-</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                                <tfoot>
+                                    <tr class="table-secondary">
+                                        <th colspan="4" class="text-end">Total Purchases:</th>
+                                        <th>@Model.PurchaseHistory.Sum(p => p.TotalPrice).ToString("C")</th>
+                                        <th>
+                                            @{
+                                                // Product variety points (from EarnedPoints field)
+                                                int totalProductPoints = Model.PurchaseHistory
+                                                    .Where(p => p.Sale?.EarnedPoints != null)
+                                                    .Sum(p => p.Sale.EarnedPoints.Value);
+                                                    
+                                                // Calculate transaction value points for all purchases
+                                                decimal allTimeSpend = Model.PurchaseHistory.Sum(p => p.TotalPrice);
+                                                int allTimeSpendPoints = (int)(allTimeSpend / 1000);
+                                                
+                                                // Total points = product variety points + transaction value points
+                                                int allTimeTotalPoints = totalProductPoints + allTimeSpendPoints;
+                                            }
+                                            <div>
+                                                <span class="badge bg-dark">@allTimeTotalPoints pts total</span>
+                                                <div class="small mt-1">
+                                                    <span class="text-muted">(@totalProductPoints product pts + @allTimeSpendPoints spend pts)</span>
+                                                </div>
+                                            </div>
+                                        </th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <h6><i class="fas fa-info-circle me-2"></i>Points System</h6>
+                            <ul class="mb-0">
+                                <li><strong>Transaction Value:</strong> +1 point per ₱1,000 of total transaction value</li>
+                                <li><strong>Product Variety:</strong>
+                                    <ul>
+                                        <li>+2 points for each product purchased for the first time in 30 days</li>
+                                        <li>+1 point for each repeated product purchase within 30 days</li>
+                                    </ul>
+                                </li>
+                                <li><strong>Lead Status:</strong> Hot (30+), Warm (15+), Cold (5+), New (0-4), Lost (inactive for 30+ days)</li>
+                            </ul>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-light">
+                            <p class="mb-0">This lead has not made any purchases yet.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

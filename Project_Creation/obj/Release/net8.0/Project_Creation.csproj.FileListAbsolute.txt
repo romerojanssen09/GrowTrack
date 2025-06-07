@@ -305,3 +305,4 @@ C:\Users\chell\source\repos\New folder\Project_Creation\Project_Creation\obj\Rel
 C:\Users\chell\source\repos\New folder\Project_Creation\Project_Creation\obj\Release\net8.0\Project_Creation.pdb
 C:\Users\chell\source\repos\New folder\Project_Creation\Project_Creation\obj\Release\net8.0\Project_Creation.genruntimeconfig.cache
 C:\Users\chell\source\repos\New folder\Project_Creation\Project_Creation\obj\Release\net8.0\ref\Project_Creation.dll
+C:\Users\chell\source\repos\New folder\Project_Creation\Project_Creation\bin\Release\net8.0\web.config

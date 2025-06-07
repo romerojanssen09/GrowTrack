@@ -1,0 +1,69 @@
+﻿@model Project_Creation.Models.Entities.Leads
+
+@{
+    ViewData["Title"] = "Delete Lead";
+}
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-dark-accent">
+        <h4 class="mb-0 text-light">Confirm Delete</h4>
+    </div>
+    <div class="card-body">
+        @if (ViewBag.HasSales == true)
+        {
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Note:</strong> @ViewBag.SalesWarning
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Warning:</strong> Are you sure you want to mark this lead as deleted? The lead will be hidden from the leads list but will still be available for historical sales data. This can be reversed by editing the lead later if needed.
+            </div>
+        }
+        
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">Lead Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Name:</strong> @Html.DisplayFor(model => model.LeadName)</p>
+                        <p><strong>Email:</strong> @Html.DisplayFor(model => model.LeadEmail)</p>
+                        <p><strong>Phone:</strong> @Html.DisplayFor(model => model.LeadPhone)</p>
+                        <p><strong>Status:</strong> @Html.DisplayFor(model => model.Status)</p>
+                        <p><strong>Notes:</strong> @(string.IsNullOrEmpty(Model.Notes) ? "None" : Model.Notes)</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">System Details</h5>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Created At:</strong> @(Model.CreatedAt?.ToString("MMM dd, yyyy HH:mm") ?? "-")</p>
+                        <p><strong>Last Updated:</strong> @(Model.UpdatedAt?.ToString("MMM dd, yyyy HH:mm") ?? "-")</p>
+                        <p><strong>Last Contacted:</strong> @(Model.LastContacted?.ToString("MMM dd, yyyy HH:mm") ?? "Not contacted")</p>
+                        <p><strong>Created By:</strong> @Html.DisplayFor(model => model.CreatedBy.BusinessAddress)</p>
+                        <p><strong>Last Product:</strong> @(Model.Product?.ProductName ?? "None")</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <form asp-controller="Leads" asp-action="Delete" method="post" class="d-flex justify-content-between">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Back to List
+            </a>
+            <button type="submit" class="btn btn-danger">
+                <i class="fas fa-trash me-1"></i> Delete Lead
+            </button>
+        </form>
+    </div>
+</div>

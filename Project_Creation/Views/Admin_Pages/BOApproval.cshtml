@@ -1,0 +1,557 @@
+@model List<Project_Creation.Models.Entities.Users>
+@{
+    ViewData["Title"] = "Business Owner Approval";
+}
+
+<div class="container-fluid">
+    <!-- Header Row -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">Business Owner Approval</h1>
+            <p class="mb-0">Verify new business owner accounts</p>
+        </div>
+        <div>
+            <a asp-controller="Admin" asp-action="Index" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">Pending Business Owner Accounts</h6>
+            <div class="d-flex">
+                <button id="verifySelectedBtn" class="btn btn-success me-3" disabled>
+                    <i class="bi bi-check-circle me-2"></i>Verify Selected (<span id="selectedCount">0</span>)
+                </button>
+                <div class="input-group" style="width: 300px;">
+                    <input type="text" class="form-control search-input" placeholder="Search..." aria-label="Search">
+                    <div class="input-group-append">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover" id="pendingUsersTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="selectAll">
+                                    <label class="form-check-label" for="selectAll"></label>
+                                </div>
+                            </th>
+                            <th>Business Name</th>
+                            <th>Owner Name</th>
+                            <th>Email</th>
+                            <th>Category</th>
+                            <th>Registration Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            @foreach (var user in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="form-check">
+                                            <input class="form-check-input user-checkbox" type="checkbox" value="@user.Id" id="user-@user.Id">
+                                            <label class="form-check-label" for="user-@user.Id"></label>
+                                        </div>
+                                    </td>
+                                    <td>@user.BusinessName</td>
+                                    <td>@user.FirstName @user.LastName</td>
+                                    <td>@user.Email</td>
+                                    <td>@user.CategoryOfBusiness</td>
+                                    <td>@user.RegistrationDate.ToString("MMM dd, yyyy")</td>
+                                    <td>
+                                        <button class="btn btn-outline-info btn-view me-1" data-step="1" data-id="@user.Id" type="button" title="View Details"><i class="bi bi-eye"></i></button>
+                                        <button class="btn btn-outline-success btn-verify me-1" data-id="@user.Id" type="button" title="Verify Account"><i class="bi bi-check-circle"></i></button>
+                                        <button class="btn btn-outline-danger btn-reject" data-id="@user.Id" type="button" title="Reject Account"><i class="bi bi-x-circle"></i></button>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="7" class="text-center py-4 text-muted">No pending business owner accounts found</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for viewing user details -->
+<div class="modal fade" id="userDetailsModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title"><i class="bi bi-person-lines-fill"></i> User Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="userDetailsContent">
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Loading user details...</p>
+                </div>
+            </div>
+            <div class="modal-footer" id="userDetailsFooter">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for bulk verification confirmation -->
+<div class="modal fade" id="bulkVerifyModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title"><i class="bi bi-check-circle"></i> Bulk Verification</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to verify <span id="verifyCount" class="fw-bold">0</span> selected business owner accounts?</p>
+                <p>Notification emails will be sent to all verified users.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" id="confirmBulkVerify">Confirm Verification</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for rejecting user -->
+<div class="modal fade" id="rejectUserModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="bi bi-x-circle"></i> Reject Account</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="rejectionForm" class="needs-validation" novalidate>
+                    <input type="hidden" id="rejectUserId" value="">
+                    <div class="mb-3">
+                        <label for="rejectionReason" class="form-label">Rejection Reason <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="rejectionReason" rows="4" required></textarea>
+                        <div class="invalid-feedback">
+                            Please provide a reason for rejection.
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmRejection">Confirm Rejection</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading overlay -->
+<div class="loading-overlay" style="display: none;">
+    <div class="loading-spinner">
+        <div class="spinner-border text-light" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <div class="mt-2 text-light">Processing request and sending email notification...</div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Helper functions for loading overlay
+            function showLoading() {
+                $('.loading-overlay').show();
+            }
+
+            function hideLoading() {
+                $('.loading-overlay').hide();
+            }
+
+            // Enhanced search functionality
+            $('.search-input').on('keyup', function() {
+                var value = $(this).val().toLowerCase();
+                $("#pendingUsersTable tbody tr").filter(function() {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                });
+            });
+
+            // Multi-select functionality
+            $('#selectAll').change(function() {
+                var isChecked = $(this).prop('checked');
+                $('.user-checkbox').prop('checked', isChecked);
+                updateSelectedCount();
+            });
+
+            $(document).on('change', '.user-checkbox', function() {
+                updateSelectedCount();
+            });
+
+            function updateSelectedCount() {
+                var count = $('.user-checkbox:checked').length;
+                $('#selectedCount').text(count);
+                $('#verifyCount').text(count);
+
+                if (count > 0) {
+                    $('#verifySelectedBtn').prop('disabled', false);
+                } else {
+                    $('#verifySelectedBtn').prop('disabled', true);
+                }
+            }
+
+            // Verify selected users button
+            $('#verifySelectedBtn').click(function() {
+                $('#bulkVerifyModal').modal('show');
+            });
+
+            // Confirm bulk verification
+            $('#confirmBulkVerify').click(function() {
+                var selectedIds = [];
+                $('.user-checkbox:checked').each(function() {
+                    selectedIds.push(parseInt($(this).val()));
+                });
+
+                if (selectedIds.length === 0) {
+                    return;
+                }
+
+                // Close modal and show loading
+                $('#bulkVerifyModal').modal('hide');
+                showLoading();
+
+                // Use the new bulk verification endpoint
+                $.ajax({
+                    url: '/Admin/BulkVerifyUsers',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(selectedIds),
+                    headers: {
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function(response) {
+                        hideLoading();
+
+                        if (response.success) {
+                            Swal.fire({
+                                title: 'Verification Complete!',
+                                text: `Successfully verified ${response.successCount} out of ${response.processedCount} accounts. Notification emails have been sent.`,
+                                icon: 'success',
+                                confirmButtonColor: '#28a745'
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                title: 'Error!',
+                                text: response.message || 'Failed to verify users.',
+                                icon: 'error',
+                                confirmButtonColor: '#dc3545'
+                            });
+                        }
+                    },
+                    error: function(xhr) {
+                        hideLoading();
+
+                        Swal.fire({
+                            title: 'Error!',
+                            text: 'An error occurred while processing your request.',
+                            icon: 'error',
+                            confirmButtonColor: '#dc3545'
+                        });
+                    }
+                });
+            });
+
+            // View user details
+            $(document).on('click', '.btn-view', function() {
+                var userId = $(this).data('id');
+                var step = $(this).data('step');
+
+                $('#userDetailsContent').html(`
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2">Loading user details...</p>
+                    </div>
+                `);
+
+                $('#userDetailsModal').modal('show');
+
+                $.ajax({
+                    url: '/Admin/GetUserDetails',
+                    type: 'GET',
+                    data: { id: userId },
+                    success: function(response) {
+                        $('#userDetailsContent').html(response);
+
+                        // Render appropriate footer buttons based on step
+                        var html = '';
+                        html += `<button class="btn btn-success me-2" id="btn-verify-modal" data-id="${userId}">
+                            <i class="bi bi-check-circle"></i> Verify
+                        </button>`;
+                        html += `<button class="btn btn-danger me-2" id="btn-reject-modal" data-id="${userId}">
+                            <i class="bi bi-x-circle"></i> Reject
+                        </button>`;
+                        html += `<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>`;
+
+                        $('#userDetailsFooter').html(html);
+                    },
+                    error: function() {
+                        $('#userDetailsContent').html(`
+                            <div class="alert alert-danger">
+                                <i class="bi bi-exclamation-triangle"></i> Error loading user details. Please try again.
+                            </div>
+                        `);
+                    }
+                });
+            });
+
+            // Verify user
+            $(document).on('click', '.btn-verify, #btn-verify-modal', function() {
+                var userId = $(this).data('id');
+
+                Swal.fire({
+                    title: 'Verify User',
+                    text: 'Are you sure you want to verify this user?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#28a745',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Yes, verify!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Show loading overlay
+                        showLoading();
+
+                        $.ajax({
+                            url: '/Admin/VerifyUser',
+                            type: 'POST',
+                            data: {
+                                id: userId,
+                                __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                            },
+                            success: function(response) {
+                                // Hide loading overlay
+                                hideLoading();
+
+                                if (response.success) {
+                                    Swal.fire({
+                                        title: 'Verified!',
+                                        text: 'User has been verified successfully and notification email sent.',
+                                        icon: 'success',
+                                        confirmButtonColor: '#28a745'
+                                    }).then(() => {
+                                        location.reload();
+                                    });
+                                } else {
+                                    Swal.fire({
+                                        title: 'Error!',
+                                        text: response.message || 'Failed to verify user.',
+                                        icon: 'error',
+                                        confirmButtonColor: '#dc3545'
+                                    });
+                                }
+                            },
+                            error: function() {
+                                // Hide loading overlay
+                                hideLoading();
+
+                                Swal.fire({
+                                    title: 'Error!',
+                                    text: 'An error occurred while processing your request.',
+                                    icon: 'error',
+                                    confirmButtonColor: '#dc3545'
+                                });
+                            }
+                        });
+                    }
+                });
+            });
+
+            // Open reject modal
+            $(document).on('click', '.btn-reject, #btn-reject-modal', function() {
+                var userId = $(this).data('id');
+                $('#rejectUserId').val(userId);
+                $('#rejectionReason').val('');
+                $('#rejectionForm').removeClass('was-validated');
+                $('#userDetailsModal').modal('hide');
+                $('#rejectUserModal').modal('show');
+            });
+
+            // Handle rejection form submission
+            $('#confirmRejection').click(function() {
+                var form = document.getElementById('rejectionForm');
+
+                if (form.checkValidity() === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    form.classList.add('was-validated');
+                    return;
+                }
+
+                var userId = $('#rejectUserId').val();
+                var rejectionReason = $('#rejectionReason').val();
+
+                // Show loading overlay
+                showLoading();
+
+                // Hide the rejection modal but keep the overlay
+                $('#rejectUserModal').modal('hide');
+
+                // Single user rejection
+                $.ajax({
+                    url: '/Admin/RejectUser',
+                    type: 'POST',
+                    data: {
+                        id: userId,
+                        rejectionReason: rejectionReason,
+                        __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function(response) {
+                        // Hide loading overlay
+                        hideLoading();
+
+                        if (response.success) {
+                            Swal.fire({
+                                title: 'Rejected!',
+                                text: 'User has been rejected successfully and notification email sent.',
+                                icon: 'success',
+                                confirmButtonColor: '#28a745'
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                title: 'Error!',
+                                text: response.message || 'Failed to reject user.',
+                                icon: 'error',
+                                confirmButtonColor: '#dc3545'
+                            });
+                        }
+                    },
+                    error: function() {
+                        // Hide loading overlay
+                        hideLoading();
+
+                        Swal.fire({
+                            title: 'Error!',
+                            text: 'An error occurred while processing your request.',
+                            icon: 'error',
+                            confirmButtonColor: '#dc3545'
+                        });
+                    }
+                });
+            });
+
+            // Add Bulk Rejection functionality (if needed in the future)
+            // This can be enabled by adding a button and modal similar to bulk verification
+            function bulkRejectUsers(userIds, rejectionReason) {
+                if (!userIds || userIds.length === 0 || !rejectionReason) {
+                    return;
+                }
+
+                showLoading();
+
+                $.ajax({
+                    url: '/Admin/BulkRejectUsers',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        userIds: userIds,
+                        rejectionReason: rejectionReason
+                    }),
+                    headers: {
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function(response) {
+                        hideLoading();
+
+                        if (response.success) {
+                            Swal.fire({
+                                title: 'Rejection Complete!',
+                                text: `Successfully rejected ${response.successCount} out of ${response.processedCount} accounts. Notification emails have been sent.`,
+                                icon: 'success',
+                                confirmButtonColor: '#28a745'
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                title: 'Error!',
+                                text: response.message || 'Failed to reject users.',
+                                icon: 'error',
+                                confirmButtonColor: '#dc3545'
+                            });
+                        }
+                    },
+                    error: function() {
+                        hideLoading();
+
+                        Swal.fire({
+                            title: 'Error!',
+                            text: 'An error occurred while processing your request.',
+                            icon: 'error',
+                            confirmButtonColor: '#dc3545'
+                        });
+                    }
+                });
+            }
+        });
+    </script>
+}
+
+<style>
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .loading-spinner {
+        text-align: center;
+    }
+
+        .loading-spinner .spinner-border {
+            width: 3rem;
+            height: 3rem;
+        }
+
+    .form-check {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+    }
+
+    #verifySelectedBtn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    #verifySelectedBtn {
+        transition: all 0.3s ease;
+    }
+</style>

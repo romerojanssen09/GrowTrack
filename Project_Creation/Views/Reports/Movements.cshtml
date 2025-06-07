@@ -1,16 +1,45 @@
-﻿@using Microsoft.AspNetCore.Html
+@using Microsoft.AspNetCore.Html
+@using System.Security.Claims
 @model List<Project_Creation.Models.Entities.InventoryLog>
 @{
     ViewData["Title"] = "Inventory Movements";
+    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    var userRole = User.FindFirstValue(ClaimTypes.Role);
+    var businessId = userRole == "Staff" ? User.FindFirstValue("BOId") : userId;
 }
 
-<div class="container mt-4">
-    <h2>Inventory Movements Report</h2>
+<div class="movements-container">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <h2 class="text-accent">Inventory Movements Report</h2>
+        <a href="@Url.Action("Index", "Reports")" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left me-1"></i> Back to reports
+        </a>
+    </div>
+    <!-- Real-time status indicator -->
+    <div class="alert alert-info alert-dismissible fade show d-flex align-items-center" role="alert" id="realtime-status">
+        <div class="spinner-border spinner-border-sm me-2" role="status" id="realtime-spinner">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <div>
+            <strong>Real-time updates active.</strong> 
+            <span id="connection-status">Connecting...</span>
+        </div>
+        <div class="ms-auto">
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </div>
+    
+    <!-- Real-time notifications area -->
+    <div id="movement-notifications" class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1050;">
+        <!-- Toasts will be added here dynamically -->
+    </div>
 
     <!-- Filter Form -->
     <div class="card mb-4">
         <div class="card-body">
             <form method="get" asp-action="Movements" asp-controller="Reports" class="row g-3">
+                <!-- Hidden field for real-time additions count -->
+                <input type="hidden" name="realTimeAdditions" id="realTimeAdditionsField" value="@ViewBag.RealTimeAdditions">
                 <!-- Date Range -->
                 <div class="col-md-3">
                     <label for="startDate" class="form-label">Start Date</label>
@@ -97,20 +126,20 @@
         <!-- Summary Section -->
         <div class="card mb-4">
             <div class="card-body">
-                <div class="row">
-                    <div class="col-md-3 text-center">
+                <div class="row sales-summary">
+                    <div class="col-md-3 col-6 text-center mb-3 mb-md-0">
                         <h5>Total Movements</h5>
                         <h3 id="movementCount">@Model.Count</h3>
                     </div>
-                    <div class="col-md-3 text-center">
+                    <div class="col-md-3 col-6 text-center mb-3 mb-md-0r">
                         <h5>Total In</h5>
                         <h3 class="text-success" id="totalIn">@Model.Where(m => (m.QuantityAfter - m.QuantityBefore) > 0).Sum(m => m.QuantityAfter - m.QuantityBefore)</h3>
                     </div>
-                    <div class="col-md-3 text-center">
+                    <div class="col-md-3 col-6 text-center mb-3 mb-md-0">
                         <h5>Total Out</h5>
                         <h3 class="text-danger" id="totalOut">@Math.Abs(Model.Where(m => (m.QuantityAfter - m.QuantityBefore) < 0).Sum(m => m.QuantityAfter - m.QuantityBefore))</h3>
                     </div>
-                    <div class="col-md-3 text-center">
+                    <div class="col-md-3 col-6 text-center mb-3 mb-md-0">
                         <h5>Net Change</h5>
                         <h3 class="@(Model.Sum(m => m.QuantityAfter - m.QuantityBefore) >= 0 ? "text-success" : "text-danger")"
                             id="netChange">
@@ -147,11 +176,11 @@
                                 <th>Notes</th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white">
+                        <tbody class="bg-white" id="movements-tbody">
                             @foreach (var movement in Model)
                             {
                                 var change = movement.QuantityAfter - movement.QuantityBefore;
-                                <tr class="movement-row">
+                                <tr class="movement-row" data-id="@movement.Id">
                                     <td>@movement.Timestamp.ToString("yyyy-MM-dd HH:mm")</td>
                                     <td>@movement.ProductName</td>
                                     <td>@GetMovementTypeBadge(movement.MovementType)</td>
@@ -171,6 +200,72 @@
                         </tbody>
                     </table>
                 </div>
+                
+                <!-- Pagination Controls -->
+                @if (ViewBag.TotalPages > 1)
+                {
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div>
+                            <span class="text-muted">Showing @((ViewBag.CurrentPage - 1) * ViewBag.PageSize + 1) to @(Math.Min(ViewBag.CurrentPage * ViewBag.PageSize, ViewBag.TotalItems)) of @ViewBag.TotalItems entries</span>
+                        </div>
+                        <nav aria-label="Inventory movements pagination">
+                            <ul class="pagination">
+                                <!-- Previous Page -->
+                                <li class="page-item @(ViewBag.CurrentPage == 1 ? "disabled" : "")">
+                                    <a class="page-link" href="@Url.Action("Movements", new { 
+                                        startDate = ViewBag.StartDate, 
+                                        endDate = ViewBag.EndDate, 
+                                        productName = ViewBag.ProductName, 
+                                        movementType = ViewBag.MovementType, 
+                                        page = ViewBag.CurrentPage - 1,
+                                        realTimeAdditions = ViewBag.RealTimeAdditions
+                                    })" aria-label="Previous">
+                                        <span aria-hidden="true">&laquo;</span>
+                                    </a>
+                                </li>
+                                
+                                <!-- Page Numbers -->
+                                @{
+                                    int startPage = Math.Max(1, ViewBag.CurrentPage - 2);
+                                    int endPage = Math.Min(ViewBag.TotalPages, startPage + 4);
+                                    
+                                    if (endPage - startPage < 4 && startPage > 1)
+                                    {
+                                        startPage = Math.Max(1, endPage - 4);
+                                    }
+                                }
+                                
+                                @for (int i = startPage; i <= endPage; i++)
+                                {
+                                    <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                                        <a class="page-link" href="@Url.Action("Movements", new { 
+                                            startDate = ViewBag.StartDate, 
+                                            endDate = ViewBag.EndDate, 
+                                            productName = ViewBag.ProductName, 
+                                            movementType = ViewBag.MovementType, 
+                                            page = i,
+                                            realTimeAdditions = ViewBag.RealTimeAdditions
+                                        })">@i</a>
+                                    </li>
+                                }
+                                
+                                <!-- Next Page -->
+                                <li class="page-item @(ViewBag.CurrentPage == ViewBag.TotalPages ? "disabled" : "")">
+                                    <a class="page-link" href="@Url.Action("Movements", new { 
+                                        startDate = ViewBag.StartDate, 
+                                        endDate = ViewBag.EndDate, 
+                                        productName = ViewBag.ProductName, 
+                                        movementType = ViewBag.MovementType, 
+                                        page = ViewBag.CurrentPage + 1,
+                                        realTimeAdditions = ViewBag.RealTimeAdditions
+                                    })" aria-label="Next">
+                                        <span aria-hidden="true">&raquo;</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                }
             </div>
         </div>
     }
@@ -196,79 +291,106 @@
 }
 
 @section Scripts {
+    <!-- SignalR client script -->
+    <script src="~/lib/microsoft/signalr/dist/browser/signalr.min.js"></script>
+    
+    <!-- Reference to the inventory movements JavaScript file -->
+    <script src="~/js/inventory-movements.js"></script>
+    
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const searchInput = document.getElementById('tableSearch');
-            const clearButton = document.getElementById('clearSearch');
-            const movementRows = document.querySelectorAll('.movement-row');
-            
-            // Search functionality
-            searchInput.addEventListener('input', function() {
-                const searchTerm = this.value.toLowerCase();
-                
-                let visibleCount = 0;
-                let totalIn = 0;
-                let totalOut = 0;
-                
-                movementRows.forEach(row => {
-                    const rowText = row.textContent.toLowerCase();
-                    const isVisible = rowText.includes(searchTerm);
-                    row.style.display = isVisible ? '' : 'none';
-                    
-                    if (isVisible) {
-                        visibleCount++;
-                        
-                        // Calculate totals for visible rows
-                        const changeText = row.querySelector('.change-value').textContent;
-                        const change = parseInt(changeText.replace(/[^0-9-]/g, ''));
-                        
-                        if (change > 0) {
-                            totalIn += change;
-                        } else if (change < 0) {
-                            totalOut += Math.abs(change);
-                        }
-                    }
-                });
-                
-                // Update summary stats
-                document.getElementById('movementCount').textContent = visibleCount;
-                document.getElementById('totalIn').textContent = totalIn;
-                document.getElementById('totalOut').textContent = totalOut;
-                
-                const netChange = totalIn - totalOut;
-                const netChangeElement = document.getElementById('netChange');
-                netChangeElement.textContent = netChange;
-                
-                if (netChange >= 0) {
-                    netChangeElement.classList.remove('text-danger');
-                    netChangeElement.classList.add('text-success');
-                } else {
-                    netChangeElement.classList.remove('text-success');
-                    netChangeElement.classList.add('text-danger');
-                }
-            });
-            
-            // Clear search
-            clearButton.addEventListener('click', function() {
-                searchInput.value = '';
-                movementRows.forEach(row => row.style.display = '');
-                
-                // Reset summary stats to original values
-                document.getElementById('movementCount').textContent = @Model.Count;
-                document.getElementById('totalIn').textContent = @Model.Where(m => (m.QuantityAfter - m.QuantityBefore) > 0).Sum(m => m.QuantityAfter - m.QuantityBefore);
-                document.getElementById('totalOut').textContent = @Math.Abs(Model.Where(m => (m.QuantityAfter - m.QuantityBefore) < 0).Sum(m => m.QuantityAfter - m.QuantityBefore));
-                
-                const netChangeElement = document.getElementById('netChange');
-                netChangeElement.textContent = @Model.Sum(m => m.QuantityAfter - m.QuantityBefore);
-                
-                if (@Model.Sum(m => m.QuantityAfter - m.QuantityBefore) >= 0) {
-                    netChangeElement.classList.remove('text-danger');
-                    netChangeElement.classList.add('text-success');
-                } else {
-                    netChangeElement.classList.remove('text-success');
-                    netChangeElement.classList.add('text-danger');
-                }
-            });
-        });
+        // Add data attributes to the body element for the JavaScript to use
+        document.body.setAttribute('data-user-id', '@userId');
+        document.body.setAttribute('data-business-id', '@businessId');
+        document.body.setAttribute('data-current-page', '@(ViewBag.CurrentPage ?? 1)');
+        document.body.setAttribute('data-page-size', '@(ViewBag.PageSize ?? 50)');
+        document.body.setAttribute('data-total-items', '@(ViewBag.TotalItems ?? 0)');
+        document.body.setAttribute('data-total-pages', '@(ViewBag.TotalPages ?? 1)');
     </script>
 }
+
+    <style>
+        @@keyframes highlight {
+            0% { background-color: rgba(0, 123, 255, 0.3); }
+            100% { background-color: transparent; }
+        }
+
+        /* Sales summary styles */
+        .sales-summary {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -10px;
+        }
+        
+        .sales-summary > div {
+            padding: 10px;
+        }
+        
+        .sales-summary h5 {
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .sales-summary h3 {
+            margin-bottom: 0;
+            font-weight: 600;
+        }
+        
+        .movement-row.highlight {
+            animation: highlight 2s ease-in-out;
+        }
+        
+        #realtime-status {
+            transition: all 0.3s ease-in-out;
+        }
+        
+        .animate__animated {
+            animation-duration: 0.75s;
+        }
+        
+        @@keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translate3d(0, -20px, 0);
+            }
+            to {
+                opacity: 1;
+                transform: translate3d(0, 0, 0);
+            }
+        }
+
+        .movements-container{
+            padding: 0 20px 0 20px !important;
+        }
+
+        @@media (max-width: 767.98px) {
+            .movements-container{
+                padding: 0 10px 0 10px !important;
+            }
+
+            /* Improve spacing on mobile */
+            .sales-summary {
+                margin: 0 -5px;
+            }
+            
+            .sales-summary > div {
+                padding: 5px;
+            }
+            
+            .sales-summary h5 {
+                margin-bottom: 4px;
+            }
+        }
+        
+        .animate__fadeInDown {
+            animation-name: fadeInDown;
+        }
+        
+        .transaction-group {
+            border-left: 4px solid #0d6efd;
+        }
+        
+        .transaction-indicator {
+            display: inline-block;
+            margin-left: 8px;
+        }
+    </style>

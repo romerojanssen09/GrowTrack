@@ -18,23 +18,106 @@
             <label class="fw-bold">Created At:</label>
             <p>@Model.CampaignAt.ToString("MM/dd/yyyy HH:mm")</p>
         </div>
+        @if (Model.UpdatedAt.HasValue)
+        {
+            <div class="mb-3">
+                <label class="fw-bold">Last Updated:</label>
+                <p>@Model.UpdatedAt.Value.ToString("MM/dd/yyyy HH:mm")</p>
+            </div>
+        }
+        @if (Model.ResendAt.HasValue)
+        {
+            <div class="mb-3">
+                <label class="fw-bold">Last Resent:</label>
+                <p>@Model.ResendAt.Value.ToString("MM/dd/yyyy HH:mm")</p>
+            </div>
+        }
     </div>
     <div class="col-md-6">
         <div class="mb-3">
             <label class="fw-bold">Status:</label>
-            <p>@(Model.IsSent ? "Sent" : "Draft")</p>
+            <p>
+                @if (Model.IsSent)
+                {
+                    <span class="badge bg-success">Sent</span>
+                }
+                else
+                {
+                    <span class="badge bg-warning">Draft</span>
+                }
+            </p>
         </div>
         <div class="mb-3">
-            <label class="fw-bold">Target:</label>
-            @foreach (var product in ViewBag.Products as List<Product2>)
-            {
-                var isSelected = Model.TargetProducts?.Split(',').Contains(product.Id.ToString()) ?? false;
-                if (!isSelected) continue;
-                <div class="form-check product-item">
-                    <label class="form-check-label">@product.ProductName</label>
-                </div>
-            }
-            @* <p>@(Model.SendToAll ? "All Leads" : Model.TargetProducts)</p> *@
+            <label class="fw-bold">Reply Status:</label>
+            <p>
+                @if (Model.HasReplied)
+                {
+                    <span class="badge bg-info">Replied</span>
+                    @if (Model.ReplyDate.HasValue)
+                    {
+                        <small class="text-muted">(@Model.ReplyDate.Value.ToString("MM/dd/yyyy HH:mm"))</small>
+                    }
+                }
+                else
+                {
+                    <span class="badge bg-secondary">No Reply</span>
+                }
+            </p>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="mb-3">
+            <label class="fw-bold">Target Products:</label>
+            <div class="border rounded p-2">
+                @if (!string.IsNullOrEmpty(Model.TargetProducts))
+                {
+                    var productIds = Model.TargetProducts.Split(',');
+                    var products = ViewBag.Products as List<Product>;
+                    if (products != null)
+                    {
+                        foreach (var product in products.Where(p => productIds.Contains(p.Id.ToString())))
+                        {
+                            <div class="d-flex align-items-center mb-1">
+                                <i class="fas fa-box text-primary me-2"></i>
+                                <span>@product.ProductName</span>
+                            </div>
+                        }
+                    }
+                }
+                else
+                {
+                    <p class="text-muted mb-0">No products selected</p>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="mb-3">
+            <label class="fw-bold">Target Leads:</label>
+            <div class="border rounded p-2">
+                @if (!string.IsNullOrEmpty(Model.TargetLeads))
+                {
+                    var leadIds = Model.TargetLeads.Split(',');
+                    var leads = ViewBag.Leads as List<Leads>;
+                    if (leads != null)
+                    {
+                        foreach (var lead in leads.Where(l => leadIds.Contains(l.Id.ToString())))
+                        {
+                            <div class="d-flex align-items-center mb-1">
+                                <i class="fas fa-user text-primary me-2"></i>
+                                <span>@lead.LeadName (@lead.LeadEmail)</span>
+                            </div>
+                        }
+                    }
+                }
+                else
+                {
+                    <p class="text-muted mb-0">No leads selected</p>
+                }
+            </div>
         </div>
     </div>
 </div>
@@ -43,7 +126,7 @@
     <div class="col-12">
         <div class="mb-3">
             <label class="fw-bold">Message:</label>
-            <div class="border p-3">@Html.Raw(Model.Message)</div>
+            <div class="border rounded p-3 bg-light">@Html.Raw(Model.Message)</div>
         </div>
     </div>
 </div>
@@ -54,7 +137,19 @@
         <div class="col-12">
             <div class="mb-3">
                 <label class="fw-bold">Notes:</label>
-                <p>@Model.Notes</p>
+                <div class="border rounded p-3 bg-light">@Model.Notes</div>
+            </div>
+        </div>
+    </div>
+}
+
+@if (Model.HasReplied && !string.IsNullOrEmpty(Model.ReplyContent))
+{
+    <div class="row">
+        <div class="col-12">
+            <div class="mb-3">
+                <label class="fw-bold">Reply Content:</label>
+                <div class="border rounded p-3 bg-light">@Model.ReplyContent</div>
             </div>
         </div>
     </div>

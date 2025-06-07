@@ -9,7 +9,7 @@ namespace Project_Creation.Models.Entities
         
         [Required]
         public int ProductId { get; set; }
-        public Product2? Product { get; set; }
+        public Product? Product { get; set; }
         
         [Required]
         [StringLength(255)]

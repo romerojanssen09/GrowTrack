@@ -1,0 +1,449 @@
+@model Project_Creation.Models.ViewModels.ProductOrderViewModel
+@using Project_Creation.Models.Entities
+@using System.Security.Claims
+
+@{
+    ViewData["Title"] = $"Order #{Model.Id}";
+    var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+    var isBuyer = Model.BuyerId == currentUserId;
+    var isSeller = Model.SellerId == currentUserId;
+}
+
+<div class="container mt-4">
+    <!-- Alert Messages -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">@ViewData["Title"]</h1>
+        
+        <div>
+            <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i> Back to Orders
+            </a>
+            
+            @if (Model.RelatedChatId.HasValue)
+            {
+                <a href="@Url.Action("Index", "Chat", new { userId = isBuyer ? Model.SellerId : Model.BuyerId })" 
+                   class="btn btn-outline-primary ms-2">
+                    <i class="fas fa-comments me-2"></i> View Chat
+                </a>
+            }
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Order Details -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-shopping-cart me-2"></i> Order Details
+                    </h5>
+                    <span class="badge @Model.StatusBadgeClass fs-6">@Model.StatusText</span>
+                </div>
+                
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <p class="mb-1"><strong>Order Date:</strong></p>
+                            <p>@Model.CreatedAt.ToString("MMMM dd, yyyy, h:mm tt")</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-1"><strong>Last Updated:</strong></p>
+                            <p>@(Model.UpdatedAt?.ToString("MMMM dd, yyyy, h:mm tt") ?? "Not updated yet")</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="mb-1"><strong>@(isBuyer ? "Seller" : "Buyer"):</strong></p>
+                            <p>@(isBuyer ? Model.BusinessName : Model.BuyerName)</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-1"><strong>Product ID:</strong></p>
+                            <p>#@Model.ProductId</p>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-3">
+                    
+                    <div class="d-flex mb-4">
+                        <img src="@Model.ProductImageUrl" alt="@Model.ProductName" 
+                             class="rounded me-3" style="width: 100px; height: 100px; object-fit: cover;">
+                        
+                        <div>
+                            <h5 class="mb-1">@Model.ProductName</h5>
+                            <p class="mb-1">Quantity: @Model.Quantity</p>
+                            <p class="mb-1">Unit Price: @Html.DisplayFor(m => m.UnitPrice)</p>
+                            <p class="mb-0 fw-bold">Total: @Html.DisplayFor(m => m.TotalPrice)</p>
+                        </div>
+                    </div>
+                    
+                    @if (!string.IsNullOrEmpty(Model.Message))
+                    {
+                        <div class="mb-0">
+                            <p class="mb-1"><strong>Message:</strong></p>
+                            <p class="mb-0">@Model.Message</p>
+                        </div>
+                    }
+                </div>
+                
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-0">Order Actions</h5>
+                        </div>
+                        
+                        <div class="btn-group">
+                            @if (isBuyer && Model.Status == ProductOrderStatus.Delivered)
+                            {
+                                <form method="post" action="@Url.Action("UpdateStatus", new { id = Model.Id, status = ProductOrderStatus.Received })" 
+                                    class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-check-circle me-2"></i> Confirm Receipt of Product
+                                    </button>
+                                </form>
+                            }
+                            
+                            @if (isSeller)
+                            {
+                                @if (Model.Status == ProductOrderStatus.Pending)
+                                {
+                                    <form method="post" action="@Url.Action("UpdateStatus", new { id = Model.Id, status = ProductOrderStatus.Accepted })" 
+                                        class="d-inline me-2">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-check me-2"></i> Accept Order
+                                        </button>
+                                    </form>
+                                }
+                                else if (Model.Status == ProductOrderStatus.Accepted)
+                                {
+                                    <form method="post" action="@Url.Action("UpdateStatus", new { id = Model.Id, status = ProductOrderStatus.Preparing })" 
+                                        class="d-inline me-2">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-info">
+                                            <i class="fas fa-box me-2"></i> Start Preparing Order
+                                        </button>
+                                    </form>
+                                }
+                                else if (Model.Status == ProductOrderStatus.Preparing)
+                                {
+                                    <form method="post" action="@Url.Action("UpdateStatus", new { id = Model.Id, status = ProductOrderStatus.Shipping })" 
+                                        class="d-inline me-2">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-shipping-fast me-2"></i> Mark as Shipped
+                                        </button>
+                                    </form>
+                                }
+                                else if (Model.Status == ProductOrderStatus.Shipping)
+                                {
+                                    <form method="post" action="@Url.Action("UpdateStatus", new { id = Model.Id, status = ProductOrderStatus.Delivered })" 
+                                        class="d-inline me-2">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-success">
+                                            <i class="fas fa-truck me-2"></i> Mark as Delivered
+                                        </button>
+                                    </form>
+                                }
+                            }
+                            
+                            @if (Model.CanCancel)
+                            {
+                                <form method="post" action="@Url.Action("Cancel", new { id = Model.Id })" 
+                                    class="d-inline" onsubmit="return confirm('Are you sure you want to cancel this order?');">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-danger">
+                                        <i class="fas fa-times me-2"></i> Cancel Order
+                                    </button>
+                                </form>
+                            }
+                        </div>
+                    </div>
+                    
+                    <!-- Action hints -->
+                    @if (Model.Status != ProductOrderStatus.Cancelled && Model.Status != ProductOrderStatus.Rejected && Model.Status != ProductOrderStatus.Received)
+                    {
+                        <div class="alert alert-info mt-3 mb-0">
+                            @if (isBuyer)
+                            {
+                                if (Model.Status == ProductOrderStatus.Delivered)
+                                {
+                                    <text><i class="fas fa-info-circle me-2"></i> Please confirm receipt of your product to complete the order.</text>
+                                }
+                                else
+                                {
+                                    <text><i class="fas fa-info-circle me-2"></i> Your order is being processed. The current status is <strong>@Model.StatusText</strong>.</text>
+                                }
+                            }
+                            else
+                            {
+                                if (Model.Status == ProductOrderStatus.Pending)
+                                {
+                                    <text><i class="fas fa-info-circle me-2"></i> Please accept this order to begin processing.</text>
+                                }
+                                else if (Model.Status == ProductOrderStatus.Accepted)
+                                {
+                                    <text><i class="fas fa-info-circle me-2"></i> Please begin preparing this order.</text>
+                                }
+                                else if (Model.Status == ProductOrderStatus.Preparing)
+                                {
+                                    <text><i class="fas fa-info-circle me-2"></i> When the order is ready to ship, mark it as shipped.</text>
+                                }
+                                else if (Model.Status == ProductOrderStatus.Shipping)
+                                {
+                                    <text><i class="fas fa-info-circle me-2"></i> Once delivered to the customer, mark this order as delivered.</text>
+                                }
+                                else if (Model.Status == ProductOrderStatus.Delivered)
+                                {
+                                    <text><i class="fas fa-info-circle me-2"></i> Waiting for customer to confirm receipt.</text>
+                                }
+                            }
+                        </div>
+                    }
+                    else if (Model.Status == ProductOrderStatus.Received)
+                    {
+                        <div class="alert alert-success mt-3 mb-0">
+                            <i class="fas fa-check-circle me-2"></i> This order has been completed and received by the customer.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+        
+        <!-- Order Timeline -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-history me-2"></i> Order Timeline
+                    </h5>
+                </div>
+                
+                <div class="card-body">
+                    <div class="timeline">
+                        <!-- Created -->
+                        <div class="timeline-item">
+                            <div class="timeline-icon @(Model.Status >= ProductOrderStatus.Pending ? "bg-primary" : "bg-secondary")">
+                                <i class="fas fa-shopping-cart"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6>Order Placed</h6>
+                                <p class="text-muted">@Model.CreatedAt.ToString("MMM dd, yyyy h:mm tt")</p>
+                                @if (Model.Status == ProductOrderStatus.Pending)
+                                {
+                                    <span class="badge bg-warning">Current Status</span>
+                                }
+                            </div>
+                        </div>
+                        
+                        <!-- Accepted -->
+                        <div class="timeline-item">
+                            <div class="timeline-icon @(Model.Status >= ProductOrderStatus.Accepted ? "bg-primary" : "bg-secondary")">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6>Order Accepted</h6>
+                                @if (Model.Status >= ProductOrderStatus.Accepted)
+                                {
+                                    <p class="text-muted">@(Model.UpdatedAt?.ToString("MMM dd, yyyy h:mm tt") ?? "N/A")</p>
+                                    @if (Model.Status == ProductOrderStatus.Accepted)
+                                    {
+                                        <span class="badge bg-warning">Current Status</span>
+                                    }
+                                }
+                                else
+                                {
+                                    <p class="text-muted">Pending</p>
+                                }
+                            </div>
+                        </div>
+                        
+                        <!-- Preparing -->
+                        <div class="timeline-item">
+                            <div class="timeline-icon @(Model.Status >= ProductOrderStatus.Preparing ? "bg-info" : "bg-secondary")">
+                                <i class="fas fa-box"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6>Preparing Order</h6>
+                                @if (Model.Status >= ProductOrderStatus.Preparing)
+                                {
+                                    <p class="text-muted">@(Model.PreparedAt?.ToString("MMM dd, yyyy h:mm tt") ?? "N/A")</p>
+                                    @if (Model.Status == ProductOrderStatus.Preparing)
+                                    {
+                                        <span class="badge bg-warning">Current Status</span>
+                                    }
+                                }
+                                else
+                                {
+                                    <p class="text-muted">Pending</p>
+                                }
+                            </div>
+                        </div>
+                        
+                        <!-- Shipping -->
+                        <div class="timeline-item">
+                            <div class="timeline-icon @(Model.Status >= ProductOrderStatus.Shipping ? "bg-warning" : "bg-secondary")">
+                                <i class="fas fa-shipping-fast"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6>Order Shipped</h6>
+                                @if (Model.Status >= ProductOrderStatus.Shipping)
+                                {
+                                    <p class="text-muted">@(Model.ShippedAt?.ToString("MMM dd, yyyy h:mm tt") ?? "N/A")</p>
+                                    @if (Model.Status == ProductOrderStatus.Shipping)
+                                    {
+                                        <span class="badge bg-warning">Current Status</span>
+                                    }
+                                }
+                                else
+                                {
+                                    <p class="text-muted">Pending</p>
+                                }
+                            </div>
+                        </div>
+                        
+                        <!-- Delivered -->
+                        <div class="timeline-item">
+                            <div class="timeline-icon @(Model.Status >= ProductOrderStatus.Delivered ? "bg-success" : "bg-secondary")">
+                                <i class="fas fa-truck"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6>Order Delivered</h6>
+                                @if (Model.Status >= ProductOrderStatus.Delivered)
+                                {
+                                    <p class="text-muted">@(Model.DeliveredAt?.ToString("MMM dd, yyyy h:mm tt") ?? "N/A")</p>
+                                    @if (Model.Status == ProductOrderStatus.Delivered)
+                                    {
+                                        <span class="badge bg-warning">Current Status</span>
+                                    }
+                                }
+                                else
+                                {
+                                    <p class="text-muted">Pending</p>
+                                }
+                            </div>
+                        </div>
+                        
+                        <!-- Received -->
+                        <div class="timeline-item">
+                            <div class="timeline-icon @(Model.Status == ProductOrderStatus.Received ? "bg-success" : "bg-secondary")">
+                                <i class="fas fa-handshake"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6>Order Received</h6>
+                                @if (Model.Status == ProductOrderStatus.Received)
+                                {
+                                    <p class="text-muted">@(Model.ReceivedAt?.ToString("MMM dd, yyyy h:mm tt") ?? "N/A")</p>
+                                    <span class="badge bg-success">Completed</span>
+                                }
+                                else if (Model.Status == ProductOrderStatus.Cancelled || Model.Status == ProductOrderStatus.Rejected)
+                                {
+                                    <p class="text-muted">Cancelled</p>
+                                }
+                                else
+                                {
+                                    <p class="text-muted">Pending</p>
+                                }
+                            </div>
+                        </div>
+                        
+                        @if (Model.Status == ProductOrderStatus.Cancelled)
+                        {
+                            <div class="timeline-item">
+                                <div class="timeline-icon bg-danger">
+                                    <i class="fas fa-times-circle"></i>
+                                </div>
+                                <div class="timeline-content">
+                                    <h6>Order Cancelled</h6>
+                                    <p class="text-muted">@(Model.UpdatedAt?.ToString("MMM dd, yyyy h:mm tt") ?? "N/A")</p>
+                                    <span class="badge bg-danger">Cancelled</span>
+                                </div>
+                            </div>
+                        }
+                        
+                        @if (Model.Status == ProductOrderStatus.Rejected)
+                        {
+                            <div class="timeline-item">
+                                <div class="timeline-icon bg-danger">
+                                    <i class="fas fa-ban"></i>
+                                </div>
+                                <div class="timeline-content">
+                                    <h6>Order Rejected</h6>
+                                    <p class="text-muted">@(Model.UpdatedAt?.ToString("MMM dd, yyyy h:mm tt") ?? "N/A")</p>
+                                    <span class="badge bg-danger">Rejected</span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Timeline styling */
+    .timeline {
+        position: relative;
+        padding: 1rem 0;
+    }
+    
+    .timeline::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 18px;
+        height: 100%;
+        width: 2px;
+        background-color: #e9ecef;
+    }
+    
+    .timeline-item {
+        position: relative;
+        padding-left: 45px;
+        margin-bottom: 1.5rem;
+    }
+    
+    .timeline-icon {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+    }
+    
+    .timeline-content {
+        padding: 0.5rem 0;
+    }
+    
+    .timeline-content h6 {
+        margin-bottom: 0.25rem;
+    }
+    
+    .timeline-content p {
+        margin-bottom: 0;
+        font-size: 0.85rem;
+    }
+</style> 

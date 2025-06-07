@@ -67,20 +67,18 @@ namespace Project_Creation.Controllers
             });
         }
 
-        private int GetCurrentUserId() // this is will get the current login user id pwee bunaks
+        private int GetCurrentUserId()
         {
             var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userIdClaim))
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
             {
-                return 0;
+                throw new InvalidOperationException("User is not authenticated");
             }
 
-            if (int.TryParse(userIdClaim, out int userId))
-            {
-                return userId;
-            }
-
-            return 0;
+            var currentUserRole = User.FindFirstValue(ClaimTypes.Role);
+            int boId = int.TryParse(User.FindFirstValue("BOId"), out var tempBoId) ? tempBoId : 0;
+            int who = currentUserRole == "Staff" ? boId : userId;
+            return who;
         }
 
         [HttpPost]
@@ -88,7 +86,7 @@ namespace Project_Creation.Controllers
         {
             if (ModelState.IsValid)
             {
-                var supplier = new Supplier2
+                var supplier = new Supplier
                 {
                     BOId = GetCurrentUserId(),
                     SupplierName = supplierDto.SupplierName,

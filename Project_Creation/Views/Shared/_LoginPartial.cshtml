@@ -1,54 +1,83 @@
-<ul class="navbar-nav align-items-center gap-2">
+@using System.Security.Claims
+@using Project_Creation.Models.Entities
+
+@{
+	var userRole = User.FindFirstValue(ClaimTypes.Role);
+	var accessLevelClaim = User.FindFirstValue("AccessLevel");
+	var staffAccessLevel = !string.IsNullOrEmpty(accessLevelClaim) && 
+						  Enum.TryParse<StaffAccessLevel>(accessLevelClaim, out var level) ? level : StaffAccessLevel.None;
+}
+
+<ul class="navbar-nav">
 	@if (User.Identity.IsAuthenticated)
 	{
 		<li class="nav-item">
-			<a class="nav-link position-relative" href="#" title="Notifications">
-				<i class="fas fa-bell fa-lg"></i>
-				<span class="position-absolute top-80 start-80 translate-middle badge rounded-pill bg-danger" style="font-size: 0.5em;">!</span>
-			</a>
-		</li>
-		<li class="nav-item">
-			<a class="nav-link position-relative" asp-controller="Chat" asp-action="Index" title="Notifications">
-				<i class="fa-solid fa-message"></i>
-				<span class="position-absolute top-80 start-80 translate-middle badge rounded-pill bg-danger" style="font-size: 0.5em;">!</span>
-			</a>
+			<a class="nav-link text-dark" asp-controller="Home" asp-action="Index">Home</a>
 		</li>
 
-		<!-- Custom Profile Dropdown -->
-		<li class="nav-item custom-dropdown" style="position: relative;">
-			<a class="nav-link" href="#" id="profileDropdown" onclick="toggleDropdown(event)" aria-expanded="false">
-				<i class="fas fa-user-circle fa-lg"></i>
+		@if (userRole == "BusinessOwner" || userRole == "Admin")
+		{
+			<li class="nav-item">
+				<a class="nav-link text-dark" asp-controller="Pages" asp-action="Dashboard">Dashboard</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link text-dark" asp-controller="Inventory1" asp-action="Index">Inventory</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link text-dark" asp-controller="Leads" asp-action="Index">Leads</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link text-dark" asp-controller="Campaigns" asp-action="Index">Campaigns</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link text-dark" asp-controller="Staffs" asp-action="Index">Staff</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link text-dark" asp-controller="Settings" asp-action="Index">Settings</a>
+			</li>
+		}
+		else if (userRole == "Staff")
+		{
+			@if (staffAccessLevel.HasFlag(StaffAccessLevel.Inventory))
+			{
+				<li class="nav-item">
+					<a class="nav-link text-dark" asp-controller="Inventory1" asp-action="Index">Inventory</a>
+				</li>
+			}
+			@if (staffAccessLevel.HasFlag(StaffAccessLevel.Leads))
+			{
+				<li class="nav-item">
+					<a class="nav-link text-dark" asp-controller="Leads" asp-action="Index">Leads</a>
+				</li>
+			}
+			@if (staffAccessLevel.HasFlag(StaffAccessLevel.PublishedProducts))
+			{
+				<li class="nav-item">
+					<a class="nav-link text-dark" asp-controller="Products" asp-action="Index">Products</a>
+				</li>
+			}
+			@if (staffAccessLevel.HasFlag(StaffAccessLevel.QuickSales))
+			{
+				<li class="nav-item">
+					<a class="nav-link text-dark" asp-controller="Inventory1" asp-action="QuickSale">Quick Sales</a>
+				</li>
+			}
+		}
+
+		<li class="nav-item">
+			<a class="nav-link text-dark" asp-controller="Calendar" asp-action="Index">Calendar</a>
+		</li>
+
+		<li class="nav-item dropdown">
+			<a class="nav-link dropdown-toggle text-dark" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+				@User.Identity.Name
 			</a>
-			<ul class="custom-dropdown-menu" id="profileDropdownMenu" onclick="event.stopPropagation()" style="display: none; position: absolute; right: 0; top: 100%; min-width: 200px; background: #fff; box-shadow: 0 4px 16px rgba(0,0,0,0.12); border-radius: 0.5rem; z-index: 1000; padding: 0.5rem 0;">
-				@if (User.IsInRole("Admin"))
-				{
-					<li>
-						<a class="dropdown-item" href="@Url.Action("Index", "AdminDashboard")">
-							<i class="fas fa-tachometer-alt me-2"></i> Admin Dashboard
-						</a>
-					</li>
-					<li>
-						<a class="dropdown-item" href="@Url.Action("ManageUsers", "Admin")">
-							<i class="fas fa-users-cog me-2"></i> Manage Users
-						</a>
-					</li>
-				}
-				<li>
-					<a class="dropdown-item" href="@Url.Action("Index", "Profile")">
-						<i class="fas fa-user me-2"></i> Profile
-					</a>
-				</li>
-				<li>
-					<a class="dropdown-item" href="@Url.Action("Settings", "Profile")">
-						<i class="fas fa-cog me-2"></i> Settings
-					</a>
-				</li>
+			<ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+				<li><a class="dropdown-item" asp-controller="Account" asp-action="Profile">Profile</a></li>
 				<li><hr class="dropdown-divider"></li>
 				<li>
-					<form asp-controller="Home" asp-action="Logout" method="post">
-						<button type="submit" class="dropdown-item text-danger">
-							<i class="fas fa-sign-out-alt me-2"></i> Logout
-						</button>
+					<form class="form-inline" asp-controller="Account" asp-action="Logout" method="post">
+						<button type="submit" class="dropdown-item">Logout</button>
 					</form>
 				</li>
 			</ul>
@@ -57,14 +86,10 @@
 	else
 	{
 		<li class="nav-item">
-			<a class="nav-link" asp-controller="Register" asp-action="Register">
-				<i class="fas fa-user-plus me-1"></i> Register
-			</a>
+			<a class="nav-link text-dark" asp-controller="Account" asp-action="Register">Register</a>
 		</li>
 		<li class="nav-item">
-			<a class="nav-link" asp-controller="Login" asp-action="Login">
-				<i class="fas fa-sign-in-alt me-1"></i> Login
-			</a>
+			<a class="nav-link text-dark" asp-controller="Account" asp-action="Login">Login</a>
 		</li>
 	}
 </ul>

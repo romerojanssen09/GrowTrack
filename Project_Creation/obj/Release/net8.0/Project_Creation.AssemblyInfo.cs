@@ -16,7 +16,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Project_Creation")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+80ace03854fc50cbe9f5b7dbbd13fec654d112ca")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e7109a5a8b13f091abe1377f0b807ee6f06dcaa4")]
 [assembly: System.Reflection.AssemblyProductAttribute("Project_Creation")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Project_Creation")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

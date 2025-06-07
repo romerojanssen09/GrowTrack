@@ -1,0 +1,217 @@
+@model List<Project_Creation.Models.Entities.MessageTemplate>
+@using System.Security.Claims
+
+@{
+    ViewData["Title"] = "Email Templates";
+}
+
+<div class="container mt-4">
+    <div class="card shadow-sm mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h4 class="mb-0 text-accent">Email Templates</h4>
+            <div>
+                <a asp-action="CreateTemplate" class="btn btn-primary">
+                    <i class="fas fa-plus me-1"></i> Add New Template
+                </a>
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i> Back to Campaigns
+                </a>
+            </div>
+        </div>
+        
+        <div class="card-body">
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    @TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+            
+            @if (Model != null && Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Subject</th>
+                                <th>Created At</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var template in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <strong>@template.Name</strong>
+                                        @if (template.IsDefault)
+                                        {
+                                            <span class="badge bg-primary ms-2">Default</span>
+                                        }
+                                    </td>
+                                    <td>@template.Subject</td>
+                                    <td>@template.CreatedAt.ToString("MMM dd, yyyy")</td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <button class="btn btn-sm btn-info view-template" 
+                                                    data-id="@template.Id" 
+                                                    data-name="@template.Name"
+                                                    data-subject="@template.Subject"
+                                                    data-content="@template.Content">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <a asp-action="EditTemplate" asp-route-id="@template.Id" class="btn btn-sm btn-warning">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <button class="btn btn-sm btn-danger delete-template" data-id="@template.Id" data-name="@template.Name">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info">
+                    <p class="mb-0">No email templates found. Create your first template to get started.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Template Preview Modal -->
+<div class="modal fade" id="templatePreviewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Template Preview: <span id="previewTemplateName"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <h6>Subject:</h6>
+                    <div id="previewTemplateSubject" class="p-2 border rounded bg-light"></div>
+                </div>
+                <div>
+                    <h6>Content:</h6>
+                    <div id="previewTemplateContent" class="p-3 border rounded bg-light"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a href="#" id="editTemplateBtn" class="btn btn-warning">
+                    <i class="fas fa-edit me-1"></i> Edit Template
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Delete Template</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the template "<span id="deleteTemplateName"></span>"?</p>
+                <p class="text-danger"><strong>This action cannot be undone.</strong></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteTemplateForm" asp-action="DeleteTemplate" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" id="deleteTemplateId" name="id" value="">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            console.log('Templates view loaded');
+            console.log('Model count:', @(Model?.Count ?? 0));
+            
+            // View template button click
+            $('.view-template').click(function() {
+                const id = $(this).data('id');
+                const name = $(this).data('name');
+                const subject = $(this).data('subject');
+                const content = $(this).data('content');
+                
+                $('#previewTemplateName').text(name);
+                $('#previewTemplateSubject').text(subject);
+                $('#previewTemplateContent').html(content);
+                $('#editTemplateBtn').attr('href', '@Url.Action("EditTemplate")/' + id);
+                
+                $('#templatePreviewModal').modal('show');
+            });
+            
+            // Delete template button click
+            $('.delete-template').click(function() {
+                const id = $(this).data('id');
+                const name = $(this).data('name');
+                
+                $('#deleteTemplateId').val(id);
+                $('#deleteTemplateName').text(name);
+                
+                $('#deleteConfirmModal').modal('show');
+            });
+            
+            // Debug button for direct SQL check
+            $('#checkDirectSql').click(function() {
+                $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Checking...');
+                
+                // Make AJAX request to get templates directly from SQL
+                $.ajax({
+                    url: '@Url.Action("GetAllTemplates")',
+                    type: 'GET',
+                    success: function(response) {
+                        console.log('Direct SQL check response:', response);
+                        
+                        let resultHtml = '<div class="alert alert-success">SQL query successful!</div>';
+                        
+                        if (response.success && response.templates && response.templates.length > 0) {
+                            resultHtml += '<table class="table table-sm table-bordered">';
+                            resultHtml += '<thead><tr><th>ID</th><th>Name</th><th>BOId</th><th>Created</th></tr></thead>';
+                            resultHtml += '<tbody>';
+                            
+                            response.templates.forEach(function(template) {
+                                resultHtml += '<tr>';
+                                resultHtml += '<td>' + template.id + '</td>';
+                                resultHtml += '<td>' + template.name + '</td>';
+                                resultHtml += '<td>' + template.boId + '</td>';
+                                resultHtml += '<td>' + new Date(template.createdAt).toLocaleString() + '</td>';
+                                resultHtml += '</tr>';
+                            });
+                            
+                            resultHtml += '</tbody></table>';
+                        } else {
+                            resultHtml += '<div class="alert alert-warning">No templates found in database.</div>';
+                        }
+                        
+                        $('#directSqlResult').html(resultHtml);
+                        $('#checkDirectSql').prop('disabled', false).html('Check Templates with Direct SQL');
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Direct SQL check error:', error);
+                        $('#directSqlResult').html('<div class="alert alert-danger">Error: ' + error + '</div>');
+                        $('#checkDirectSql').prop('disabled', false).html('Check Templates with Direct SQL');
+                    }
+                });
+            });
+        });
+    </script>
+} 

@@ -28,7 +28,7 @@ namespace Project_Creation.Controllers
             if (userId != null)
             {
                 var currentUser = await _context.Users.FirstOrDefaultAsync(u => u.Id == Convert.ToInt32(userId));
-                if (currentUser != null && currentUser.MarkerPlaceStatus.ToString() == "Pending")
+                if (currentUser != null && currentUser.MarkerPlaceStatus.ToString() == "NotApplied")
                 {
                     TempData["WarningMessage"] = "Please fill the form to send a request to the admin!";
                     return RedirectToAction("Index", "Profile", new { userId = userId });
@@ -38,15 +38,20 @@ namespace Project_Creation.Controllers
                     TempData["WarningMessage"] = "Please wait for the admin to approve your Marketplace access.";
                     return RedirectToAction("Dashboard", "Pages");
                 }
-                else if (currentUser != null && currentUser.MarkerPlaceStatus.ToString() == "Requesting")
+                else if (currentUser != null && currentUser.MarkerPlaceStatus.ToString() == "AwaitingApproval")
                 {
                     TempData["WarningMessage"] = "Please wait for the admin to approve your Marketplace access.";
                     return RedirectToAction("Dashboard", "Pages");
                 }
             }
 
-            // Prepare view data
-            ViewBag.Categories = await _context.Categories.ToListAsync();
+            var categories = await _context.Categories
+               .Select(c => c.CategoryName.ToLower())
+               .Distinct()
+               .Select(name => new { CategoryName = char.ToUpper(name[0]) + name.Substring(1) })
+               .ToListAsync();
+
+            ViewBag.Categories = categories;
             ViewBag.CurrentCategory = category;
             ViewBag.CurrentSearch = search;
 
@@ -113,8 +118,6 @@ namespace Project_Creation.Controllers
         public async Task<IActionResult> Details(int id)
         {
             var product = await _context.Products2
-                //.Include(p => p.Category)
-                //.Include(p => p.BOId)
                 .Include(p => p.Images)
                 .FirstOrDefaultAsync(p => p.Id == id && p.IsPublished);
 
@@ -123,15 +126,14 @@ namespace Project_Creation.Controllers
                 return NotFound();
             }
 
-            // Get related products
+            // Get related products - prioritize same category
             var relatedProducts = await _context.Products2
-                //.Include(p => p.Category)
-                //.Include(p => p.BOId)
                 .Include(p => p.Images)
-                .Where(p =>p.Id != product.Id &&
+                .Where(p => p.Id != product.Id &&
                            p.IsPublished &&
                            p.QuantityInStock > 0)
-                .OrderByDescending(p => p.UpdatedAt)
+                .OrderByDescending(p => p.Category == product.Category) // Prioritize same category
+                .ThenByDescending(p => p.UpdatedAt)                    // Then by newest
                 .Take(4)
                 .ToListAsync();
 
@@ -143,7 +145,7 @@ namespace Project_Creation.Controllers
                 Price = product.SellingPrice,
                 CategoryName = product.Category,
                 BusinessName = GetUserDataById(Convert.ToInt32(product.BOId), "BusinessName"),
-                BusinessOwnerId = product.BOId, // Handle nullable BusinessOwnerId
+                BusinessOwnerId = product.BOId, 
                 InStock = product.QuantityInStock > 0,
                 QuantityInStock = product.QuantityInStock,
                 Images = product.Images?
@@ -206,7 +208,7 @@ namespace Project_Creation.Controllers
 
         #region Helper Methods
 
-        private List<MarketplaceProductViewModel> MapToProductViewModels(List<Product2> products)
+        private List<MarketplaceProductViewModel> MapToProductViewModels(List<Product> products)
         {
             // First get all distinct business owner IDs from the products
             var businessOwnerIds = products

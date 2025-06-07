@@ -8,14 +8,10 @@ namespace Project_Creation.DTO
     {
         [Key]
         public int Id { get; set; }
-        public int BOId { get; set; } // Business Owner ID
         public string CustomerName { get; set; }
         public decimal TotalAmount { get; set; }
         public bool IsQuickSale { get; set; }
         public DateTime SaleDate { get; set; } = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Singapore"));
-
-        // Add this property to store the DTO collection
-        public List<SaleItemDto> SaleItemsDto { get; set; }
 
         // Keep the original property if it's still needed elsewhere
         public List<SaleItemDto> SaleItems { get; set; }
@@ -40,6 +36,6 @@ namespace Project_Creation.DTO
 
         // Navigation properties
         public Sale Sale { get; set; }
-        public Product2 Product { get; set; }
+        public Product Product { get; set; }
     }
 }

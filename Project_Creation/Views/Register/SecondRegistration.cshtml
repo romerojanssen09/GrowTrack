@@ -173,11 +173,34 @@
             }
         }
 
-        passwordInput.addEventListener("keyup", validatePassword);
-        confirmPasswordInput.addEventListener("keyup", validatePasswordConfirmation);
+        // Add event listeners for both input and change events
+        ['input', 'change'].forEach(eventType => {
+            passwordInput.addEventListener(eventType, validatePassword);
+            confirmPasswordInput.addEventListener(eventType, validatePasswordConfirmation);
+        });
 
+        // Clear any existing values and run initial validation on page load
         document.addEventListener("DOMContentLoaded", () => {
+            // Clear any existing values
+            passwordInput.value = '';
+            confirmPasswordInput.value = '';
+            
+            // Reset the UI
             submitButton.disabled = true;
+            confirmPasswordError.classList.add('d-none');
+            confirmPasswordSuccess.classList.add('d-none');
+            
+            // Reset all requirements to initial state
+            ['lengthRequirement', 'upperRequirement', 'lowerRequirement', 'numberRequirement', 'specialRequirement'].forEach(id => {
+                const element = document.getElementById(id);
+                const text = element.getAttribute('data-text');
+                element.innerHTML = `<i class="bi bi-x-circle-fill text-danger"></i> ${text}`;
+            });
+            
+            // Reset password strength bar
+            const strengthBar = document.getElementById('passwordStrength');
+            strengthBar.style.width = '0%';
+            strengthBar.className = 'progress-bar bg-danger';
         });
     </script>
 }

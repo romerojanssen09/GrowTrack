@@ -1,0 +1,192 @@
+@model Project_Creation.Models.Entities.ContactMessage
+@{
+    ViewData["Title"] = "View Message";
+}
+
+<div class="container-fluid">
+    <!-- Header Row -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">View Message</h1>
+            <p class="mb-0">
+                <span class="@(Model.IsRead ? "text-success" : "text-danger")">
+                    <i class="fas @(Model.IsRead ? "fa-check-circle" : "fa-exclamation-circle")"></i>
+                    @(Model.IsRead ? "Read" : "Unread")
+                </span>
+                @if (Model.IsRead && Model.ReadAt.HasValue)
+                {
+                    <span class="text-muted ms-2">
+                        (Read on @Model.ReadAt.Value.ToString("MMM dd, yyyy HH:mm"))
+                    </span>
+                }
+            </p>
+        </div>
+        <div>
+            <a asp-controller="Admin" asp-action="ContactMessages" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back to Messages
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Message Details -->
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Message Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">Message Details</h6>
+                    <span class="badge bg-primary">@Model.CreatedAt.ToString("MMM dd, yyyy HH:mm")</span>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h5 class="message-subject">
+                            @(string.IsNullOrEmpty(Model.Subject) ? "(No Subject)" : Model.Subject)
+                        </h5>
+                    </div>
+                    
+                    <div class="message-content p-4 bg-light rounded mb-4">
+                        <p style="white-space: pre-line;">@Model.Message</p>
+                    </div>
+                    
+                    <div class="message-footer">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <form asp-controller="Admin" asp-action="DeleteMessage" method="post" onsubmit="return confirm('Are you sure you want to delete this message?');">
+                                    <input type="hidden" name="id" value="@Model.Id" />
+                                    <button type="submit" class="btn btn-danger">
+                                        <i class="fas fa-trash me-2"></i>Delete
+                                    </button>
+                                </form>
+                            </div>
+                            @if (!Model.IsRead)
+                            {
+                                <div>
+                                    <form asp-controller="Admin" asp-action="MarkMessageAsRead" method="post">
+                                        <input type="hidden" name="id" value="@Model.Id" />
+                                        <button type="submit" class="btn btn-success">
+                                            <i class="fas fa-check me-2"></i>Mark as Read
+                                        </button>
+                                    </form>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reply Form -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Reply to Message</h6>
+                </div>
+                <div class="card-body">
+                    <form asp-controller="Admin" asp-action="ReplyToMessage" method="post">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        
+                        <div class="form-group mb-3">
+                            <label for="replyMessage" class="form-label">Your Reply</label>
+                            <textarea name="replyMessage" id="replyMessage" class="form-control" rows="6" required></textarea>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane me-2"></i>Send Reply
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Sender Info -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Sender Information</h6>
+                </div>
+                <div class="card-body">
+                    <div class="sender-avatar mb-3 text-center">
+                        <div class="avatar-circle">
+                            @Model.Name.Substring(0, 1).ToUpper()
+                        </div>
+                    </div>
+                    
+                    <div class="sender-details">
+                        <div class="mb-3">
+                            <label class="text-muted d-block">Name:</label>
+                            <p class="mb-0 fw-bold">@Model.Name</p>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="text-muted d-block">Email:</label>
+                            <p class="mb-0">
+                                <a href="mailto:@Model.Email" class="text-primary">@Model.Email</a>
+                            </p>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="text-muted d-block">Sent on:</label>
+                            <p class="mb-0">@Model.CreatedAt.ToString("dddd, MMMM dd, yyyy")</p>
+                            <p class="mb-0">@Model.CreatedAt.ToString("HH:mm:ss")</p>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="sender-actions text-center">
+                        <a href="mailto:@Model.Email" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-envelope me-2"></i>Send Email
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .message-subject {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #304251;
+        border-bottom: 1px solid #e3e6f0;
+        padding-bottom: 0.75rem;
+    }
+    
+    .message-content {
+        font-size: 1rem;
+        line-height: 1.6;
+        color: #5a5c69;
+    }
+    
+    .avatar-circle {
+        width: 80px;
+        height: 80px;
+        background-color: #F3993E;
+        border-radius: 50%;
+        color: white;
+        font-size: 2.5rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Auto-dismiss alerts after 5 seconds
+            setTimeout(function() {
+                $('.alert').alert('close');
+            }, 5000);
+        });
+    </script>
+} 

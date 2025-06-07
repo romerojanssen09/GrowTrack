@@ -2,116 +2,409 @@
     ViewData["Title"] = "Home - GrowTrack";
 }
 
-<div class="hero-section position-relative text-white" style="background-color: #304251;">
-    <div class="container py-5">
-        <div class="row align-items-center py-5">
-            <div class="col-lg-6 mb-4 mb-lg-0">
-                <h1 class="display-4 fw-bold mb-3">GrowTrack</h1>
-                <p class="lead mb-4">Gain valuable insights into your business performance with our comprehensive analytics-driven CRM solution designed specifically for small and medium enterprises.</p>
-                <div class="d-flex flex-wrap gap-3">
-                    <a href="#features" class="btn btn-light btn-lg px-4 rounded-pill" style="z-index: 99;">
-                        <i class="fas fa-info-circle me-2"></i>Learn More
+<!-- Include the auth navbar -->
+<partial name="_AuthNavbar" />
+
+<!-- Redesigned Hero Section with Enhanced Background -->
+<div class="hero-section position-relative vh-100 d-flex align-items-center">
+    <!-- Modern background elements with image -->
+    <div class="hero-bg">
+        <div class="hero-bg-image"></div>
+        <div class="glassmorphism-overlay"></div>
+        <div class="gradient-sphere gradient-1"></div>
+        <div class="gradient-sphere gradient-2"></div>
+        <div class="gradient-sphere gradient-3"></div>
+        <div class="animated-circle circle-1"></div>
+        <div class="animated-circle circle-2"></div>
+        <div class="animated-circle circle-3"></div>
+        <div class="animated-circle circle-4"></div>
+        <div class="animated-circle circle-5"></div>
+        <div class="animated-circle circle-6"></div>
+        <div class="animated-circle circle-7"></div>
+        <div class="animated-circle circle-8"></div>
+        <div class="animated-circle circle-9"></div>
+        <div class="gradient-overlay"></div>
+        <div class="grid-pattern"></div>
+    </div>
+    
+    <div class="container position-relative">
+        <div class="row hero-row">
+            <!-- Left Content Column -->
+            <div class="col-lg-5 hero-content-col">
+                <div class="hero-badge">
+                    <span>BUSINESS INTELLIGENCE</span>
+                </div>
+                <h1 class="hero-title">Grow<span>Track</span></h1>
+                    <p class="hero-description">
+                        Powerful analytics and business intelligence for data-driven companies. Transform your business decisions with actionable insights.
+                    </p>
+                <div class="hero-actions">
+                    <a href="#features" class="btn-learn">
+                        <span>Learn More</span>
+                        <i class="fas fa-arrow-right"></i>
                     </a>
-                    <a asp-controller="Login" asp-action="Login" class="btn btn-lg px-4 rounded-pill" style="background-color: #F3993E; color: white; z-index: 99;">
-                        <i class="fas fa-sign-in-alt me-2"></i>Login
+                    <a asp-controller="Login" asp-action="Login" class="btn-login login-trigger">
+                        <span class="btn-text">Login Now</span>
+                        <i class="fas fa-sign-in-alt"></i>
                     </a>
                 </div>
             </div>
-            <div class="col-lg-6 text-center">
-                <img src="~/images/default/growchart.jpg" alt="GrowTrack Dashboard" class="img-fluid rounded shadow-lg" style="max-height: 400px;">
+            
+            <!-- Right Dashboard Visualization Column -->
+            <div class="col-lg-7 hero-visual-col">
+                <div class="dashboard-visualization">
+                    <!-- Dashboard Header -->
+                    <div class="dashboard-header">
+                        <div class="dashboard-title">Business Analytics Dashboard</div>
+                        <div class="dashboard-controls">
+                            <span class="control-dot"></span>
+                            <span class="control-dot"></span>
+                            <span class="control-dot"></span>
+                        </div>
+                    </div>
+                    
+                    <!-- Dashboard Content -->
+                    <div class="dashboard-content">
+                        <!-- Charts Row -->
+                        <div class="dashboard-row">
+                            <div class="dashboard-chart line-chart">
+                                <div class="chart-header">
+                                    <span>Revenue Growth</span>
+                                </div>
+                                <div class="chart-content">
+                                    <svg viewBox="0 0 100 30" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M0,25 L10,20 L20,22 L30,15 L40,18 L50,10 L60,12 L70,8 L80,5 L90,3 L100,2" fill="none" stroke="#F3993E" stroke-width="1.5" />
+                                        <path d="M0,25 L10,20 L20,22 L30,15 L40,18 L50,10 L60,12 L70,8 L80,5 L90,3 L100,2" fill="url(#lineGradient)" stroke="none" opacity="0.3" />
+                                        <defs>
+                                            <linearGradient id="lineGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                                <stop offset="0%" stop-color="#F3993E" />
+                                                <stop offset="100%" stop-color="#F3993E" stop-opacity="0" />
+                                            </linearGradient>
+                                        </defs>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="dashboard-chart bar-chart">
+                                <div class="chart-header">
+                                    <span>Monthly Sales</span>
+                                </div>
+                                <div class="chart-content">
+                                    <svg viewBox="0 0 100 30" xmlns="http://www.w3.org/2000/svg">
+                                        <rect x="5" y="20" width="5" height="10" fill="#304251" />
+                                        <rect x="15" y="15" width="5" height="15" fill="#304251" />
+                                        <rect x="25" y="18" width="5" height="12" fill="#304251" />
+                                        <rect x="35" y="12" width="5" height="18" fill="#F3993E" />
+                                        <rect x="45" y="8" width="5" height="22" fill="#F3993E" />
+                                        <rect x="55" y="5" width="5" height="25" fill="#F3993E" />
+                                        <rect x="65" y="10" width="5" height="20" fill="#304251" />
+                                        <rect x="75" y="15" width="5" height="15" fill="#304251" />
+                                        <rect x="85" y="7" width="5" height="23" fill="#F3993E" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Metrics Row -->
+                        <div class="dashboard-row">
+                            <div class="dashboard-metric">
+                                <div class="metric-icon">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <div class="metric-data">
+                                    <div class="metric-value">2,845</div>
+                                    <div class="metric-label">Active Users</div>
+                                </div>
+                                <div class="metric-trend positive">
+                                    <i class="fas fa-arrow-up"></i>
+                                    <span>12%</span>
+                                </div>
+                            </div>
+                            <div class="dashboard-metric">
+                                <div class="metric-icon">
+                                    <i class="fas fa-chart-pie"></i>
+                                </div>
+                                <div class="metric-data">
+                                    <div class="metric-value">$42K</div>
+                                    <div class="metric-label">Monthly Revenue</div>
+                                </div>
+                                <div class="metric-trend positive">
+                                    <i class="fas fa-arrow-up"></i>
+                                    <span>8%</span>
+                                </div>
+                            </div>
+                            <div class="dashboard-metric">
+                                <div class="metric-icon">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                                <div class="metric-data">
+                                    <div class="metric-value">89%</div>
+                                    <div class="metric-label">Growth Rate</div>
+                                </div>
+                                <div class="metric-trend positive">
+                                    <i class="fas fa-arrow-up"></i>
+                                    <span>5%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
+    
     <div class="wave-bottom">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="#F7F5EF" fill-opacity="1" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,122.7C672,117,768,139,864,149.3C960,160,1056,160,1152,138.7C1248,117,1344,75,1392,53.3L1440,32L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 100" preserveAspectRatio="none">
+            <rect x="0" y="50" width="1440" height="50" fill="#F7F5EF"/>
+        </svg>
     </div>
 </div>
 
-<div id="features" class="py-5">
-    <div class="container">
-        <div class="text-center mb-5">
-            <h2 class="fw-bold">Key Features</h2>
-            <p class="text-muted">Powerful analytics tools to help you understand and grow your business</p>
+<!-- Features Section -->
+<div id="features" class="features-section d-flex align-items-center py-5">
+    <!-- Decorative elements -->
+    <div class="features-decorations">
+        <div class="dec-circle dec-circle-1"></div>
+        <div class="dec-circle dec-circle-2"></div>
+        <div class="dec-line dec-line-1"></div>
+        <div class="dec-line dec-line-2"></div>
+        <div class="dec-dots"></div>
+        
+        <!-- Animated Glowing Circles -->
+        <div class="feature-glow-circle circle-orange-lg"></div>
+        <div class="feature-glow-circle circle-blue-md"></div>
+        <div class="feature-glow-circle circle-orange-sm"></div>
+        <div class="feature-glow-circle circle-blue-lg"></div>
+        <div class="feature-glow-circle circle-orange-md"></div>
+        
+        <!-- Connecting animated line -->
+        <div class="connecting-line features-to-growth">
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+                <path class="path-line" d="M10,90 Q30,70 50,80 T90,50" stroke="#F3993E" stroke-width="0.5" fill="none" stroke-dasharray="5,3" />
+                <circle class="path-dot" cx="10" cy="90" r="1" fill="#F3993E" />
+                <circle class="path-dot" cx="90" cy="50" r="1" fill="#F3993E" />
+            </svg>
+        </div>
+    </div>
+    
+    <!-- Floating particles -->
+    <div class="particles-container">
+        <div class="particle particle-1"></div>
+        <div class="particle particle-2"></div>
+        <div class="particle particle-3"></div>
+        <div class="particle particle-4"></div>
+        <div class="particle particle-5"></div>
+        <div class="particle particle-6"></div>
+    </div>
+        
+    <div class="container position-relative">
+        <div class="text-center mb-4 mb-lg-5 section-header">
+            <span class="section-badge">What We Offer</span>
+            <h2 class="section-title animate-title">Key Features</h2>
+            <p class="section-subtitle">Powerful analytics tools to help you understand and grow your business</p>
         </div>
         
-        <div class="row g-4">
-            <div class="col-md-4">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body p-4 text-center">
-                        <div class="rounded-circle p-3 mx-auto mb-4" style="width: 80px; height: 80px; background-color: rgba(243, 153, 62, 0.1); color: #F3993E;">
-                            <i class="fas fa-users fa-2x"></i>
+        <div class="row g-4 features-container">
+            <div class="col-lg-4 col-md-6 col-sm-12 feature-item">
+                <div class="feature-card h-100">
+                    <div class="feature-card-inner">
+                        <div class="feature-icon-wrapper">
+                            <div class="feature-icon-bg"></div>
+                            <div class="feature-icon" style="background-color: rgba(243, 153, 62, 0.1); color: #F3993E;">
+                                <i class="fas fa-users"></i>
+                            </div>
                         </div>
-                        <h4 class="card-title mb-3">Business Analytics</h4>
-                        <p class="card-text">Get comprehensive insights into your business performance with customizable dashboards and real-time analytics.</p>
+                        <h3 class="feature-title">Business Analytics</h3>
+                        <p class="feature-desc">Get comprehensive insights into your business performance with customizable dashboards and real-time analytics.</p>
+                        <div class="feature-indicator"></div>
                     </div>
+                    <a href="#" class="feature-link">
+                        <span>Learn More</span>
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M14.1667 7.5L17.5 10.8333M17.5 10.8333L14.1667 14.1667M17.5 10.8333H2.5" stroke="#F3993E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </a>
                 </div>
             </div>
             
-            <div class="col-md-4">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body p-4 text-center">
-                        <div class="rounded-circle p-3 mx-auto mb-4" style="width: 80px; height: 80px; background-color: rgba(48, 66, 81, 0.1); color: #304251;">
-                            <i class="fas fa-chart-line fa-2x"></i>
+            <div class="col-lg-4 col-md-6 col-sm-12 feature-item">
+                <div class="feature-card h-100">
+                    <div class="feature-card-inner">
+                        <div class="feature-icon-wrapper">
+                            <div class="feature-icon-bg"></div>
+                            <div class="feature-icon" style="background-color: rgba(48, 66, 81, 0.1); color: #304251;">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
                         </div>
-                        <h4 class="card-title mb-3">Performance Tracking</h4>
-                        <p class="card-text">Track key performance indicators and growth metrics with interactive visualizations that help you make data-driven business decisions.</p>
+                        <h3 class="feature-title">Performance Tracking</h3>
+                        <p class="feature-desc">Track key performance indicators and growth metrics with interactive visualizations that help you make data-driven business decisions.</p>
+                        <div class="feature-indicator"></div>
                     </div>
+                    <a href="#" class="feature-link">
+                        <span>Learn More</span>
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M14.1667 7.5L17.5 10.8333M17.5 10.8333L14.1667 14.1667M17.5 10.8333H2.5" stroke="#304251" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </a>
                 </div>
             </div>
             
-            <div class="col-md-4">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body p-4 text-center">
-                        <div class="rounded-circle p-3 mx-auto mb-4" style="width: 80px; height: 80px; background-color: rgba(233, 243, 245, 0.6); color: #304251;">
-                            <i class="fas fa-tasks fa-2x"></i>
+            <div class="col-lg-4 col-md-6 col-sm-12 feature-item mx-auto">
+                <div class="feature-card h-100">
+                    <div class="feature-card-inner">
+                        <div class="feature-icon-wrapper">
+                            <div class="feature-icon-bg"></div>
+                            <div class="feature-icon" style="background-color: rgba(233, 243, 245, 0.6); color: #304251;">
+                                <i class="fas fa-tasks"></i>
+                            </div>
                         </div>
-                        <h4 class="card-title mb-3">Growth Forecasting</h4>
-                        <p class="card-text">Leverage predictive analytics to forecast business growth, identify opportunities, and plan strategic initiatives with confidence.</p>
+                        <h3 class="feature-title">Growth Forecasting</h3>
+                        <p class="feature-desc">Leverage predictive analytics to forecast business growth, identify opportunities, and plan strategic initiatives with confidence.</p>
+                        <div class="feature-indicator"></div>
                     </div>
+                    <a href="#" class="feature-link">
+                        <span>Learn More</span>
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M14.1667 7.5L17.5 10.8333M17.5 10.8333L14.1667 14.1667M17.5 10.8333H2.5" stroke="#304251" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </a>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<div class="py-5" style="background-color: #E9F3F6;">
-    <div class="container">
+<!-- Growth Section -->
+<div class="growth-section d-flex align-items-center py-5">
+    <!-- Background elements -->
+    <div class="growth-bg">
+        <div class="growth-circle growth-circle-1"></div>
+        <div class="growth-circle growth-circle-2"></div>
+        <div class="growth-dots"></div>
+        
+        <!-- Connecting animated line -->
+        <div class="connecting-line growth-to-cta">
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+                <path class="path-line" d="M10,20 Q30,40 50,30 T90,70" stroke="#304251" stroke-width="0.5" fill="none" stroke-dasharray="5,3" />
+                <circle class="path-dot" cx="10" cy="20" r="1" fill="#304251" />
+                <circle class="path-dot" cx="90" cy="70" r="1" fill="#304251" />
+            </svg>
+        </div>
+    </div>
+    
+    <div class="container position-relative">
         <div class="row align-items-center">
-            <div class="col-lg-6 mb-4 mb-lg-0">
-                <img src="/images/default/business-growth-chart.png" alt="Business Growth Chart" class="img-fluid rounded shadow" style="max-height: 400px;">
+            <div class="col-lg-6 mb-5 mb-lg-0 growth-visual">
+                <div class="growth-visual-wrapper">
+                    <!-- Business analytics dashboard visualization -->
+                    <div class="dashboard-animation">
+                        <svg class="analytics-svg" viewBox="0 0 800 500" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Dashboard Frame -->
+                            <rect x="50" y="50" width="700" height="400" rx="10" fill="#f8f9fa" stroke="#e9ecef" stroke-width="2"/>
+                            
+                            <!-- Header Bar -->
+                            <rect x="50" y="50" width="700" height="60" rx="10" fill="#304251" stroke="none"/>
+                            
+                            <!-- Chart Area -->
+                            <rect x="70" y="130" width="400" height="200" rx="5" fill="white" stroke="#e9ecef" stroke-width="1"/>
+                            
+                            <!-- Line Chart -->
+                            <polyline points="90,280 150,220 210,260 270,180 330,200 390,150 450,190" fill="none" stroke="#F3993E" stroke-width="3">
+                                <animate attributeName="points" dur="4s" repeatCount="indefinite" 
+                                    values="90,280 150,220 210,260 270,180 330,200 390,150 450,190;
+                                           90,260 150,240 210,230 270,160 330,220 390,130 450,170;
+                                           90,280 150,220 210,260 270,180 330,200 390,150 450,190"/>
+                            </polyline>
+                            
+                            <!-- Data Points -->
+                            <circle cx="90" cy="280" r="5" fill="#F3993E"/>
+                            <circle cx="150" cy="220" r="5" fill="#F3993E">
+                                <animate attributeName="cy" dur="4s" repeatCount="indefinite" values="220;240;220"/>
+                            </circle>
+                            <circle cx="210" cy="260" r="5" fill="#F3993E">
+                                <animate attributeName="cy" dur="4s" repeatCount="indefinite" values="260;230;260"/>
+                            </circle>
+                            <circle cx="270" cy="180" r="5" fill="#F3993E">
+                                <animate attributeName="cy" dur="4s" repeatCount="indefinite" values="180;160;180"/>
+                            </circle>
+                            <circle cx="330" cy="200" r="5" fill="#F3993E">
+                                <animate attributeName="cy" dur="4s" repeatCount="indefinite" values="200;220;200"/>
+                            </circle>
+                            <circle cx="390" cy="150" r="5" fill="#F3993E">
+                                <animate attributeName="cy" dur="4s" repeatCount="indefinite" values="150;130;150"/>
+                            </circle>
+                            <circle cx="450" cy="190" r="5" fill="#F3993E">
+                                <animate attributeName="cy" dur="4s" repeatCount="indefinite" values="190;170;190"/>
+                            </circle>
+                            
+                            <!-- Metrics Cards -->
+                            <rect x="490" y="130" width="240" height="80" rx="5" fill="white" stroke="#e9ecef" stroke-width="1"/>
+                            <rect x="490" y="230" width="240" height="80" rx="5" fill="white" stroke="#e9ecef" stroke-width="1"/>
+                            <rect x="490" y="330" width="240" height="80" rx="5" fill="white" stroke="#e9ecef" stroke-width="1"/>
+                            
+                            <!-- Metrics Icons -->
+                            <circle cx="520" cy="170" r="15" fill="rgba(243, 153, 62, 0.2)"/>
+                            <circle cx="520" cy="270" r="15" fill="rgba(52, 152, 219, 0.2)"/>
+                            <circle cx="520" cy="370" r="15" fill="rgba(46, 204, 113, 0.2)"/>
+                        </svg>
+                    </div>
+                    
+                    
+                    <!-- Stat indicators -->
+                    <div class="growth-stats">
+                        <div class="growth-stat-item">
+                            <div class="growth-stat-value">+94<span>%</span></div>
+                            <div class="growth-stat-label">Conversion Rate</div>
+                        </div>
+                        <div class="growth-stat-item">
+                            <div class="growth-stat-value">4.7<span>x</span></div>
+                            <div class="growth-stat-label">Efficiency</div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="col-lg-6">
-                <h2 class="fw-bold mb-4">Accelerate Your Business Growth</h2>
-                <p class="mb-4">GrowTrack is designed to help small and medium enterprises gain actionable insights, identify growth opportunities, and make strategic decisions based on real-time data.</p>
+            
+            <div class="col-lg-6 growth-content">
+                <div class="growth-content-inner">
+                    <span class="growth-badge">Propel Your Business</span>
+                    <h2 class="growth-title">Accelerate Your <span>Business Growth</span></h2>
+                    <p class="growth-description">GrowTrack is designed to help small and medium enterprises gain actionable insights, identify growth opportunities, and make strategic decisions based on real-time data.</p>
+                    
+                    <div class="growth-points">
+                        <div class="growth-point-item">
+                            <div class="growth-point-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div class="growth-point-content">
+                                <h5 class="growth-point-title">Identify Growth Opportunities</h5>
+                                <p class="growth-point-desc">Discover untapped markets and opportunities through advanced data analytics and trend analysis.</p>
+                            </div>
+                        </div>
                 
-                <div class="d-flex mb-3">
-                    <div class="text-white rounded-circle p-2 me-3" style="width: 40px; height: 40px; background-color: #F3993E;">
-                        <i class="fas fa-check"></i>
+                        <div class="growth-point-item">
+                            <div class="growth-point-icon">
+                                <i class="fas fa-chart-bar"></i>
+                            </div>
+                            <div class="growth-point-content">
+                                <h5 class="growth-point-title">Track Business Performance</h5>
+                                <p class="growth-point-desc">Monitor key performance indicators with customizable dashboards that highlight areas of success and improvement.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="growth-point-item">
+                            <div class="growth-point-icon">
+                                <i class="fas fa-chess-knight"></i>
+                            </div>
+                            <div class="growth-point-content">
+                                <h5 class="growth-point-title">Strategic Planning</h5>
+                                <p class="growth-point-desc">Develop effective business strategies based on predictive analytics and growth forecasting models.</p>
+                            </div>
+                        </div>
                     </div>
-                    <div>
-                        <h5 class="mb-1">Identify Growth Opportunities</h5>
-                        <p class="text-muted mb-0">Discover untapped markets and opportunities through advanced data analytics and trend analysis.</p>
-                    </div>
-                </div>
-                
-                <div class="d-flex mb-3">
-                    <div class="text-white rounded-circle p-2 me-3" style="width: 40px; height: 40px; background-color: #F3993E;">
-                        <i class="fas fa-check"></i>
-                    </div>
-                    <div>
-                        <h5 class="mb-1">Track Business Performance</h5>
-                        <p class="text-muted mb-0">Monitor key performance indicators with customizable dashboards that highlight areas of success and improvement.</p>
-                    </div>
-                </div>
-                
-                <div class="d-flex">
-                    <div class="text-white rounded-circle p-2 me-3" style="width: 40px; height: 40px; background-color: #F3993E;">
-                        <i class="fas fa-check"></i>
-                    </div>
-                    <div>
-                        <h5 class="mb-1">Strategic Planning</h5>
-                        <p class="text-muted mb-0">Develop effective business strategies based on predictive analytics and growth forecasting models.</p>
-                    </div>
+
+                    <a href="#" class="growth-cta">
+                        <span>Start Growing Today</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
                 </div>
             </div>
         </div>
@@ -120,17 +413,688 @@
 
 
 
-<div class="text-white py-5" style="background-color: #304251;">
-    <div class="container text-center">
-        <h2 class="fw-bold mb-4">Ready to Grow Your Business?</h2>
-        <p class="lead mb-4">Join thousands of SMEs that trust GrowTrack to provide actionable insights and drive business growth.</p>
-        <a asp-controller="Login" asp-action="Login" class="btn btn-lg px-5 rounded-pill" style="background-color: #F3993E; color: white;">
-            <i class="fas fa-sign-in-alt me-2"></i>Login Now
-        </a>
+<!-- Enhanced CTA Section -->
+<div class="cta-section text-white vh-100 d-flex align-items-center">
+    <!-- Background elements -->
+    <div class="cta-bg">
+        <div class="cta-circle cta-circle-1"></div>
+        <div class="cta-circle cta-circle-2"></div>
+        <div class="cta-pattern"></div>
+        
+        <!-- Modern SVG Elements -->
+        <svg class="cta-svg" viewBox="0 0 1440 800" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Abstract shapes -->
+            <path class="shape shape-1" d="M1086.4,446.3c-44.1,54.9-130.7,100.2-219.3,63.6s-99.6-129.9-165.1-190.6C636.4,258.6,511.7,262,456.8,309.9s-61.1,142.8-126.7,189.7c-65.5,46.9-243.5,82.4-273.6-32.6S205.9,240.1,307.3,205.5s188.3-51.2,278.8-66s193.9-54.9,202.6-183.5" fill="none" stroke="rgba(243, 153, 62, 0.1)" stroke-width="2" />
+            
+            <path class="shape shape-2" d="M1201.8,748.4c-32.9,43.6-191.3,78.7-259.9,49.2s-96.1-126.8-178.1-166.1c-82-39.3-203.2-18.1-250.7,25.7s-90.7,139.3-175.3,166.1C253.2,850.2,87.7,848.5,57.3,737S156.5,450.6,276.9,429s233.2-44.8,286.5-69.8s106-112,77.4-186.4" fill="none" stroke="rgba(255, 255, 255, 0.05)" stroke-width="2" />
+            
+            <!-- Floating elements -->
+            <circle class="floating-element" cx="200" cy="200" r="10" fill="rgba(243, 153, 62, 0.3)">
+                <animate attributeName="cy" values="200;180;200" dur="4s" repeatCount="indefinite" />
+            </circle>
+            
+            <circle class="floating-element" cx="1200" cy="300" r="15" fill="rgba(243, 153, 62, 0.2)">
+                <animate attributeName="cy" values="300;330;300" dur="6s" repeatCount="indefinite" />
+            </circle>
+            
+            <circle class="floating-element" cx="400" cy="600" r="8" fill="rgba(255, 255, 255, 0.15)">
+                <animate attributeName="cy" values="600;580;600" dur="5s" repeatCount="indefinite" />
+            </circle>
+            
+            <circle class="floating-element" cx="1000" cy="650" r="12" fill="rgba(255, 255, 255, 0.1)">
+                <animate attributeName="cy" values="650;680;650" dur="7s" repeatCount="indefinite" />
+            </circle>
+            
+            <!-- Dotted grid lines -->
+            <line x1="0" y1="200" x2="1440" y2="200" stroke="rgba(255, 255, 255, 0.03)" stroke-width="1" stroke-dasharray="10,15" />
+            <line x1="0" y1="400" x2="1440" y2="400" stroke="rgba(255, 255, 255, 0.03)" stroke-width="1" stroke-dasharray="10,15" />
+            <line x1="0" y1="600" x2="1440" y2="600" stroke="rgba(255, 255, 255, 0.03)" stroke-width="1" stroke-dasharray="10,15" />
+        </svg>
+    </div>
+    
+    <div class="container position-relative">
+        <div class="row cta-container">
+            <div class="col-lg-7 mx-auto text-center">
+                <div class="cta-badge">Take the Next Step</div>
+                <h2 class="cta-title">Ready to Transform Your <span>Business Insights?</span></h2>
+                <p class="cta-text">Join thousands of SMEs that trust GrowTrack to provide actionable insights and drive unprecedented business growth.</p>
+                
+                <div class="cta-actions">
+                    <a asp-controller="Login" asp-action="Login" class="btn-cta-primary login-trigger">
+                        <span class="btn-text">Login Now</span>
+                        <span class="btn-icon"><i class="fas fa-sign-in-alt"></i></span>
+                        <span class="btn-shine"></span>
+                    </a>
+                    
+                    <!-- <a href="#" class="btn-cta-secondary">
+                        <span>Request Demo</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </a> -->
+                </div>
+                
+                <div class="cta-stats">
+                    <!-- <div class="cta-stat-item">
+                        <div class="cta-stat-number">12K+</div>
+                        <div class="cta-stat-label">Active Users</div>
+                    </div>
+                    <div class="cta-stat-item">
+                        <div class="cta-stat-number">98%</div>
+                        <div class="cta-stat-label">Satisfaction</div>
+                    </div>
+                    <div class="cta-stat-item">
+                        <div class="cta-stat-number">24/7</div>
+                        <div class="cta-stat-label">Support</div> -->
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
 <style>
+    /* Base styles */
+    body {
+        font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
+        color: #333;
+        background-color: #F7F5EF;
+        overflow-x: hidden;
+        margin: 0;
+        padding: 0;
+    }
+    
+    * {
+        scroll-behavior: smooth;
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    
+    /* Enhanced hero section with modern background */
+    .hero-section {
+        min-height: 100vh;
+        padding: 0;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    /* Modern background design */
+    .hero-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+    }
+    
+    .hero-bg-image {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: url('https://investinasia.id/blog/wp-content/uploads/2023/07/business3.jpg');
+        background-size: cover;
+        background-position: center;
+        opacity: 0.85;
+        z-index: 1;
+        filter: brightness(0.9) contrast(1.1);
+    }
+    
+    .glassmorphism-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, rgba(48, 66, 81, 0.4) 0%, rgba(28, 49, 68, 0.5) 100%);
+        backdrop-filter: blur(1.5px);
+        -webkit-backdrop-filter: blur(1.5px);
+        z-index: 2;
+    }
+    
+    /* Add browser support for glassmorphism */
+    @@supports not ((backdrop-filter: blur(8px)) or (-webkit-backdrop-filter: blur(8px))) {
+        .glassmorphism-overlay {
+            background: linear-gradient(135deg, rgba(48, 66, 81, 0.5) 0%, rgba(28, 49, 68, 0.6) 100%);
+        }
+        
+        .dashboard-visualization {
+            background-color: rgba(22, 34, 46, 0.85);
+        }
+        
+        .hero-badge {
+            background-color: rgba(243, 153, 62, 0.3);
+        }
+    }
+    
+    .gradient-sphere {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(60px);
+        z-index: 3;
+    }
+    
+    .gradient-1 {
+        width: 500px;
+        height: 500px;
+        background: radial-gradient(circle, rgba(243, 153, 62, 0.2) 0%, rgba(243, 153, 62, 0) 70%);
+        top: -200px;
+        left: -100px;
+        animation: float-slow 15s ease-in-out infinite;
+    }
+    
+    .gradient-2 {
+        width: 600px;
+        height: 600px;
+        background: radial-gradient(circle, rgba(72, 126, 176, 0.15) 0%, rgba(72, 126, 176, 0) 70%);
+        bottom: -300px;
+        right: -200px;
+        animation: float-slow 18s ease-in-out infinite reverse;
+    }
+    
+    .gradient-3 {
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(243, 153, 62, 0.1) 0%, rgba(243, 153, 62, 0) 60%);
+        top: 30%;
+        right: 15%;
+        animation: float-slow 12s ease-in-out infinite 2s;
+    }
+    
+    .gradient-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, rgba(28, 49, 68, 0.3) 0%, rgba(48, 66, 81, 0) 50%, rgba(44, 62, 80, 0.3) 100%);
+        opacity: 0.8;
+        z-index: 4;
+    }
+    
+    .grid-pattern {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: 
+            linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+        background-size: 30px 30px;
+        opacity: 0.5;
+        z-index: 5;
+    }
+    
+    .hero-row {
+        min-height: 100%;
+        padding-top: 0;
+        padding-bottom: 0;
+        position: relative;
+        z-index: 10;
+    }
+    
+    /* Hero content styling */
+    .hero-content-col {
+        padding-right: 3rem;
+        color: white;
+        z-index: 10;
+    }
+    
+    .hero-badge {
+        display: inline-block;
+        padding: 6px 16px;
+        border-radius: 50px;
+        background-color: rgba(243, 153, 62, 0.2);
+        border: 1px solid rgba(243, 153, 62, 0.3);
+        color:rgb(255, 255, 255);
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 1.5rem;
+        animation: float 3s infinite ease-in-out;
+        position: relative;
+        z-index: 1;
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
+    }
+    
+    .hero-badge::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(243, 153, 62, 0.05);
+        border-radius: 50px;
+        z-index: -1;
+    }
+    
+    .hero-title {
+        font-size: 4rem;
+        font-weight: 800;
+        margin-bottom: 1.5rem;
+        line-height: 1.1;
+        letter-spacing: -0.5px;
+        background: linear-gradient(to right, #ffffff, #e0e0e0);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        display: inline-block;
+    }
+    
+    .hero-title span {
+        background: linear-gradient(to right, #F3993E, #ffb366);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        display: inline-block;
+    }
+    
+    .hero-description {
+        font-size: 1.15rem;
+        line-height: 1.6;
+        color: rgba(255, 255, 255, 1);
+        margin-bottom: 2rem;
+        max-width: 500px;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        font-weight: 500;
+    }
+    
+    .hero-description .highlight {
+        background: rgba(243, 153, 62, 0.15);
+        padding: 8px 16px;
+        border-radius: 8px;
+        border-left: 3px solid #F3993E;
+        display: inline-block;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
+        color: white;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+        animation: highlight-glow 3s infinite alternate;
+    }
+    
+    @@keyframes highlight-glow {
+        0% { box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); }
+        100% { box-shadow: 0 8px 25px rgba(243, 153, 62, 0.25); }
+    }
+    
+    /* Hero actions */
+    .hero-actions {
+        display: flex;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+        margin-top: 2.5rem;
+    }
+    
+    .btn-learn, .btn-login {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 14px 28px;
+        border-radius: 50px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        position: relative;
+        z-index: 1;
+        min-width: 160px;
+        letter-spacing: 0.5px;
+    }
+    
+    .btn-learn {
+        background-color: rgba(255, 255, 255, 0.9);
+        color: #304251;
+        border: none;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .btn-learn:hover {
+        background-color: #ffffff;
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+    
+    .btn-login {
+        background: #F3993E;
+        color: white;
+        box-shadow: 0 4px 15px rgba(243, 153, 62, 0.3);
+        border: none;
+    }
+    
+    .btn-login:hover {
+        background: #ff9f2d;
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(243, 153, 62, 0.4);
+    }
+    
+    .btn-learn i, .btn-login i {
+        margin-left: 10px;
+        transition: transform 0.3s ease;
+    }
+    
+    .btn-learn:hover i, .btn-login:hover i {
+        transform: translateX(5px);
+    }
+    
+    /* Dashboard visualization enhanced */
+    .hero-visual-col {
+        position: relative;
+        z-index: 5;
+    }
+    
+    .dashboard-visualization {
+        width: 100%;
+        background-color: rgba(22, 34, 46, 0.6); /* More transparent for glassmorphism */
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+        transform: perspective(1000px) rotateY(-5deg) rotateX(5deg);
+        transition: all 0.5s ease;
+        animation: float-slow 6s infinite ease-in-out;
+        position: relative;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+    }
+    
+    .dashboard-visualization::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%);
+        pointer-events: none;
+        border-radius: 12px;
+    }
+    
+    .dashboard-visualization:hover {
+        transform: perspective(1000px) rotateY(0deg) rotateX(0deg) scale(1.02);
+    }
+    
+    .dashboard-header {
+        padding: 15px 20px;
+        background-color: rgba(22, 28, 36, 0.9);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .dashboard-title {
+        color: white;
+        font-weight: 600;
+        font-size: 1rem;
+    }
+    
+    .dashboard-controls {
+        display: flex;
+        gap: 8px;
+    }
+    
+    .control-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background-color: rgba(255, 255, 255, 0.3);
+    }
+    
+    .dashboard-content {
+        padding: 20px;
+        background-color: rgba(30, 42, 56, 0.8);
+    }
+    
+    .dashboard-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .dashboard-chart {
+        background-color: rgba(22, 28, 36, 0.8);
+        border-radius: 8px;
+        overflow: hidden;
+        height: 140px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .chart-header {
+        padding: 10px 15px;
+        font-size: 0.85rem;
+        color: white;
+        font-weight: 500;
+        background-color: rgba(15, 20, 25, 0.5);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .chart-content {
+        height: calc(100% - 36px);
+        padding: 10px;
+    }
+    
+    .dashboard-metric {
+        background-color: rgba(22, 28, 36, 0.8);
+        border-radius: 8px;
+        padding: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .metric-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, rgba(243, 153, 62, 0.3) 0%, rgba(243, 153, 62, 0.1) 100%);
+        color: #F3993E;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+    
+    .metric-data {
+        flex-grow: 1;
+        padding: 0 15px;
+    }
+    
+    .metric-value {
+        color: white;
+        font-weight: 700;
+        font-size: 1.3rem;
+    }
+    
+    .metric-label {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 0.8rem;
+    }
+    
+    .metric-trend {
+        font-size: 0.8rem;
+        font-weight: 600;
+        padding: 4px 8px;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .metric-trend.positive {
+        background-color: rgba(52, 199, 89, 0.15);
+        color: #4cff7a;
+        border: 1px solid rgba(52, 199, 89, 0.2);
+    }
+    
+    .metric-trend.negative {
+        background-color: rgba(255, 69, 58, 0.15);
+        color: #ff6b60;
+        border: 1px solid rgba(255, 69, 58, 0.2);
+    }
+    
+    /* Animation keyframes */
+    @@keyframes float-slow {
+        0%, 100% { transform: perspective(1000px) rotateY(-5deg) rotateX(5deg) translateY(0); }
+        50% { transform: perspective(1000px) rotateY(-5deg) rotateX(5deg) translateY(-10px); }
+    }
+    
+    @@keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-8px); }
+    }
+    
+    @@keyframes shine {
+        0% { left: -100%; }
+        20%, 100% { left: 100%; }
+    }
+    
+    /* Responsive styles */
+    @@media (max-width: 991px) {
+        .hero-content-col {
+            padding-right: 0;
+            margin-bottom: 3rem;
+        }
+        
+        .hero-title {
+            font-size: 3rem;
+        }
+        
+        .dashboard-visualization {
+            transform: none !important;
+        }
+        
+        .hero-row {
+            padding-top: 4rem !important;
+            padding-bottom: 4rem !important;
+        }
+        
+        /* Fix for mobile view */
+        .vh-100 {
+            height: auto !important;
+            min-height: 100vh;
+        }
+        
+        .hero-section {
+            padding-top: 80px;
+            padding-bottom: 80px;
+        }
+    }
+    
+    @@media (max-width: 767px) {
+        .hero-title {
+            font-size: 2.5rem;
+        }
+        
+        .dashboard-row {
+            grid-template-columns: 1fr;
+        }
+        
+        .hero-actions {
+            flex-direction: column;
+            width: 100%;
+        }
+        
+        .btn-learn, .btn-login {
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+        
+        .dashboard-visualization {
+            margin-top: 2rem;
+        }
+    }
+    
+    @@media (max-width: 575px) {
+        .hero-title {
+            font-size: 2rem;
+        }
+        
+        .hero-badge {
+            font-size: 0.7rem;
+        }
+        
+        .dashboard-visualization {
+            transform: scale(0.9) !important;
+            margin-left: -5%;
+            margin-right: -5%;
+        }
+        
+        .dashboard-metric {
+            padding: 10px;
+        }
+        
+        .metric-icon {
+            width: 35px;
+            height: 35px;
+            font-size: 1rem;
+        }
+        
+        .metric-value {
+            font-size: 1.1rem;
+        }
+        
+        .metric-label {
+            font-size: 0.7rem;
+        }
+        
+        .metric-trend {
+            padding: 2px 6px;
+            font-size: 0.7rem;
+        }
+    }
+    
+    @@media (max-width: 480px) {
+        .dashboard-visualization {
+            transform: scale(0.85) !important;
+            margin-left: -10%;
+            margin-right: -10%;
+        }
+        
+        .dashboard-row {
+            gap: 10px;
+        }
+        
+        .dashboard-metric {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        
+        .metric-data {
+            padding: 10px 0;
+        }
+        
+        .metric-trend {
+            margin-top: 5px;
+        }
+    }
+    
+    @@media (max-width: 380px) {
+        .hero-title {
+            font-size: 1.8rem;
+        }
+        
+        .hero-description {
+            font-size: 0.9rem;
+        }
+        
+        .dashboard-visualization {
+            transform: scale(0.8) !important;
+            margin-left: -15%;
+            margin-right: -15%;
+        }
+    }
+    
+    /* Wave bottom */
     .wave-bottom {
         position: absolute;
         bottom: 0;
@@ -138,13 +1102,2132 @@
         width: 100%;
         overflow: hidden;
         line-height: 0;
+        z-index: 6;
+        transform: translateY(1px); /* Ensures no gap between sections */
     }
     
-    .hero-section {
-        padding-bottom: 100px;
+    .wave-bottom svg {
+        display: block;
+        width: 100%;
+        height: 50px;
+    }
+    
+    /* Existing styles below */
+    .feature-card {
+        transition: all 0.3s ease;
+        transform: translateY(50px);
+        opacity: 0;
+    }
+    
+    .feature-card.animated {
+        transform: translateY(0);
+        opacity: 1;
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08) !important;
+    }
+    
+    .feature-icon {
+        transition: all 0.3s ease;
+    }
+    
+    .feature-card:hover .feature-icon {
+        transform: scale(1.1);
+    }
+    
+    .growth-section {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .growth-visual {
+        position: relative;
+        z-index: 2;
+    }
+    
+    .growth-visual-wrapper {
+        position: relative;
+        background-color: white;
+        border-radius: 20px;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.08);
+        padding: 25px;
+        transform: perspective(1000px) rotateY(5deg);
+        transition: all 0.5s ease;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        max-width: 550px;
+        margin: 0 auto;
+    }
+    
+    .growth-visual-wrapper:hover {
+        transform: perspective(1000px) rotateY(0deg);
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.1);
+    }
+    
+    .growth-chart {
+        border-radius: 12px;
+        width: 100%;
+        height: auto;
+        object-fit: cover;
+    }
+    
+    .growth-stats {
+        position: absolute;
+        bottom: -30px;
+        left: 20px;
+        right: 20px;
+        display: flex;
+        justify-content: space-around;
+    }
+    
+    .growth-stat-item {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        padding: 15px 25px;
+        min-width: 140px;
+        text-align: center;
+        border: 1px solid rgba(243, 153, 62, 0.15);
+        transform: translateY(0);
+        transition: transform 0.3s ease;
+    }
+    
+    .growth-stat-item:hover {
+        transform: translateY(-5px);
+    }
+    
+    .growth-stat-value {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #304251;
+        line-height: 1.2;
+    }
+    
+    .growth-stat-value span {
+        font-size: 1rem;
+        color: #F3993E;
+        font-weight: 600;
+    }
+    
+    .growth-stat-label {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-top: 5px;
+    }
+    
+    .growth-content {
+        position: relative;
+        z-index: 2;
+    }
+    
+    .growth-content-inner {
+        max-width: 500px;
+    }
+    
+    .growth-badge {
+        display: inline-block;
+        padding: 8px 20px;
+        border-radius: 50px;
+        background: linear-gradient(120deg, rgba(243, 153, 62, 0.15), rgba(255, 159, 45, 0.1));
+        color: #F3993E;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin-bottom: 1.5rem;
+        position: relative;
+        box-shadow: 0 4px 15px rgba(243, 153, 62, 0.1);
+    }
+    
+    .growth-title {
+        font-size: 2.8rem;
+        font-weight: 800;
+        color: #304251;
+        margin-bottom: 1.5rem;
+        line-height: 1.2;
+    }
+    
+    .growth-title span {
+        color: #F3993E;
+        position: relative;
+        display: inline-block;
+    }
+    
+    .growth-title span::after {
+        content: '';
+        position: absolute;
+        bottom: 5px;
+        left: 0;
+        width: 100%;
+        height: 8px;
+        background-color: rgba(243, 153, 62, 0.2);
+        z-index: -1;
+        border-radius: 10px;
+    }
+    
+    .growth-description {
+        font-size: 1.1rem;
+        line-height: 1.7;
+        color: #6c757d;
+        margin-bottom: 2.5rem;
+    }
+    
+    .growth-points {
+        margin-bottom: 2.5rem;
+    }
+    
+    .growth-point-item {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 1.5rem;
+        position: relative;
+        padding-left: 15px;
+        border-left: 2px solid transparent;
+        transition: all 0.3s ease;
+    }
+    
+    .growth-point-item:hover {
+        border-left-color: #F3993E;
+        padding-left: 20px;
+    }
+    
+    .growth-point-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, rgba(243, 153, 62, 0.15), rgba(243, 153, 62, 0.05));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #F3993E;
+        font-size: 1.3rem;
+        margin-right: 20px;
+        flex-shrink: 0;
+        box-shadow: 0 8px 20px rgba(243, 153, 62, 0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .growth-point-item:hover .growth-point-icon {
+        transform: scale(1.1) rotate(-5deg);
+    }
+    
+    .growth-point-content {
+        flex-grow: 1;
+    }
+    
+    .growth-point-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #304251;
+        margin-bottom: 0.5rem;
+    }
+    
+    .growth-point-desc {
+        font-size: 0.95rem;
+        color: #6c757d;
+        line-height: 1.6;
+        margin-bottom: 0;
+    }
+    
+    .growth-cta {
+        display: inline-flex;
+        align-items: center;
+        padding: 15px 30px;
+        border-radius: 50px;
+        background: linear-gradient(to right, #F3993E, #ff9f2d);
+        color: white;
+        font-weight: 600;
+        text-decoration: none;
+        box-shadow: 0 10px 25px rgba(243, 153, 62, 0.3);
+        transition: all 0.3s ease;
+    }
+    
+    .growth-cta:hover {
+        box-shadow: 0 15px 30px rgba(243, 153, 62, 0.4);
+        transform: translateY(-3px);
+        color: white;
+    }
+    
+    .growth-cta i {
+        margin-left: 10px;
+        transition: transform 0.3s ease;
+    }
+    
+    .growth-cta:hover i {
+        transform: translateX(5px);
+    }
+    
+    /* Responsive adjustments */
+    @@media (max-width: 1199px) {
+        .growth-title {
+            font-size: 2.5rem;
+        }
+        
+        .growth-stat-item {
+            padding: 12px 20px;
+            min-width: 120px;
+        }
+        
+        .growth-stat-value {
+            font-size: 1.6rem;
+        }
+    }
+    
+    @@media (max-width: 991px) {
+        .growth-section {
+            min-height: auto;
+            padding: 6rem 0;
+        }
+        
+        .growth-title {
+            font-size: 2.2rem;
+        }
+        
+        .growth-description {
+            font-size: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .growth-point-icon {
+            width: 45px;
+            height: 45px;
+            font-size: 1.1rem;
+        }
+        
+        .growth-point-title {
+            font-size: 1.1rem;
+        }
+        
+        .growth-visual-wrapper {
+            max-width: 450px;
+        }
+    }
+    
+    @@media (max-width: 767px) {
+        .growth-visual {
+            margin-bottom: 5rem;
+        }
+        
+        .growth-stats {
+            bottom: -25px;
+        }
+        
+        .growth-title {
+            font-size: 2rem;
+        }
+        
+        .growth-point-item {
+            margin-bottom: 1.2rem;
+        }
+        
+        .growth-badge {
+            font-size: 0.75rem;
+            padding: 6px 15px;
+        }
+    }
+    
+    @@media (max-width: 575px) {
+        .growth-section {
+            padding: 5rem 0;
+        }
+        
+        .growth-title {
+            font-size: 1.8rem;
+        }
+        
+        .growth-stats {
+            flex-direction: column;
+            bottom: -80px;
+            align-items: center;
+        }
+        
+        .growth-stat-item {
+            margin-bottom: 10px;
+            width: 80%;
+        }
+        
+        .growth-visual {
+            margin-bottom: 7rem;
+        }
+        
+        .growth-point-icon {
+            width: 40px;
+            height: 40px;
+            font-size: 1rem;
+            margin-right: 15px;
+        }
+        
+        .growth-point-title {
+            font-size: 1rem;
+        }
+        
+        .growth-cta {
+            width: 100%;
+            justify-content: center;
+            padding: 12px 20px;
+        }
+    }
+    
+    /* Features Section Styling - Enhanced */
+    .features-section {
+        min-height: 100vh;
+        background-color: #F7F5EF;
+        position: relative;
+        overflow: hidden;
+        padding: 6rem 0 4rem;
+        margin-top: 0;
     }
 
-    *{
-        scroll-behavior: smooth;
+    @@media (max-height: 800px) {
+        .features-section {
+            padding: 6rem 0;
+            height: auto;
+            min-height: auto;
+        }
+    }
+
+    .features-decorations {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        pointer-events: none;
+    }
+    
+    /* Feature section animated circles */
+    .feature-circle-1 {
+        width: 180px;
+        height: 180px;
+        background: radial-gradient(circle, rgba(243, 153, 62, 0.15) 0%, rgba(243, 153, 62, 0) 70%);
+        top: 10%;
+        right: 5%;
+        animation: float-circle 20s ease-in-out infinite;
+    }
+    
+    .feature-circle-2 {
+        width: 120px;
+        height: 120px;
+        background: radial-gradient(circle, rgba(48, 66, 81, 0.1) 0%, rgba(48, 66, 81, 0) 70%);
+        bottom: 15%;
+        left: 8%;
+        animation: float-circle-alt 18s ease-in-out infinite 2s;
+    }
+    
+    .feature-circle-3 {
+        width: 60px;
+        height: 60px;
+        background-color: rgba(243, 153, 62, 0.15);
+        top: 30%;
+        left: 15%;
+        animation: pulse-circle 12s ease-in-out infinite 1s;
+    }
+    
+    .feature-circle-4 {
+        width: 90px;
+        height: 90px;
+        background-color: rgba(48, 66, 81, 0.08);
+        bottom: 25%;
+        right: 20%;
+        animation: float-circle 15s ease-in-out infinite 3s;
+    }
+    
+    .feature-circle-5 {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, rgba(243, 153, 62, 0.2), rgba(255, 183, 112, 0.1));
+        top: 60%;
+        right: 30%;
+        animation: float-circle-alt 10s ease-in-out infinite;
+    }
+
+    .dec-circle {
+        position: absolute;
+        border-radius: 50%;
+        opacity: 0.4;
+    }
+
+    .dec-circle-1 {
+        width: 400px;
+        height: 400px;
+        background: radial-gradient(circle, rgba(243, 153, 62, 0.05) 0%, rgba(243, 153, 62, 0) 70%);
+        top: -150px;
+        left: -100px;
+        animation: float-slow 15s ease-in-out infinite;
+    }
+
+    .dec-circle-2 {
+        width: 600px;
+        height: 600px;
+        background: radial-gradient(circle, rgba(48, 66, 81, 0.04) 0%, rgba(48, 66, 81, 0) 70%);
+        bottom: -200px;
+        right: -150px;
+        animation: float-slow 18s ease-in-out infinite 2s;
+    }
+
+    .dec-line {
+        position: absolute;
+        background: linear-gradient(to bottom, rgba(243, 153, 62, 0.05), rgba(243, 153, 62, 0));
+    }
+
+    .dec-line-1 {
+        width: 1px;
+        height: 400px;
+        top: 0;
+        left: 15%;
+        transform: rotate(15deg);
+        animation: sway 20s ease-in-out infinite;
+    }
+
+    .dec-line-2 {
+        width: 1px;
+        height: 300px;
+        top: 100px;
+        right: 10%;
+        transform: rotate(-20deg);
+        animation: sway 15s ease-in-out infinite reverse;
+    }
+
+    .dec-dots {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: radial-gradient(circle, rgba(48, 66, 81, 0.08) 1px, transparent 1px);
+        background-size: 40px 40px;
+        opacity: 0.4;
+    }
+
+    .section-header {
+        margin-bottom: 5rem !important;
+        position: relative;
+        z-index: 5;
+    }
+    
+    .section-badge {
+        display: inline-block;
+        padding: 10px 24px;
+        border-radius: 50px;
+        background: linear-gradient(120deg, rgba(243, 153, 62, 0.15), rgba(255, 159, 45, 0.1));
+        color: #F3993E;
+        font-size: 0.9rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 3px;
+        margin-bottom: 1.5rem;
+        position: relative;
+        box-shadow: 0 8px 20px rgba(243, 153, 62, 0.15);
+        transform: translateY(0);
+        transition: all 0.3s ease;
+    }
+    
+    .section-badge:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 25px rgba(243, 153, 62, 0.2);
+    }
+
+    .section-badge::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        border-radius: 50px;
+        border: 1px solid rgba(243, 153, 62, 0.2);
+        opacity: 0.5;
+    }
+
+    .section-title {
+        font-size: 3.5rem;
+        font-weight: 800;
+        background: linear-gradient(to right, #304251, #1c3144);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 1.5rem;
+        position: relative;
+        display: inline-block;
+        letter-spacing: -0.5px;
+        text-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .animate-title {
+        position: relative;
+        overflow: hidden;
+        animation: reveal 1.5s ease forwards;
+    }
+    
+    @@keyframes reveal {
+        0% { opacity: 0; transform: translateY(30px) scale(0.95); }
+        50% { opacity: 1; transform: translateY(-5px) scale(1.02); }
+        100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .section-title::after {
+        content: '';
+        position: absolute;
+        bottom: -15px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 120px;
+        height: 4px;
+        background: linear-gradient(to right, #F3993E, #ff9f2d);
+        border-radius: 4px;
+        animation: line-grow 1.8s ease-out forwards;
+        transform-origin: center;
+        box-shadow: 0 2px 10px rgba(243, 153, 62, 0.3);
+    }
+    
+    @@keyframes line-grow {
+        0% { width: 0; opacity: 0; }
+        30% { width: 0; opacity: 0.5; }
+        100% { width: 120px; opacity: 1; }
+    }
+
+    .section-subtitle {
+        color: #6c757d;
+        font-size: 1.2rem;
+        max-width: 700px;
+        margin: 2.5rem auto 0;
+        line-height: 1.7;
+        font-weight: 400;
+        animation: fade-in 2s ease forwards;
+        animation-delay: 0.5s;
+        opacity: 0;
+    }
+    
+    @@keyframes fade-in {
+        0% { opacity: 0; transform: translateY(10px); }
+        100% { opacity: 1; transform: translateY(0); }
+    }
+
+    .features-container {
+        margin-top: 1rem;
+        position: relative;
+        z-index: 5;
+    }
+    
+    /* Enhanced feature item animations */
+    .feature-item {
+        transform: translateY(50px);
+        opacity: 0;
+        animation: fadeUpStaggered 1.2s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+        transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+    }
+    
+    .feature-item:hover {
+        z-index: 10;
+    }
+    
+    .feature-item:nth-child(1) {
+        animation-delay: 0.2s;
+    }
+    
+    .feature-item:nth-child(2) {
+        animation-delay: 0.5s;
+    }
+    
+    .feature-item:nth-child(3) {
+        animation-delay: 0.8s;
+    }
+    
+    @@keyframes fadeUpStaggered {
+        0% { 
+            opacity: 0; 
+            transform: translateY(80px) scale(0.95); 
+        }
+        60% {
+            opacity: 1;
+            transform: translateY(-10px) scale(1.02);
+        }
+        100% { 
+            opacity: 1; 
+            transform: translateY(0) scale(1); 
+        }
+    }
+    
+    .feature-card {
+        background-color: white;
+        border-radius: 16px;
+        height: 100%;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);
+        position: relative;
+        overflow: hidden;
+        transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+        transform-style: preserve-3d;
+        perspective: 1000px;
+        cursor: pointer;
+        border: 1px solid rgba(0, 0, 0, 0.03);
+    }
+
+    .feature-card:hover {
+        transform: translateY(-15px) scale(1.02) rotateX(5deg);
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.1);
+        border-color: rgba(243, 153, 62, 0.1);
+    }
+    
+    .feature-card::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(120deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0) 100%);
+        opacity: 0;
+        transition: opacity 0.5s ease;
+        pointer-events: none;
+    }
+    
+    .feature-card:hover::after {
+        opacity: 1;
+        animation: card-shine 1.5s infinite alternate;
+    }
+    
+    @@keyframes card-shine {
+        from { background-position: -100% 0; }
+        to { background-position: 200% 0; }
+    }
+    
+    .feature-card-inner {
+        padding: 3rem 2.5rem 4rem;
+        position: relative;
+        border: 1px solid rgba(0, 0, 0, 0.03);
+        border-radius: 16px;
+        background: linear-gradient(145deg, #ffffff, #f8f8f8);
+        z-index: 2;
+    }
+
+    .feature-card::before {
+        content: '';
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        height: 6px;
+        background: linear-gradient(to right, #F3993E, #ff9f2d);
+        z-index: 3;
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    .feature-card:hover::before {
+        transform: scaleX(1);
+    }
+
+    .feature-icon-wrapper {
+        position: relative;
+        margin-bottom: 2rem;
+        display: inline-block;
+    }
+
+    .feature-icon-bg {
+        position: absolute;
+        width: 110px;
+        height: 110px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(243, 153, 62, 0.08), rgba(243, 153, 62, 0));
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 0;
+        animation: pulse 3s infinite;
+    }
+    
+    @@keyframes pulse {
+        0% { transform: translate(-50%, -50%) scale(0.95); opacity: 0.5; }
+        50% { transform: translate(-50%, -50%) scale(1.05); opacity: 0.8; }
+        100% { transform: translate(-50%, -50%) scale(0.95); opacity: 0.5; }
+    }
+
+    .feature-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        position: relative;
+        z-index: 2;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .feature-card:hover .feature-icon {
+        transform: scale(1.1) rotate(-5deg);
+        border-radius: 30%;
+        box-shadow: 0 12px 25px rgba(0, 0, 0, 0.12);
+    }
+
+    .feature-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #304251;
+        margin-bottom: 1.2rem;
+        transition: all 0.3s ease;
+        position: relative;
+        display: inline-block;
+    }
+
+    .feature-title::after {
+        content: '';
+        position: absolute;
+        bottom: -8px;
+        left: 0;
+        width: 0;
+        height: 2px;
+        background: linear-gradient(to right, #F3993E, rgba(243, 153, 62, 0.3));
+        transition: width 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    .feature-card:hover .feature-title::after {
+        width: 100%;
+    }
+
+    .feature-desc {
+        color: #6c757d;
+        font-size: 1rem;
+        line-height: 1.7;
+        margin-bottom: 0;
+    }
+
+    .feature-indicator {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(to right, rgba(243, 153, 62, 0), rgba(243, 153, 62, 0));
+        transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+        opacity: 0;
+    }
+
+    .feature-card:hover .feature-indicator {
+        background: linear-gradient(to right, #F3993E, rgba(243, 153, 62, 0.1));
+        opacity: 1;
+    }
+
+    .feature-link {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: rgba(248, 248, 248, 0.9);
+        padding: 1rem 2.5rem;
+        color: #304251;
+        font-weight: 600;
+        text-decoration: none;
+        transform: translateY(100%);
+        transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+        z-index: 1;
+    }
+
+    .feature-card:hover .feature-link {
+        transform: translateY(0);
+    }
+
+    .feature-link svg {
+        transition: transform 0.3s ease;
+    }
+
+    .feature-link:hover {
+        color: #F3993E;
+    }
+
+    .feature-link:hover svg {
+        transform: translateX(5px);
+    }
+
+    .feature-link:hover svg path {
+        stroke: #F3993E;
+    }
+    
+    @@keyframes sway {
+        0%, 100% { transform: rotate(15deg); }
+        50% { transform: rotate(25deg); }
+    }
+
+    /* Credit link styling */
+    .gif-credit {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        background-color: rgba(255, 255, 255, 0.85);
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        z-index: 3;
+    }
+    
+    .gif-credit a {
+        color: #304251;
+        text-decoration: none;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+    }
+    
+    .gif-credit i {
+        font-size: 0.7rem;
+        margin-right: 6px;
+        color: #F3993E;
+    }
+    
+    .gif-credit:hover {
+        background-color: rgba(255, 255, 255, 0.95);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        transform: translateY(-2px);
+    }
+
+    /* Enhanced CTA section */
+    .cta-section {
+        position: relative;
+        background: linear-gradient(135deg, #1f2f3f 0%, #304251 50%, #1c2a3a 100%);
+        overflow: hidden;
+    }
+
+    .cta-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        pointer-events: none;
+    }
+
+    .cta-circle {
+        position: absolute;
+        border-radius: 50%;
+        opacity: 0.4;
+    }
+
+    .cta-circle-1 {
+        width: 500px;
+        height: 500px;
+        background: radial-gradient(circle, rgba(243, 153, 62, 0.15) 0%, rgba(243, 153, 62, 0) 70%);
+        top: -100px;
+        right: -100px;
+        animation: float-slow 20s ease-in-out infinite;
+    }
+
+    .cta-circle-2 {
+        width: 600px;
+        height: 600px;
+        background: radial-gradient(circle, rgba(72, 126, 176, 0.1) 0%, rgba(72, 126, 176, 0) 70%);
+        bottom: -200px;
+        left: -150px;
+        animation: float-slow 25s ease-in-out infinite reverse;
+    }
+
+    .cta-pattern {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: 
+            radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+            radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+        background-size: 30px 30px;
+        background-position: 0 0, 15px 15px;
+        opacity: 0.3;
+    }
+
+    .cta-container {
+        position: relative;
+        z-index: 5;
+        padding: 3rem 0;
+    }
+
+    .cta-badge {
+        display: inline-block;
+        padding: 8px 20px;
+        border-radius: 50px;
+        background: rgba(243, 153, 62, 0.15);
+        color: #F3993E;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        margin-bottom: 1.5rem;
+        border: 1px solid rgba(243, 153, 62, 0.3);
+        backdrop-filter: blur(5px);
+    }
+
+    .cta-title {
+        font-size: 3.2rem;
+        font-weight: 800;
+        margin-bottom: 1.5rem;
+        line-height: 1.2;
+        background: linear-gradient(to right, #ffffff, #e0e0e0);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        display: inline-block;
+    }
+
+    .cta-title span {
+        background: linear-gradient(to right, #F3993E, #ffb366);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        display: inline-block;
+        position: relative;
+    }
+
+    .cta-title span::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: 5px;
+        width: 100%;
+        height: 6px;
+        background-color: rgba(243, 153, 62, 0.2);
+        border-radius: 10px;
+        z-index: -1;
+    }
+
+    .cta-text {
+        font-size: 1.15rem;
+        line-height: 1.7;
+        color: rgba(255, 255, 255, 0.8);
+        margin-bottom: 2rem;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .cta-actions {
+        display: flex;
+        justify-content: center;
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-cta-primary {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        width: 200px;
+        height: 56px;
+        border-radius: 50px;
+        background: linear-gradient(to right, #F3993E, #ff9f2d);
+        color: white;
+        font-weight: 600;
+        position: relative;
+        text-decoration: none;
+        overflow: hidden;
+        z-index: 1;
+        box-shadow: 0 10px 30px rgba(243, 153, 62, 0.3);
+        transition: all 0.3s ease;
+    }
+
+    .btn-cta-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 40px rgba(243, 153, 62, 0.4);
+        color: white;
+    }
+
+    .btn-text {
+        position: relative;
+        z-index: 2;
+        margin-right: 10px;
+    }
+
+    .btn-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background-color: rgba(255, 255, 255, 0.2);
+        transition: all 0.3s ease;
+        position: relative;
+        z-index: 2;
+    }
+
+    .btn-cta-primary:hover .btn-icon {
+        background-color: rgba(255, 255, 255, 0.3);
+        transform: scale(1.1);
+    }
+
+    .btn-shine {
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+            90deg, 
+            rgba(255, 255, 255, 0) 0%, 
+            rgba(255, 255, 255, 0.3) 50%, 
+            rgba(255, 255, 255, 0) 100%
+        );
+        z-index: 1;
+        animation: btn-shine 3s infinite;
+    }
+
+    @@keyframes btn-shine {
+        0% { left: -100%; }
+        20%, 100% { left: 100%; }
+    }
+
+    .btn-cta-secondary {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 30px;
+        height: 56px;
+        border-radius: 50px;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(5px);
+    }
+
+    .btn-cta-secondary:hover {
+        background: rgba(255, 255, 255, 0.15);
+        color: white;
+        transform: translateY(-3px);
+    }
+
+    .btn-cta-secondary i {
+        margin-left: 10px;
+        transition: transform 0.3s ease;
+    }
+
+    .btn-cta-secondary:hover i {
+        transform: translateX(5px);
+    }
+
+    .cta-stats {
+        display: flex;
+        justify-content: center;
+        gap: 3rem;
+        margin-top: 2rem;
+    }
+
+    .cta-stat-item {
+        text-align: center;
+    }
+
+    .cta-stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #F3993E;
+        margin-bottom: 0.5rem;
+    }
+
+    .cta-stat-label {
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.7);
+        font-weight: 500;
+    }
+
+    /* Responsive adjustments */
+    @@media (max-width: 991px) {
+        .cta-title {
+            font-size: 2.5rem;
+        }
+        
+        .cta-actions {
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .cta-stats {
+            flex-wrap: wrap;
+            gap: 2rem;
+        }
+    }
+
+    @@media (max-width: 767px) {
+        .cta-title {
+            font-size: 2rem;
+        }
+        
+        .cta-text {
+            font-size: 1rem;
+        }
+        
+        .cta-stats {
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        .cta-stat-number {
+            font-size: 1.8rem;
+        }
+    }
+
+    /* SVG styling */
+    .cta-svg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+        pointer-events: none;
+    }
+    
+    .shape {
+        opacity: 0.6;
+        transform-origin: center;
+        animation: shape-float 40s ease-in-out infinite alternate;
+    }
+    
+    .shape-1 {
+        transform: scale(1.2) translateX(-5%);
+        animation-delay: 0s;
+    }
+    
+    .shape-2 {
+        transform: scale(1.1) translateX(5%);
+        animation-delay: 10s;
+    }
+    
+    .floating-element {
+        filter: blur(1px);
+    }
+    
+    @@keyframes shape-float {
+        0% { transform: scale(1) translateX(0); }
+        50% { transform: scale(1.05) translateX(1%); }
+        100% { transform: scale(1) translateX(0); }
+    }
+    
+    /* Comprehensive Responsive Enhancements */
+    @@media (max-width: 1199px) {
+        .hero-title {
+            font-size: 3.5rem;
+        }
+        
+        .dashboard-visualization {
+            transform: perspective(1000px) rotateY(-3deg) rotateX(3deg);
+        }
+        
+        .feature-card-inner {
+            padding: 2.5rem 2rem 3.5rem;
+        }
+        
+        .feature-icon {
+            width: 70px;
+            height: 70px;
+            font-size: 1.8rem;
+        }
+        
+        .growth-title {
+            font-size: 2.5rem;
+        }
+        
+        .growth-visual-wrapper {
+            transform: perspective(1000px) rotateY(3deg);
+        }
+    }
+    
+    @@media (max-width: 991px) {
+        /* Global responsive fixes */
+        .vh-100 {
+            min-height: 100vh;
+            height: auto !important;
+            padding: 5rem 0;
+        }
+        
+        /* Hero section improvements */
+        .hero-content-col {
+            padding-right: 0;
+            margin-bottom: 3rem;
+            text-align: center;
+        }
+        
+        .hero-title {
+            font-size: 3rem;
+        }
+        
+        .hero-description {
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .hero-actions {
+            justify-content: center;
+        }
+        
+        .dashboard-visualization {
+            transform: none !important;
+            max-width: 100%;
+            margin: 0 auto;
+        }
+        
+        /* Features section improvements */
+        .feature-item {
+            margin-bottom: 2rem;
+        }
+        
+        .section-title {
+            font-size: 2.5rem;
+        }
+        
+        /* Growth section improvements */
+        .growth-visual-wrapper {
+            transform: none;
+            margin-bottom: 2rem;
+        }
+        
+        .growth-content-inner {
+            max-width: 100%;
+            text-align: center;
+        }
+        
+        .growth-point-item {
+            text-align: left;
+            justify-content: flex-start;
+        }
+        
+        .growth-cta {
+            margin: 0 auto;
+        }
+        
+        /* SVG improvements for tablets */
+        .dashboard-animation {
+            max-width: 100%;
+            overflow: hidden;
+        }
+        
+        .analytics-svg {
+            max-width: 100%;
+        }
+    }
+    
+    @@media (max-width: 767px) {
+        /* Hero section mobile improvements */
+        .hero-title {
+            font-size: 2.5rem;
+        }
+        
+        .hero-description {
+            font-size: 1rem;
+            padding-right: 10px;
+        }
+        
+        .hero-actions {
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            padding-right: 10px;
+        }
+        
+        .btn-learn, .btn-login {
+            width: 80%;
+            margin-bottom: 0.5rem;
+        }
+        
+        .dashboard-row {
+            grid-template-columns: 1fr;
+        }
+        
+        /* Features section mobile improvements */
+        .features-section {
+            padding: 5rem 0;
+        }
+        
+        .feature-card {
+            margin-bottom: 0;
+        }
+        
+        .section-title {
+            font-size: 2rem;
+        }
+        
+        .section-badge {
+            font-size: 0.75rem;
+            padding: 6px 15px;
+        }
+        
+        /* Growth section mobile improvements */
+        .growth-section {
+            padding: 5rem 0;
+        }
+        
+        .growth-title {
+            font-size: 2rem;
+        }
+        
+        .growth-stats {
+            flex-direction: column;
+            gap: 1rem;
+            width: 80%;
+            margin: 0 auto;
+        }
+        
+        .growth-stat-item {
+            margin-bottom: 0.5rem;
+        }
+        
+        .growth-point-item {
+            padding-left: 10px;
+        }
+        
+        .growth-badge {
+            font-size: 0.75rem;
+            padding: 6px 15px;
+        }
+        
+        /* SVG improvements for mobile */
+        .cta-svg .floating-element:nth-child(even) {
+            display: none;
+        }
+        
+        .dashboard-animation {
+            transform: scale(0.8);
+        }
+    }
+    
+    @@media (max-width: 575px) {
+        /* Global small device improvements */
+        .vh-100 {
+            padding: 4rem 0;
+        }
+        
+        /* Hero section small device improvements */
+        .hero-title {
+            font-size: 2rem;
+        }
+        
+        .hero-badge {
+            font-size: 0.7rem;
+        }
+        
+        .btn-learn, .btn-login {
+            width: 100%;
+        }
+        
+        /* Features section small device improvements */
+        .section-title {
+            font-size: 1.8rem;
+        }
+        
+        .section-title::after {
+            width: 80px;
+        }
+        
+        .feature-card-inner {
+            padding: 1.8rem 1.3rem 3rem;
+        }
+        
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            font-size: 1.5rem;
+        }
+        
+        .feature-title {
+            font-size: 1.2rem;
+        }
+        
+        .feature-link {
+            padding: 0.8rem 1.5rem;
+        }
+        
+        /* Growth section small device improvements */
+        .growth-title {
+            font-size: 1.8rem;
+        }
+        
+        .growth-visual-wrapper {
+            padding: 15px;
+        }
+        
+        .growth-point-icon {
+            width: 40px;
+            height: 40px;
+            font-size: 1rem;
+            margin-right: 15px;
+        }
+        
+        .growth-point-title {
+            font-size: 1rem;
+        }
+        
+        .growth-cta {
+            width: 100%;
+            justify-content: center;
+            padding: 12px 20px;
+        }
+        
+        /* CTA section small device improvements */
+        .btn-cta-primary {
+            width: 100%;
+        }
+        
+        /* SVG improvements for very small devices */
+        .dashboard-animation {
+            transform: scale(0.7);
+            margin-left: -15%;
+        }
+        
+        .cta-svg .shape {
+            opacity: 0.3;
+        }
+    }
+    
+    /* Extra small device improvements */
+    @@media (max-width: 380px) {
+        .hero-title {
+            font-size: 1.8rem;
+        }
+        
+        .section-title, 
+        .growth-title,
+        .cta-title {
+            font-size: 1.6rem;
+        }
+        
+        .feature-card-inner {
+            padding: 1.5rem 1rem 2.5rem;
+        }
+        
+        .dashboard-animation {
+            transform: scale(0.6);
+            margin-left: -20%;
+        }
+    }
+
+    /* Animated circles */
+    .animated-circle {
+        position: absolute;
+        border-radius: 50%;
+        opacity: 0.4;
+        z-index: 3;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .circle-1 {
+        width: 120px;
+        height: 120px;
+        background-color: #F3993E;
+        top: 15%;
+        left: 10%;
+        animation: float-circle 8s ease-in-out infinite;
+    }
+    
+    .circle-2 {
+        width: 80px;
+        height: 80px;
+        background-color: #304251;
+        bottom: 20%;
+        right: 15%;
+        animation: float-circle 12s ease-in-out infinite 1s;
+    }
+    
+    .circle-3 {
+        width: 150px;
+        height: 150px;
+        background-color: rgba(243, 153, 62, 0.3);
+        bottom: 30%;
+        left: 20%;
+        animation: float-circle 15s ease-in-out infinite 2s;
+    }
+    
+    .circle-4 {
+        width: 60px;
+        height: 60px;
+        background-color: rgba(48, 66, 81, 0.4);
+        top: 25%;
+        right: 25%;
+        animation: float-circle 10s ease-in-out infinite 3s;
+    }
+    
+    .circle-5 {
+        width: 40px;
+        height: 40px;
+        background-color: rgba(243, 153, 62, 0.5);
+        top: 40%;
+        left: 30%;
+        animation: float-circle-alt 9s ease-in-out infinite 1.5s;
+    }
+    
+    .circle-6 {
+        width: 90px;
+        height: 90px;
+        background-color: rgba(48, 66, 81, 0.2);
+        bottom: 15%;
+        right: 35%;
+        animation: float-circle-alt 14s ease-in-out infinite 0.5s;
+    }
+    
+    .circle-7 {
+        width: 70px;
+        height: 70px;
+        background: linear-gradient(135deg, rgba(243, 153, 62, 0.6), rgba(255, 183, 112, 0.3));
+        top: 60%;
+        left: 15%;
+        animation: pulse-circle 10s ease-in-out infinite 2s;
+    }
+    
+    .circle-8 {
+        width: 45px;
+        height: 45px;
+        background: linear-gradient(135deg, rgba(48, 66, 81, 0.5), rgba(72, 96, 114, 0.2));
+        top: 10%;
+        right: 40%;
+        animation: pulse-circle 8s ease-in-out infinite 1s;
+    }
+    
+    .circle-9 {
+        width: 110px;
+        height: 110px;
+        background: radial-gradient(circle, rgba(243, 153, 62, 0.2) 0%, rgba(243, 153, 62, 0) 70%);
+        bottom: 40%;
+        right: 10%;
+        animation: float-circle 16s ease-in-out infinite 3.5s;
+    }
+    
+    @@keyframes float-circle {
+        0%, 100% { transform: translate(0, 0) scale(1); }
+        25% { transform: translate(15px, -15px) scale(1.05); }
+        50% { transform: translate(0, 15px) scale(0.95); }
+        75% { transform: translate(-15px, 0) scale(1.02); }
+    }
+    
+    @@keyframes float-circle-alt {
+        0%, 100% { transform: translate(0, 0) scale(1) rotate(0deg); }
+        25% { transform: translate(-10px, 15px) scale(1.1) rotate(5deg); }
+        50% { transform: translate(15px, 0) scale(0.9) rotate(0deg); }
+        75% { transform: translate(0, -15px) scale(1.05) rotate(-5deg); }
+    }
+    
+    @@keyframes pulse-circle {
+        0%, 100% { transform: scale(1); opacity: 0.4; }
+        50% { transform: scale(1.2); opacity: 0.2; }
+    }
+
+    /* Particles for features section */
+    .particles-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        pointer-events: none;
+    }
+    
+    .particle {
+        position: absolute;
+        border-radius: 50%;
+        opacity: 0.3;
+        z-index: 1;
+    }
+    
+    .particle-1 {
+        width: 6px;
+        height: 6px;
+        background-color: #F3993E;
+        top: 20%;
+        left: 25%;
+        animation: particle-float 15s infinite linear;
+    }
+    
+    .particle-2 {
+        width: 8px;
+        height: 8px;
+        background-color: #304251;
+        top: 70%;
+        left: 80%;
+        animation: particle-float 20s infinite linear reverse;
+    }
+    
+    .particle-3 {
+        width: 5px;
+        height: 5px;
+        background-color: #F3993E;
+        top: 30%;
+        left: 70%;
+        animation: particle-float 18s infinite linear;
+    }
+    
+    .particle-4 {
+        width: 4px;
+        height: 4px;
+        background-color: #304251;
+        top: 80%;
+        left: 30%;
+        animation: particle-float 25s infinite linear reverse;
+    }
+    
+    .particle-5 {
+        width: 7px;
+        height: 7px;
+        background-color: #F3993E;
+        top: 50%;
+        left: 10%;
+        animation: particle-float 22s infinite linear;
+    }
+    
+    .particle-6 {
+        width: 5px;
+        height: 5px;
+        background-color: #304251;
+        top: 15%;
+        left: 60%;
+        animation: particle-float 17s infinite linear reverse;
+    }
+    
+    @@keyframes particle-float {
+        0% {
+            transform: translate(0, 0) rotate(0deg);
+        }
+        25% {
+            transform: translate(100px, 50px) rotate(90deg);
+        }
+        50% {
+            transform: translate(50px, 100px) rotate(180deg);
+        }
+        75% {
+            transform: translate(-50px, 50px) rotate(270deg);
+        }
+        100% {
+            transform: translate(0, 0) rotate(360deg);
+        }
+    }
+
+    /* Responsive styles for features section */
+    @@media (max-width: 1199px) {
+        .section-title {
+            font-size: 2.5rem;
+        }
+        
+        .feature-card-inner {
+            padding: 2.5rem 2rem 3.5rem;
+        }
+        
+        .feature-icon {
+            width: 70px;
+            height: 70px;
+            font-size: 1.8rem;
+        }
+    }
+
+    @@media (max-width: 991px) {
+        .features-section {
+            min-height: auto;
+            padding: 6rem 0;
+        }
+        
+        .section-title {
+            font-size: 2.2rem;
+        }
+        
+        .section-subtitle {
+            font-size: 1rem;
+            margin: 1.5rem auto 0;
+        }
+        
+        .features-container {
+            margin-top: 2rem;
+        }
+        
+        .feature-card-inner {
+            padding: 2rem 1.5rem 3rem;
+        }
+        
+        .feature-title {
+            font-size: 1.3rem;
+        }
+        
+        .feature-desc {
+            font-size: 0.95rem;
+        }
+    }
+
+    @@media (max-width: 767px) {
+        .features-section {
+            padding: 5rem 0;
+        }
+        
+        .feature-card {
+            margin-bottom: 0;
+        }
+        
+        .section-title {
+            font-size: 2rem;
+        }
+        
+        .section-badge {
+            font-size: 0.75rem;
+            padding: 6px 15px;
+        }
+        
+        .feature-item {
+            margin-bottom: 1.5rem;
+        }
+    }
+
+    @@media (max-width: 575px) {
+        .features-section {
+            padding: 4rem 0;
+        }
+        
+        .section-title {
+            font-size: 1.8rem;
+        }
+        
+        .section-title::after {
+            width: 80px;
+        }
+        
+        .feature-card-inner {
+            padding: 1.8rem 1.3rem 3rem;
+        }
+        
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            font-size: 1.5rem;
+        }
+        
+        .feature-title {
+            font-size: 1.2rem;
+        }
+        
+        .feature-link {
+            padding: 0.8rem 1.5rem;
+        }
+    }
+
+    /* Animated Glowing Circles for Features Section */
+    .feature-glow-circle {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(20px);
+        opacity: 0.6;
+        z-index: 1;
+        box-shadow: 0 0 40px 10px rgba(0, 0, 0, 0.1);
+        animation: glow-pulse 8s infinite alternate;
+    }
+    
+    .circle-orange-lg {
+        width: 180px;
+        height: 180px;
+        background: radial-gradient(circle, rgba(243, 153, 62, 0.6) 0%, rgba(243, 153, 62, 0) 70%);
+        top: 15%;
+        right: 10%;
+        animation: glow-float 15s ease-in-out infinite, glow-pulse 8s infinite alternate;
+    }
+    
+    .circle-blue-md {
+        width: 120px;
+        height: 120px;
+        background: radial-gradient(circle, rgba(48, 66, 81, 0.5) 0%, rgba(48, 66, 81, 0) 70%);
+        bottom: 20%;
+        left: 15%;
+        animation: glow-float 12s ease-in-out infinite 2s, glow-pulse 6s infinite alternate;
+    }
+    
+    .circle-orange-sm {
+        width: 80px;
+        height: 80px;
+        background: radial-gradient(circle, rgba(243, 153, 62, 0.7) 0%, rgba(243, 153, 62, 0) 70%);
+        top: 30%;
+        left: 25%;
+        animation: glow-float 10s ease-in-out infinite 1s, glow-pulse 5s infinite alternate;
+    }
+    
+    .circle-blue-lg {
+        width: 200px;
+        height: 200px;
+        background: radial-gradient(circle, rgba(48, 66, 81, 0.4) 0%, rgba(48, 66, 81, 0) 70%);
+        bottom: 10%;
+        right: 20%;
+        animation: glow-float 18s ease-in-out infinite 3s, glow-pulse 9s infinite alternate;
+    }
+    
+    .circle-orange-md {
+        width: 150px;
+        height: 150px;
+        background: radial-gradient(circle, rgba(243, 153, 62, 0.5) 0%, rgba(243, 153, 62, 0) 70%);
+        top: 50%;
+        left: 8%;
+        animation: glow-float 14s ease-in-out infinite 4s, glow-pulse 7s infinite alternate;
+    }
+    
+    @@keyframes glow-float {
+        0%, 100% { transform: translate(0, 0); }
+        25% { transform: translate(20px, -20px); }
+        50% { transform: translate(0, 20px); }
+        75% { transform: translate(-20px, 0); }
+    }
+    
+    @@keyframes glow-pulse {
+        0% { opacity: 0.4; filter: blur(15px); }
+        50% { opacity: 0.6; filter: blur(20px); }
+        100% { opacity: 0.8; filter: blur(25px); }
+    }
+
+    /* Connecting Animated Lines */
+    .connecting-line {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        z-index: 1;
+        pointer-events: none;
+        opacity: 0.5;
+    }
+    
+    .connecting-line svg {
+        width: 100%;
+        height: 100%;
+    }
+    
+    .path-line {
+        stroke-dashoffset: 0;
+        animation: dash-animation 30s linear infinite;
+    }
+    
+    .path-dot {
+        animation: dot-pulse 3s ease-in-out infinite alternate;
+    }
+    
+    .features-to-growth .path-dot:first-child {
+        animation-delay: 0s;
+    }
+    
+    .features-to-growth .path-dot:last-child {
+        animation-delay: 1.5s;
+    }
+    
+    .growth-to-cta .path-dot:first-child {
+        animation-delay: 0.5s;
+    }
+    
+    .growth-to-cta .path-dot:last-child {
+        animation-delay: 2s;
+    }
+    
+    @@keyframes dash-animation {
+        to {
+            stroke-dashoffset: 200;
+        }
+    }
+    
+    @@keyframes dot-pulse {
+        0% {
+            r: 1;
+            opacity: 0.5;
+        }
+        50% {
+            r: 2;
+            opacity: 1;
+        }
+        100% {
+            r: 1;
+            opacity: 0.5;
+        }
+    }
+
+    .container-fluid{
+        padding:0 !important;
+        margin: 0 !important;
+    }
+    </style>
+
+<script>
+    // Animation on scroll
+    document.addEventListener('DOMContentLoaded', function() {
+        // Counter animation
+        const counters = document.querySelectorAll('.counter');
+        counters.forEach(counter => {
+            const target = +counter.innerText;
+            const duration = 2000;
+            let startTime = null;
+            
+            function updateCounter(timestamp) {
+                if (!startTime) startTime = timestamp;
+                const progress = timestamp - startTime;
+                const value = Math.floor((progress / duration) * target);
+                
+                counter.innerText = Math.min(value, target);
+                
+                if (progress < duration) {
+                    requestAnimationFrame(updateCounter);
+                }
+            }
+            
+            requestAnimationFrame(updateCounter);
+        });
+        
+        // Scroll animations
+        function checkScrollAnimation() {
+            const sections = document.querySelectorAll('.section-header, .feature-card, .growth-image, .growth-content, .growth-point, .cta-title, .cta-text, .cta-button');
+            
+            sections.forEach(section => {
+                const sectionTop = section.getBoundingClientRect().top;
+                if (sectionTop < window.innerHeight * 0.8) {
+                    section.classList.add('animated');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', checkScrollAnimation);
+        checkScrollAnimation(); // Check on load
+        
+        // Login loading animation
+        const loginButtons = document.querySelectorAll('.login-trigger');
+        const loadingOverlay = document.querySelector('.login-loading-overlay');
+        
+        loginButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Show loading overlay
+                loadingOverlay.classList.add('active');
+                
+                // Redirect after a short delay (simulating loading)
+                setTimeout(() => {
+                    window.location.href = this.getAttribute('href');
+                }, 1500);
+            });
+        });
+    });
+</script>
+
+<!-- Login Loading Overlay -->
+<div class="login-loading-overlay">
+    <div class="login-loader-container">
+        <div class="login-loader">
+            <div class="login-loader-chart">
+                <div class="login-loader-bar bar1"></div>
+                <div class="login-loader-bar bar2"></div>
+                <div class="login-loader-bar bar3"></div>
+                <div class="login-loader-bar bar4"></div>
+                <div class="login-loader-bar bar5"></div>
+            </div>
+            <div class="login-loader-circle"></div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Login Loading Overlay */
+    .login-loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(28, 49, 68, 0.95);
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
+        z-index: 9999;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+    
+    .login-loading-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+    
+    .login-loader-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        max-width: 90%;
+    }
+    
+    .login-loader {
+        position: relative;
+        width: 120px;
+        height: 120px;
+    }
+    
+    .login-loader-chart {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        padding: 15px;
+    }
+    
+    .login-loader-bar {
+        width: 12%;
+        background-color: #F3993E;
+        border-radius: 3px;
+        animation: bar-animation 1.5s ease-in-out infinite;
+    }
+    
+    .login-loader-bar.bar1 { height: 30%; animation-delay: 0s; }
+    .login-loader-bar.bar2 { height: 60%; animation-delay: 0.2s; }
+    .login-loader-bar.bar3 { height: 80%; animation-delay: 0.4s; }
+    .login-loader-bar.bar4 { height: 40%; animation-delay: 0.6s; }
+    .login-loader-bar.bar5 { height: 70%; animation-delay: 0.8s; }
+    
+    @@keyframes bar-animation {
+        0%, 100% { transform: scaleY(1); }
+        50% { transform: scaleY(0.6); }
+    }
+    
+    .login-loader-circle {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border: 3px solid rgba(255, 255, 255, 0.1);
+        border-top: 3px solid #F3993E;
+        border-radius: 50%;
+        animation: spin 2s linear infinite;
+    }
+    
+    @@keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    /* Responsive adjustments */
+    @@media (max-width: 767px) {
+        .login-loader {
+            width: 100px;
+            height: 100px;
+        }
+    }
+    
+    @@media (max-width: 480px) {
+        .login-loader {
+            width: 80px;
+            height: 80px;
+        }
+    }
+
+    #wrapper {
+        padding: 0 !important;
     }
 </style>

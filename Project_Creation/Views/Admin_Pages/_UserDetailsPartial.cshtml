@@ -38,7 +38,21 @@
                     <dt class="col-sm-5">Business Name:</dt>
                     <dd class="col-sm-7">@Model.User.BusinessName</dd>
                     <dt class="col-sm-5">DTI Registration:</dt>
-                    <dd class="col-sm-7">@Model.User.DTIReqistrationNumber</dd>
+                    <dd class="col-sm-7">
+                        @Model.User.DTIReqistrationNumber
+                        <button type="button" class="btn btn-sm btn-outline-info ms-2" data-bs-toggle="popover" data-bs-placement="right" 
+                                title="DTI Registration Number Format" 
+                                data-bs-content="Valid DTI Registration Numbers follow these formats:
+                                    - Certificate No. (CBNR): 7-digit number (e.g., 1234567)
+                                    - Reference Code: Format - BNRS-MMDDYY-XXXXXX where X is alphanumeric
+                                    - Business Name Registration System (BNRS) Number: Alphanumeric code
+                                    Verify authenticity at https://bnrs.dti.gov.ph/search">
+                            <i class="bi bi-info-circle"></i>
+                        </button>
+                        <a href="https://bnrs.dti.gov.ph/search" target="_blank" class="btn btn-sm btn-outline-info ms-2">
+                            <i class="bi bi-info-circle"></i> Verify DTI Registration
+                        </a>
+                    </dd>
                     <dt class="col-sm-5">Business Address:</dt>
                     <dd class="col-sm-7">@Model.User.BusinessAddress</dd>
                     <dt class="col-sm-5">Years in Operation:</dt>
@@ -56,7 +70,7 @@
                             }
                             else if (ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".gif")
                             {
-                                <img src="@Model.User.BusinessPermitPath" style="max-width:650px;max-height:900px;" class="img-thumbnail border" />
+                                <img src="@Model.User.BusinessPermitPath" style="max-width:650px;max-height:900px;" class="img-thumbnail border doc-preview" data-src="@Model.User.BusinessPermitPath" data-title="Business Permit" />
                             }
                             else
                             {
@@ -72,7 +86,7 @@
                     <dd class="col-sm-7">
                         @if (!string.IsNullOrEmpty(Model.User.LogoPath))
                         {
-                            <img src="@Model.User.LogoPath" style="max-width:150px;max-height:150px;" class="img-thumbnail border" />
+                            <img src="@Model.User.LogoPath" style="max-width:250px;max-height:250px;" class="img-thumbnail border doc-preview" data-src="@Model.User.LogoPath" data-title="Business Logo" />
                         }
                         else
                         {
@@ -108,6 +122,22 @@
                         </span>
 
                     </dd>
+                    <!-- Navigation shortcuts -->
+                    <dt class="col-sm-12 mt-3">
+                        <div class="d-flex justify-content-center">
+                            <div class="btn-group">
+                                <a href="@Url.Action("BusinessOwners", "Admin")" class="btn btn-primary">
+                                    <i class="bi bi-people me-1"></i> All Business Owners
+                                </a>
+                                <a href="@Url.Action("MarketplaceApproval", "Admin")" class="btn btn-info">
+                                    <i class="bi bi-shop me-1"></i> Marketplace Approvals
+                                </a>
+                                <a href="@Url.Action("BOApproval", "Admin")" class="btn btn-secondary">
+                                    <i class="bi bi-check-circle me-1"></i> BO Approvals
+                                </a>
+                            </div>
+                        </div>
+                    </dt>
                 </dl>
             </div>
         </div>
@@ -136,13 +166,13 @@
                     <div class="card-body">
                         <dl class="row mb-0">
                             <dt class="col-sm-6">Barangay Clearance:</dt>
-                            <dd class="col-sm-6">@DisplayFile(Model.AdditionInfo.BrgyClearancePath)</dd>
+                            <dd class="col-sm-6">@DisplayFile(Model.AdditionInfo.BrgyClearancePath, "Barangay Clearance")</dd>
                             <dt class="col-sm-6">SEC Certificate:</dt>
-                            <dd class="col-sm-6">@DisplayFile(Model.AdditionInfo.SecCertPath)</dd>
+                            <dd class="col-sm-6">@DisplayFile(Model.AdditionInfo.SecCertPath, "SEC Certificate")</dd>
                             <dt class="col-sm-6">DTI Certificate:</dt>
-                            <dd class="col-sm-6">@DisplayFile(Model.AdditionInfo.DtiCertPath)</dd>
+                            <dd class="col-sm-6">@DisplayFile(Model.AdditionInfo.DtiCertPath, "DTI Certificate")</dd>
                             <dt class="col-sm-6">Business Owner Valid ID:</dt>
-                            <dd class="col-sm-6">@DisplayFile(Model.AdditionInfo.BusinessOwnerValidId)</dd>
+                            <dd class="col-sm-6">@DisplayFile(Model.AdditionInfo.BusinessOwnerValidId, "Business Owner ID")</dd>
                         </dl>
                     </div>
                 </div>
@@ -153,7 +183,7 @@
                     <div class="card-body">
                         <dl class="row mb-0">
                             <dt class="col-sm-6">Operation to Operate:</dt>
-                            <dd class="col-sm-6">@DisplayFile(Model.AdditionInfo.OperationToOperate)</dd>
+                            <dd class="col-sm-6">@DisplayFile(Model.AdditionInfo.OperationToOperate, "Operation to Operate")</dd>
                             <dt class="col-sm-6">Submitted On:</dt>
                             <dd class="col-sm-6">@Model.AdditionInfo.SubmissionDate.ToString("MMMM dd, yyyy")</dd>
                         </dl>
@@ -164,18 +194,69 @@
     }
 </div>
 
+<!-- Image Preview Modal -->
+<div class="modal fade" id="imagePreviewModal" tabindex="-1" aria-labelledby="imagePreviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title" id="imagePreviewModalLabel">Document Preview</h5>
+                <div class="ms-auto me-3 d-flex gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-light zoom-in-btn">
+                        <i class="bi bi-zoom-in"></i> Zoom In
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-light zoom-out-btn">
+                        <i class="bi bi-zoom-out"></i> Zoom Out
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-light reset-zoom-btn">
+                        <i class="bi bi-arrows-angle-contract"></i> Reset
+                    </button>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center bg-dark p-0 position-relative">
+                <div class="document-viewer d-flex justify-content-center align-items-center h-100">
+                    <img id="modalImage" src="" class="img-fluid" style="max-height: 90vh; transition: transform 0.3s ease;" />
+                </div>
+            </div>
+            <div class="modal-footer bg-dark text-white">
+                <div class="text-muted small me-auto image-info">
+                    <span id="imageDimensions"></span>
+                </div>
+                <a id="downloadBtn" href="" download class="btn btn-primary">
+                    <i class="bi bi-download"></i> Download
+                </a>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @functions {
-    public IHtmlContent DisplayFile(string path)
+    public IHtmlContent DisplayFile(string path, string title = "Document")
     {
         if (string.IsNullOrEmpty(path)) return new HtmlString("<span class='text-muted'>No file uploaded</span>");
         var ext = System.IO.Path.GetExtension(path).ToLower();
         if (ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".gif")
         {
-            return new HtmlString($"<img src='{path}' style='max-width:150px;max-height:150px;' class='img-thumbnail border' />");
+            return new HtmlString($@"
+                <div class='position-relative'>
+                    <img src='{path}' style='max-width:300px;max-height:300px;' class='img-thumbnail border doc-preview' data-src='{path}' data-title='{title}' />
+                    <button type='button' class='btn btn-sm btn-primary position-absolute top-0 end-0 m-2 view-full-btn' data-src='{path}' data-title='{title}'>
+                        <i class='bi bi-arrows-fullscreen'></i>
+                    </button>
+                </div>");
         }
         else if (ext == ".pdf")
         {
-            return new HtmlString($"<embed src='{path}' type='application/pdf' width='120' height='150' class='border rounded' />");
+            return new HtmlString($@"
+                <div class='mb-2'>
+                    <embed src='{path}' type='application/pdf' width='300' height='300' class='border rounded' />
+                    <div class='mt-2'>
+                        <a href='{path}' target='_blank' class='btn btn-outline-primary btn-sm'>
+                            <i class='bi bi-file-earmark-pdf'></i> View Full PDF
+                        </a>
+                    </div>
+                </div>");
         }
         else
         {
@@ -184,65 +265,153 @@
     }
 }
 
-@section Scripts {
-    <script>
-        $(document).ready(function () {
-            // Toggle verification status
-            $('#btn-verify-toggle').click(function () {
-                var userId = '@Model.User.Id';
-                var isVerified = '@Model.User.IsVerified' === 'True' ? false : true;
-                $.ajax({
-                    url: '/Admin/ChangeUserStatus',
-                    type: 'POST',
-                    headers: {
-                        "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val(),
-                        "Content-Type": "application/x-www-form-urlencoded"
-                    },
-                    data: {
-                        id: userId,
-                        isVerified: isVerified,
-                        isAllowedToMarketPlace: '@Model.User.MarkerPlaceStatus'
-                    },
-                    success: function (response) {
-                        if (response.success) {
-                            location.reload();
-                        } else {
-                            alert(response.message || 'Failed to update status');
-                        }
-                    },
-                    error: function () {
-                        alert('An error occurred while updating status');
-                    }
-                });
-            });
-            // Toggle marketplace status
-            $('#btn-marketplace-toggle').click(function () {
-                var userId = '@Model.User.Id';
-                var isAllowed = '@Model.User.MarkerPlaceStatus' === 'True' ? false : true;
-                $.ajax({
-                    url: '/Admin/ChangeUserStatus',
-                    type: 'POST',
-                    headers: {
-                        "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val(),
-                        "Content-Type": "application/x-www-form-urlencoded"
-                    },
-                    data: {
-                        id: userId,
-                        isVerified: '@Model.User.IsVerified',
-                        isAllowedToMarketPlace: isAllowed
-                    },
-                    success: function (response) {
-                        if (response.success) {
-                            location.reload();
-                        } else {
-                            alert(response.message || 'Failed to update status');
-                        }
-                    },
-                    error: function () {
-                        alert('An error occurred while updating status');
-                    }
-                });
+<style>
+    .doc-preview {
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+    
+    .doc-preview:hover {
+        transform: scale(1.03);
+        box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    }
+    
+    .view-full-btn {
+        opacity: 0.7;
+    }
+    
+    .view-full-btn:hover {
+        opacity: 1;
+    }
+    
+    .document-viewer {
+        overflow: auto;
+        background-color: #1e1e1e;
+        height: calc(100vh - 130px);
+        position: relative;
+    }
+    
+    .document-viewer img {
+        margin: auto;
+        display: block;
+        transform-origin: center;
+    }
+</style>
+
+<script>
+    $(document).ready(function () {
+        // Initialize popovers
+        const popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+        popoverTriggerList.map(function (popoverTriggerEl) {
+            return new bootstrap.Popover(popoverTriggerEl, {
+                html: true,
+                trigger: 'focus'
             });
         });
-    </script>
-}
+        
+        // Image preview modal
+        let currentZoom = 1;
+        
+        $('.doc-preview, .view-full-btn').click(function(e) {
+            e.preventDefault();
+            var src = $(this).data('src') || $(this).attr('src');
+            var title = $(this).data('title') || 'Document Preview';
+            
+            $('#modalImage').attr('src', src);
+            $('#imagePreviewModalLabel').text(title);
+            $('#downloadBtn').attr('href', src);
+            
+            // Reset zoom level
+            currentZoom = 1;
+            $('#modalImage').css('transform', `scale(${currentZoom})`);
+            
+            var imageModal = new bootstrap.Modal(document.getElementById('imagePreviewModal'));
+            imageModal.show();
+            
+            // Get image dimensions once loaded
+            $('#modalImage').on('load', function() {
+                const width = this.naturalWidth;
+                const height = this.naturalHeight;
+                $('#imageDimensions').text(`Dimensions: ${width} × ${height} pixels`);
+            });
+        });
+        
+        // Zoom in
+        $('.zoom-in-btn').click(function() {
+            currentZoom += 0.25;
+            if (currentZoom > 5) currentZoom = 5; // Max zoom
+            $('#modalImage').css('transform', `scale(${currentZoom})`);
+        });
+        
+        // Zoom out
+        $('.zoom-out-btn').click(function() {
+            currentZoom -= 0.25;
+            if (currentZoom < 0.25) currentZoom = 0.25; // Min zoom
+            $('#modalImage').css('transform', `scale(${currentZoom})`);
+        });
+        
+        // Reset zoom
+        $('.reset-zoom-btn').click(function() {
+            currentZoom = 1;
+            $('#modalImage').css('transform', 'scale(1)');
+        });
+        
+        // Toggle verification status
+        $('#btn-verify-toggle').click(function () {
+            var userId = '@Model.User.Id';
+            var isVerified = '@Model.User.IsVerified' === 'True' ? false : true;
+            $.ajax({
+                url: '/Admin/ChangeUserStatus',
+                type: 'POST',
+                headers: {
+                    "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val(),
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                data: {
+                    id: userId,
+                    isVerified: isVerified,
+                    isAllowedToMarketPlace: '@Model.User.MarkerPlaceStatus'
+                },
+                success: function (response) {
+                    if (response.success) {
+                        location.reload();
+                    } else {
+                        alert(response.message || 'Failed to update status');
+                    }
+                },
+                error: function () {
+                    alert('An error occurred while updating status');
+                }
+            });
+        });
+        
+        // Toggle marketplace status
+        $('#btn-marketplace-toggle').click(function () {
+            var userId = '@Model.User.Id';
+            var isAllowed = '@Model.User.MarkerPlaceStatus' === 'True' ? false : true;
+            $.ajax({
+                url: '/Admin/ChangeUserStatus',
+                type: 'POST',
+                headers: {
+                    "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val(),
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                data: {
+                    id: userId,
+                    isVerified: '@Model.User.IsVerified',
+                    isAllowedToMarketPlace: isAllowed
+                },
+                success: function (response) {
+                    if (response.success) {
+                        location.reload();
+                    } else {
+                        alert(response.message || 'Failed to update status');
+                    }
+                },
+                error: function () {
+                    alert('An error occurred while updating status');
+                }
+            });
+        });
+    });
+</script>

@@ -1,0 +1,308 @@
+<!-- Authentication Navbar -->
+<nav class="auth-navbar sticky-top">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center py-3">
+            <!-- Logo -->
+            <a asp-controller="Home" asp-action="Index" class="auth-navbar-brand">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-building me-2" style="color: #F3993E; font-size: 1.5rem;"></i>
+                    <span class="brand-text fw-bold">Grow<span style="color: #F3993E;">Track</span></span>
+                </div>
+            </a>
+            
+            <!-- Mobile Menu Toggle -->
+            <button class="navbar-toggler d-lg-none" type="button" id="mobileMenuToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            
+            <!-- Navigation Links -->
+            <div class="d-none d-lg-flex align-items-center nav-links-container">
+                <a asp-controller="Home" asp-action="Index" class="auth-nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "Index" ? "active" : "")">Home</a>
+                <a asp-controller="Home" asp-action="About" class="auth-nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "About" ? "active" : "")">About</a>
+                <a asp-controller="Home" asp-action="Features" class="auth-nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "Features" ? "active" : "")">Features</a>
+                <a asp-controller="Home" asp-action="Contact" class="auth-nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "Contact" ? "active" : "")">Contact</a>
+                
+                <!-- Auth Buttons -->
+                <div class="ms-3 d-flex">
+                    <a asp-controller="Login" asp-action="Login" class="auth-btn auth-btn-login me-2">
+                        <i class="fas fa-sign-in-alt me-1"></i> Login
+                    </a>
+                    <a asp-controller="Register" asp-action="Register" class="auth-btn auth-btn-register">
+                        <i class="fas fa-user-plus me-1"></i> Register
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Mobile Menu (Off-canvas) -->
+<div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
+<div class="mobile-menu" id="mobileMenu">
+    <div class="mobile-menu-header">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-building me-2" style="color: #F3993E; font-size: 1.2rem;"></i>
+            <span class="brand-text fw-bold">Grow<span style="color: #F3993E;">Track</span></span>
+        </div>
+        <button class="mobile-menu-close" id="mobileMenuClose">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+    <div class="mobile-menu-body">
+        <a asp-controller="Home" asp-action="Index" class="mobile-nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "Index" ? "active" : "")">Home</a>
+        <a asp-controller="Home" asp-action="About" class="mobile-nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "About" ? "active" : "")">About</a>
+        <a asp-controller="Home" asp-action="Features" class="mobile-nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "Features" ? "active" : "")">Features</a>
+        <a asp-controller="Home" asp-action="Contact" class="mobile-nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "Contact" ? "active" : "")">Contact</a>
+        <div class="mobile-auth-buttons">
+            <a asp-controller="Login" asp-action="Login" class="auth-btn auth-btn-login w-100 mb-2">
+                <i class="fas fa-sign-in-alt me-1"></i> Login
+            </a>
+            <a asp-controller="Register" asp-action="Register" class="auth-btn auth-btn-register w-100">
+                <i class="fas fa-user-plus me-1"></i> Register
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .auth-navbar {
+        background-color: rgba(48, 66, 81, 0.95);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        position: sticky;
+        top: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        z-index: 1000;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    .auth-navbar-brand {
+        text-decoration: none;
+        color: white;
+        font-size: 1.4rem;
+    }
+    
+    .auth-navbar-brand:hover {
+        color: rgba(255, 255, 255, 0.9);
+    }
+    
+    .auth-nav-link {
+        color: rgba(255, 255, 255, 0.9);
+        text-decoration: none;
+        padding: 0.5rem 1rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+    
+    .auth-nav-link:hover {
+        color: #F3993E;
+    }
+    
+    .auth-nav-link::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        width: 0;
+        height: 2px;
+        background: #F3993E;
+        transition: all 0.3s ease;
+        transform: translateX(-50%);
+    }
+    
+    .auth-nav-link:hover::after,
+    .auth-nav-link.active::after {
+        width: 70%;
+    }
+    
+    .auth-nav-link.active {
+        color: #F3993E;
+        font-weight: 600;
+    }
+    
+    .auth-btn {
+        padding: 0.5rem 1.25rem;
+        border-radius: 50px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .auth-btn-login {
+        background-color: transparent;
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    .auth-btn-login:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: #F3993E;
+        border-color: #F3993E;
+    }
+    
+    .auth-btn-register {
+        background-color: #F3993E;
+        color: white;
+        border: 1px solid #F3993E;
+    }
+    
+    .auth-btn-register:hover {
+        background-color: #e48a30;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(243, 153, 62, 0.3);
+    }
+    
+    /* Mobile Menu Styles */
+    .navbar-toggler {
+        background: transparent;
+        border: none;
+        color: white;
+        font-size: 1.5rem;
+        padding: 0.25rem 0.5rem;
+        cursor: pointer;
+        display: none;
+    }
+    
+    .mobile-menu {
+        position: fixed;
+        top: 0;
+        left: -280px;
+        width: 280px;
+        height: 100vh;
+        background-color: #304251;
+        z-index: 1050;
+        transition: left 0.3s ease;
+        box-shadow: 5px 0 15px rgba(0, 0, 0, 0.2);
+        overflow-y: auto;
+    }
+    
+    .mobile-menu.active {
+        left: 0;
+    }
+    
+    .mobile-menu-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1040;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+    
+    .mobile-menu-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+    
+    .mobile-menu-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        color: white;
+    }
+    
+    .mobile-menu-close {
+        background: transparent;
+        border: none;
+        color: white;
+        font-size: 1.2rem;
+        cursor: pointer;
+    }
+    
+    .mobile-menu-body {
+        padding: 1rem;
+    }
+    
+    .mobile-nav-link {
+        display: block;
+        padding: 0.75rem 0;
+        color: white;
+        text-decoration: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .mobile-nav-link:hover,
+    .mobile-nav-link.active {
+        color: #F3993E;
+        padding-left: 0.5rem;
+    }
+    
+    .mobile-nav-link.active {
+        font-weight: 600;
+        background-color: rgba(243, 153, 62, 0.1);
+        border-left: 3px solid #F3993E;
+        padding-left: 0.75rem;
+    }
+    
+    .mobile-auth-buttons {
+        margin-top: 1.5rem;
+    }
+    
+    /* Responsive styles */
+    @@media (max-width: 991px) {
+        .navbar-toggler {
+            display: block;
+        }
+        
+        .nav-links-container {
+            display: none !important;
+        }
+    }
+    
+    @@media (min-width: 992px) {
+        .mobile-menu, .mobile-menu-overlay {
+            display: none;
+        }
+    }
+
+    #wrapper {
+        padding: 0px !important;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+        const mobileMenuClose = document.getElementById('mobileMenuClose');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+        
+        // Open mobile menu
+        mobileMenuToggle.addEventListener('click', function() {
+            mobileMenu.classList.add('active');
+            mobileMenuOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+        
+        // Close mobile menu
+        function closeMobileMenu() {
+            mobileMenu.classList.remove('active');
+            mobileMenuOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        
+        mobileMenuClose.addEventListener('click', closeMobileMenu);
+        mobileMenuOverlay.addEventListener('click', closeMobileMenu);
+        
+        // Close mobile menu when clicking on a link
+        const mobileNavLinks = document.querySelectorAll('.mobile-nav-link');
+        mobileNavLinks.forEach(link => {
+            link.addEventListener('click', closeMobileMenu);
+        });
+    });
+</script> 

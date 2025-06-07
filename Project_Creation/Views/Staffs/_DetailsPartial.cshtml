@@ -1,4 +1,4 @@
-﻿@model Project_Creation.Models.Entities.Staff
+@model Project_Creation.Models.Entities.Staff
 
 @{
     @using Project_Creation.Models.Entities
@@ -24,26 +24,22 @@
 
     <dt class="col-sm-4">Access Permissions</dt>
     <dd class="col-sm-8">
-        <div class="row">
-            @foreach (var accessLevel in Enum.GetValues(typeof(StaffAccessLevel)))
-            {
-                if ((int)accessLevel > 0)
+        @if (Model.StaffAccessLevel == StaffAccessLevel.None)
+        {
+            <span class="badge bg-secondary">None</span>
+        }
+        else
+        {
+            <div class="d-flex flex-wrap gap-2">
+                @foreach (var accessLevel in Enum.GetValues(typeof(StaffAccessLevel)))
                 {
-                    <div class="col-md-6 mb-2">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input"
-                                   type="checkbox"
-                                   id="details_@accessLevel"
-                                   disabled
-                            @(Model.StaffAccessLevel.HasFlag((StaffAccessLevel)accessLevel) ? "checked" : "")>
-                            <label class="form-check-label" for="details_@accessLevel">
-                                @accessLevel
-                            </label>
-                        </div>
-                    </div>
+                    if ((int)accessLevel > 0 && Model.StaffAccessLevel.HasFlag((StaffAccessLevel)accessLevel))
+                    {
+                        <span class="badge bg-info">@accessLevel</span>
+                    }
                 }
-            }
-        </div>
+            </div>
+        }
     </dd>
 </dl>
 

@@ -1,1008 +1,388 @@
-﻿@using Project_Creation.DTO
+@using Project_Creation.DTO
 @model AdminDashboardViewModel
 @{
-	ViewData["Title"] = "Admin Dashboard";
+    ViewData["Title"] = "Admin Dashboard";
 }
 
-<div class="container mt-4">
-	<!-- Step 1: Accept User and Send Link for Second Registration -->
-	<div class="card shadow-sm mb-4">
-		<div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
-			<h5 class="mb-0"><span class="badge bg-white text-secondary me-2">Step 1</span> Accept User & Send Registration Link</h5>
-			<div class="d-flex gap-2">
-				<input type="search" class="form-control form-control-sm search-input" placeholder="Search step 1..." data-table="step1">
-				<button class="btn btn-sm btn-light" title="Help"><i class="bi bi-question-circle"></i></button>
-			</div>
-		</div>
-		<div class="card-body p-0">
-			<div class="table-responsive">
-				<table class="table table-hover align-middle mb-0" id="step1Table">
-					<thead class="table-light">
-						<tr>
-							<th class="sort" data-sort="name">Name <i class="bi bi-arrow-down-up"></i></th>
-							<th class="sort" data-sort="email">Email <i class="bi bi-arrow-down-up"></i></th>
-							<th class="sort" data-sort="business">Business Name <i class="bi bi-arrow-down-up"></i></th>
-							<th>Business Permit</th>
-							<th>Actions</th>
-						</tr>
-					</thead>
-					<tbody>
-						@foreach (var user in Model.Step1_Applicants)
-						{
-							<tr>
-								<td class="name">@user.FirstName @user.LastName</td>
-								<td class="email">@user.Email</td>
-								<td class="business">@user.BusinessName</td>
-								<td>
-									@if (!string.IsNullOrEmpty(user.BusinessPermitPath))
-									{
-										<a href="@user.BusinessPermitPath" target="_blank" class="btn btn-outline-primary btn-sm"><i class="bi bi-file-earmark"></i> View File</a>
-									}
-									else
-									{
-										<span class="text-muted">No file</span>
-									}
-								</td>
-								<td>
-									<button class="btn btn-outline-info btn-view me-1" data-step="1" data-id="@user.Id" type="button" title="View Details"><i class="bi bi-eye"></i></button>
-									<button class="btn btn-outline-success btn-verify me-1" data-id="@user.Id" type="button" title="Accept & Send Link"><i class="bi bi-check"></i></button>
-									<button class="btn btn-outline-danger btn-reject" data-id="@user.Id" type="button" title="Reject"><i class="bi bi-x"></i></button>
-								</td>
-							</tr>
-						}
-						@if (!Model.Step1_Applicants.Any())
-						{
-							<tr>
-								<td colspan="5" class="text-center py-4 text-muted">No applicants in this step</td>
-							</tr>
-						}
-					</tbody>
-				</table>
-			</div>
-		</div>
-	</div>
+<div class="container-fluid">
+    <!-- Header Row -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">Admin Dashboard</h1>
+            <p class="mb-0">Welcome back, @User.Identity.Name!</p>
+        </div>
+        <div class="btn-group">
+            <a asp-controller="Admin" asp-action="BOApproval" class="btn btn-primary">
+                <i class="fas fa-user-check me-2"></i>Account Approvals
+            </a>
+            <a asp-controller="Admin" asp-action="MarketplaceApproval" class="btn btn-success">
+                <i class="fas fa-store me-2"></i>Marketplace Approvals
+            </a>
+        </div>
+    </div>
 
-	<!-- Step 2: Confirm Final Details and Allow Marketplace -->
-	<div class="card shadow-sm mb-4">
-		<div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
-			<h5 class="mb-0"><span class="badge bg-white text-info me-2">Step 2</span> Confirm Final Details & Allow Marketplace</h5>
-			<div class="d-flex gap-2">
-				<input type="search" class="form-control form-control-sm search-input" placeholder="Search step 2..." data-table="step2">
-				<button class="btn btn-sm btn-light" title="Help"><i class="bi bi-question-circle"></i></button>
-			</div>
-		</div>
-		<div class="card-body p-0">
-			<div class="table-responsive">
-				<table class="table table-hover align-middle mb-0" id="step2Table">
-					<thead class="table-light">
-						<tr>
-							<th class="sort" data-sort="name">Name <i class="bi bi-arrow-down-up"></i></th>
-							<th class="sort" data-sort="email">Email <i class="bi bi-arrow-down-up"></i></th>
-							<th class="sort" data-sort="business">Business Name <i class="bi bi-arrow-down-up"></i></th>
-							<th>Actions</th>
-						</tr>
-					</thead>
-					<tbody>
-						@foreach (var user in Model.Step2_Applicants)
-						{
-							<tr>
-								<td class="name">@user.FirstName @user.LastName</td>
-								<td class="email">@user.Email</td>
-								<td class="business">@user.BusinessName</td>
-								<td>
-									<button class="btn btn-outline-info btn-view me-1" data-step="2" data-id="@user.Id" type="button" title="View Details"><i class="bi bi-eye"></i></button>
-									<button class="btn btn-outline-success btn-accept me-1" data-id="@user.Id" type="button" title="Allow Marketplace"><i class="bi bi-check"></i></button>
-									<button class="btn btn-outline-danger btn-reject-marketplace" data-id="@user.Id" type="button" title="Reject Marketplace"><i class="bi bi-x"></i></button>
-								</td>
-							</tr>
-						}
-						@if (!Model.Step2_Applicants.Any())
-						{
-							<tr>
-								<td colspan="4" class="text-center py-4 text-muted">No applicants in this step</td>
-							</tr>
-						}
-					</tbody>
-				</table>
-			</div>
-		</div>
-	</div>
+    <!-- Key Metrics Row -->
+    <div class="row mb-4">
+        <!-- Business Summary Card -->
+        <div class="col-lg-12 mb-3">
+            <div class="card shadow-sm border-left-primary">
+                <div class="card-body py-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="font-weight-bold text-primary mb-0">Platform Overview</h6>
+                        <span class="badge bg-primary rounded-pill">Today</span>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-lg-3 col-md-6">
+                            <div class="d-flex align-items-center border-start border-4 border-primary px-3 py-2 rounded shadow-sm">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-users fa-2x text-primary me-3"></i>
+                                </div>
+                                <div>
+                                    <div class="text-xs text-muted">TOTAL BUSINESS OWNERS</div>
+                                    <div class="h5 mb-0 font-weight-bold">@Model.AllUsers.Count</div>
+                                </div>
+                            </div>
+                        </div>
 
-	<!-- Step 3: Display All Users and Status -->
-	<div class="card shadow-sm">
-		<div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
-			<h5 class="mb-0"><span class="badge bg-white text-success me-2">Step 3</span> All Users & Status</h5>
-			<div class="d-flex gap-2">
-				<div class="input-group input-group-sm" style="width: 200px;">
-					<select class="form-select form-select-sm" id="step3SortCategory">
-						<option selected disabled>Filter by category</option>
-						<option value="All">Show All</option>
-						@if (Model.BusinessCategories != null && Model.BusinessCategories.Any())
-						{
-							foreach (var category in Model.BusinessCategories)
-							{
-								<option value="@category">@category</option>
-							}
-						}
-						else
-						{
-							<option disabled>No categories available</option>
-						}
-					</select>
-				</div>
-				<div class="input-group input-group-sm" style="width: 200px;">
-					@* <label class="input-group-text">Sort MarketPlace</label> *@
-					<select class="form-select form-select-sm" id="sortMarketplaceOnly">
-						<option selected disabled>Sort MarketPlace</option>
-						<option value="All">All</option>
-						<option value="Approved">Approved</option>
-						<option value="Pending">Pending</option>
-						<option value="Requesting">Requesting</option>
-						<option value="Rejected">Rejected</option>
-					</select>
-				</div>
-				<div class="input-group input-group-sm" style="width: 200px;">
-					<input type="search" class="form-control search-input" placeholder="Search all users..." data-table="step3">
-					<button class="btn btn-outline-light" type="button"><i class="bi bi-search"></i></button>
-				</div>
-				<button class="btn btn-sm btn-light" title="Help"><i class="bi bi-question-circle"></i></button>
-			</div>
-		</div>
-		<div class="card-body p-0">
-			<div class="table-responsive">
-				<table class="table table-hover align-middle mb-0" id="step3Table">
-					<thead class="table-light">
-						<tr>
-							<th class="sort" data-sort="name">Name <i class="bi bi-arrow-down-up"></i></th>
-							<th class="sort" data-sort="email">Email <i class="bi bi-arrow-down-up"></i></th>
-							<th class="sort" data-sort="business">Business Name <i class="bi bi-arrow-down-up"></i></th>
-							<th class="sort" data-sort="verified">Verified <i class="bi bi-arrow-down-up"></i></th>
-							<th class="sort" data-sort="marketplace">Marketplace <i class="bi bi-arrow-down-up"></i></th>
-							<th>Actions</th>
-						</tr>
-					</thead>
-					<tbody>
-						@foreach (var user in Model.AllUsers)
-						{
-							<tr data-category="@user.CategoryOfBusiness"
-								data-verified="@user.IsVerified"
-								data-marketplace="@user.MarkerPlaceStatus.ToString()">
-								<td class="name">@user.FirstName @user.LastName</td>
-								<td class="email">@user.Email</td>
-								<td class="business">@user.BusinessName</td>
-								<td class="verified">
-									@if (user.IsVerified)
-									{
-										<span class="badge bg-success">Verified</span>
-									}
-									else
-									{
-										<span class="badge bg-warning text-dark">Pending</span>
-									}
-								</td>
-								<td class="marketplace">
-									@if (user.MarkerPlaceStatus.ToString() == "Requesting")
-									{
-										<span class="badge bg-warning">Requesting</span>
-									}
-									else if (user.MarkerPlaceStatus.ToString() == "Approved")
-									{
-										<span class="badge bg-success">Approved</span>
-									}
-									else if (user.MarkerPlaceStatus.ToString() == "Pending")
-									{
-										<span class="badge bg-secondary">Pending</span>
-									}
-									else
-									{
-										<span class="badge bg-danger">Not Allowed</span>
-									}
-								</td>
-								<td>
-									<button class="btn btn-outline-info btn-view me-1" data-step="3" data-id="@user.Id" type="button" title="View Details"><i class="bi bi-eye"></i></button>
-									<button class="btn btn-outline-primary btn-status me-1" data-id="@user.Id" type="button" title="Change Status"><i class="bi bi-pencil"></i></button>
-								</td>
-							</tr>
-						}
-					</tbody>
-				</table>
-			</div>
-		</div>
-	</div>
+                        <div class="col-lg-3 col-md-6">
+                            <div class="d-flex align-items-center border-start border-4 border-warning px-3 py-2 rounded shadow-sm">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-user-plus fa-2x text-warning me-3"></i>
+                                </div>
+                                <div>
+                                    <div class="text-xs text-muted">PENDING APPROVALS</div>
+                                    <div class="h5 mb-0 font-weight-bold">@Model.Step1_Applicants.Count</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-3 col-md-6">
+                            <div class="d-flex align-items-center border-start border-4 border-success px-3 py-2 rounded shadow-sm">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-store fa-2x text-success me-3"></i>
+                                </div>
+                                <div>
+                                    <div class="text-xs text-muted">MARKETPLACE REQUESTS</div>
+                                    <div class="h5 mb-0 font-weight-bold">@Model.Step2_Applicants.Count</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-3 col-md-6">
+                            <div class="d-flex align-items-center border-start border-4 border-info px-3 py-2 rounded shadow-sm">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-check-circle fa-2x text-info me-3"></i>
+                                </div>
+                                <div>
+                                    <div class="text-xs text-muted">ACTIVE BUSINESSES</div>
+                                    <div class="h5 mb-0 font-weight-bold">@Model.AllUsers.Count(u => u.IsVerified && u.MarkerPlaceStatus == Project_Creation.Models.Entities.Users.MarketplaceStatus.Authorized)</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions & Main Content Row -->
+    <div class="row">
+        <!-- Quick Actions Column -->
+        <div class="col-lg-3 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-primary text-white">
+                    <h6 class="m-0 font-weight-bold">Quick Actions</h6>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        <a href="/Admin/BOApproval" class="list-group-item list-group-item-action py-3 px-3">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0 me-3">
+                                    <i class="fas fa-user-check text-primary"></i>
+                                </div>
+                                <div>
+                                    <div class="font-weight-bold">Account Approvals</div>
+                                    <small class="text-muted">Verify new business accounts</small>
+                                </div>
+                            </div>
+                        </a>
+                        <a href="/Admin/MarketplaceApproval" class="list-group-item list-group-item-action py-3 px-3">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0 me-3">
+                                    <i class="fas fa-store text-success"></i>
+                                </div>
+                                <div>
+                                    <div class="font-weight-bold">Marketplace Approvals</div>
+                                    <small class="text-muted">Review marketplace requests</small>
+                                </div>
+                            </div>
+                        </a>
+                        <a href="/Admin/BusinessOwners" class="list-group-item list-group-item-action py-3 px-3">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0 me-3">
+                                    <i class="fas fa-users text-info"></i>
+                                </div>
+                                <div>
+                                    <div class="font-weight-bold">Business Owners</div>
+                                    <small class="text-muted">Manage all business accounts</small>
+                                </div>
+                            </div>
+                        </a>
+                        <a href="/Admin/StaffLimits" class="list-group-item list-group-item-action py-3 px-3">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0 me-3">
+                                    <i class="fas fa-user-cog text-warning"></i>
+                                </div>
+                                <div>
+                                    <div class="font-weight-bold">Staff Limits</div>
+                                    <small class="text-muted">Manage staff account limits</small>
+                                </div>
+                            </div>
+                        </a>
+                        <a href="/Admin/ContactMessages" class="list-group-item list-group-item-action py-3 px-3">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0 me-3">
+                                    <i class="fas fa-envelope text-info"></i>
+                                </div>
+                                <div>
+                                    <div class="font-weight-bold">Contact Messages</div>
+                                    <small class="text-muted">Manage customer inquiries</small>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Dashboard Content -->
+        <div class="col-lg-9">
+            <div class="row">
+                <!-- Business Category Distribution -->
+                <div class="col-lg-6 mb-4">
+                    <div class="card shadow h-100">
+                        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                            <h6 class="m-0 font-weight-bold text-primary">Business Categories</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-pie pt-4 pb-2">
+                                <canvas id="businessCategoriesChart"></canvas>
+                            </div>
+                            <div class="mt-4 text-center small">
+                                @if (Model.BusinessCategories != null && Model.BusinessCategories.Any())
+                                {
+                                    @foreach (var category in Model.BusinessCategories.Take(5))
+                                    {
+                                        <span class="me-2">
+                                            <i class="fas fa-circle" style="color: #@(Math.Abs(category.GetHashCode()).ToString("X6").Substring(0, 6))"></i> @category
+                                        </span>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="text-muted">No categories available</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Marketplace Status Chart -->
+                <div class="col-lg-6 mb-4">
+                    <div class="card shadow h-100">
+                        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                            <h6 class="m-0 font-weight-bold text-primary">Marketplace Status</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-pie pt-4 pb-2">
+                                <canvas id="marketplaceStatusChart"></canvas>
+                            </div>
+                            <div class="mt-4 text-center small">
+                                <span class="me-2">
+                                    <i class="fas fa-circle text-success"></i> Authorized
+                                </span>
+                                <span class="me-2">
+                                    <i class="fas fa-circle text-warning"></i> Awaiting Approval
+                                </span>
+                                <span class="me-2">
+                                    <i class="fas fa-circle text-secondary"></i> Not Applied
+                                </span>
+                                <span class="me-2">
+                                    <i class="fas fa-circle text-danger"></i> Rejected
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Business Owners -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">Recent Business Owners</h6>
+                    <a href="/Admin/BusinessOwners" class="btn btn-sm btn-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Business Name</th>
+                                    <th>Owner</th>
+                                    <th>Category</th>
+                                    <th>Status</th>
+                                    <th>Registered</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.AllUsers != null && Model.AllUsers.Any())
+                                {
+                                    @foreach (var user in Model.AllUsers.OrderByDescending(u => u.RegistrationDate).Take(5))
+                                    {
+                                        <tr>
+                                            <td>@user.BusinessName</td>
+                                            <td>@user.FirstName @user.LastName</td>
+                                            <td>@user.CategoryOfBusiness</td>
+                                            <td>
+                                                @if (user.IsVerified)
+                                                {
+                                                    <span class="badge bg-success">Verified</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-warning">Awaiting Approval</span>
+                                                }
+                                            </td>
+                                            <td>@user.RegistrationDate.ToString("MMM dd, yyyy")</td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="5" class="text-center py-4 text-muted">No business owners found</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
-<!-- Modal for viewing user details -->
-<div class="modal fade" id="userDetailsModal" tabindex="-1" role="dialog" aria-hidden="true">
-	<div class="modal-dialog modal-lg" role="document">
-		<div class="modal-content">
-			<div class="modal-header bg-info text-white">
-				<h5 class="modal-title"><i class="bi bi-person-lines-fill"></i> User Details</h5>
-				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-			</div>
-			<div class="modal-body" id="userDetailsContent">
-				<div class="text-center my-4">
-					<div class="spinner-border text-info" role="status">
-						<span class="visually-hidden">Loading...</span>
-					</div>
-				</div>
-			</div>
-			<div class="modal-footer justify-content-between">
-				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-					<i class="bi bi-x-circle"></i> Close
-				</button>
-				<div>
-					<div class="d-flex flex-row gap-2" id="modalFooterActionButtons">
-						<!-- Buttons will be injected here by JS -->
-					</div>
-					<input type="hidden" name="id" id="modalUserId" />
-				</div>
-			</div>
-		</div>
-	</div>
-</div>
-
-<!-- Modal for changing user status -->
-<div class="modal fade" id="changeStatusModal" tabindex="-1" role="dialog" aria-hidden="true">
-	<div class="modal-dialog modal-lg" role="document">
-		<div class="modal-content">
-			<div class="modal-header bg-primary text-white">
-				<h5 class="modal-title"><i class="bi bi-pencil"></i> Change User Status</h5>
-				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-			</div>
-			<div class="modal-body" id="changeStatusContent">
-				<div class="mb-3">
-					<label for="verifiedStatus" class="form-label">Verified Status:</label>
-					<select id="verifiedStatus" class="form-select">
-						<option value="true">Verified</option>
-						<option value="false">Unverified</option>
-					</select>
-				</div>
-				<div class="mb-3">
-					<label for="marketplaceStatus" class="form-label">Marketplace Status:</label>
-					<select id="marketplaceStatus" class="form-select">
-						<option value="0" id="Pending">Pending</option>
-						<option value="1" id="Requesting">Requesting</option>
-						<option value="2" id="Approved">Approved</option>
-						<option value="3" id="Rejected">Rejected</option>
-					</select>
-				</div>
-			</div>
-			<div class="modal-footer justify-content-between">
-				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-					<i class="bi bi-x-circle"></i> Close
-				</button>
-				<input id="modalUserId2" />
-				<button type="button" class="btn btn-primary" id="saveStatusChanges">
-					<i class="bi bi-check-circle"></i> Save Changes
-				</button>
-
-			</div>
-		</div>
-	</div>
-</div>
-
-<!-- Rejection Reason Modal -->
-<div class="modal fade" id="rejectionModal" tabindex="-1" role="dialog" aria-hidden="true">
-	<div class="modal-dialog" role="document">
-		<div class="modal-content">
-			<div class="modal-header bg-danger text-white">
-				<h5 class="modal-title"><i class="bi bi-x-octagon"></i> Reject Application</h5>
-				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-			</div>
-			<div class="modal-body">
-				<form id="rejectionForm" novalidate>
-					<input type="hidden" id="rejectionUserId" required>
-					<input type="hidden" id="rejectionType" required>
-
-					<div class="mb-3">
-						<label for="emailSubject" class="form-label">Email Subject <span class="text-danger">*</span></label>
-						<input type="text" class="form-control" id="emailSubject" required>
-						<div class="invalid-feedback">Please provide an email subject</div>
-					</div>
-
-					<div class="mb-3">
-						<label for="rejectionReason" class="form-label">Primary Reason <span class="text-danger">*</span></label>
-						<select class="form-select" id="rejectionReason" required>
-							<option value="" selected disabled>Select a reason</option>
-							<option value="Incomplete documentation">Incomplete documentation</option>
-							<option value="Business not eligible">Business not eligible</option>
-							<option value="Information verification failed">Information verification failed</option>
-							<option value="Other">Other (specify below)</option>
-						</select>
-						<div class="invalid-feedback">Please select a rejection reason</div>
-					</div>
-
-					<div class="mb-3" id="customReasonContainer" style="display:none;">
-						<label for="customReason" class="form-label">Custom Reason <span class="text-danger">*</span></label>
-						<textarea class="form-control" id="customReason" rows="2" required></textarea>
-						<div class="invalid-feedback">Please provide a custom reason</div>
-					</div>
-
-					<div class="mb-3">
-						<label for="additionalMessage" class="form-label">Additional Message</label>
-						<textarea class="form-control" id="additionalMessage" rows="4"></textarea>
-					</div>
-				</form>
-			</div>
-			<div class="modal-footer">
-				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-				<button type="button" class="btn btn-danger" id="confirmRejection">Send Rejection</button>
-			</div>
-		</div>
-	</div>
-</div>
-
-<!-- Add this loading overlay div at the bottom of your body -->
-<div class="loading-overlay" style="display: none;">
-	<div class="loading-spinner">
-		<div class="spinner-border" role="status">
-			<span class="visually-hidden">Loading...</span>
-		</div>
-		<div class="mt-2">Processing...</div>
-	</div>
-</div>
-
-<style>
-	.loading-overlay {
-		position: fixed;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		background: rgba(0, 0, 0, 0.5);
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		z-index: 9999;
-	}
-
-	.loading-spinner {
-		color: white;
-		font-size: 2rem;
-	}
-
-	/* New styles for enhanced UI */
-	.card {
-		border: none;
-		border-radius: 0.5rem;
-		overflow: hidden;
-		margin-bottom: 1.5rem;
-	}
-
-	.card-header {
-		padding: 0.75rem 1.25rem;
-	}
-
-	.table {
-		margin-bottom: 0;
-	}
-
-	.table th {
-		white-space: nowrap;
-		position: relative;
-		cursor: pointer;
-	}
-
-	.table th.sort::after {
-		content: "";
-		display: inline-block;
-		margin-left: 0.25rem;
-		opacity: 0.5;
-	}
-
-	.table th.sort.asc::after {
-		content: "↑";
-	}
-
-	.table th.sort.desc::after {
-		content: "↓";
-	}
-
-	.search-input {
-		transition: all 0.3s;
-	}
-
-	.search-input:focus {
-		box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.1);
-	}
-
-	.badge {
-		font-weight: 500;
-		padding: 0.35em 0.5em;
-	}
-
-	.btn-sm {
-		padding: 0.25rem 0.5rem;
-		font-size: 0.75rem;
-	}
-
-	.empty-table-message {
-		padding: 2rem;
-		text-align: center;
-		color: #6c757d;
-	}
-
-	/* Ensure dropdown toggle is clickable */
-	.dropdown-toggle, .btn-light.dropdown-toggle {
-		cursor: pointer !important;
-		z-index: 100;
-	}
-	
-	/* Make sure the dropdown menu appears properly */
-	.dropdown-menu {
-		z-index: 2000;
-	}
-</style>
-
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@@emailjs/browser@3/dist/email.min.js"></script>
-<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
-<script>
-	$(document).ready(function() {
-		// Initialize EmailJS
-		emailjs.init('AmtWnMNC-dAZMEVas'); // Replace with your EmailJS user ID
-
-		var currentUserId;
-
-		// Helper functions to show/hide loading overlay
-		function showLoading() {
-			$('.loading-overlay').show();
-		}
-
-		function hideLoading() {
-			$('.loading-overlay').hide();
-		}
-
-		// Search functionality
-		$('#searchInput').on('keyup', function() {
-			var value = $(this).val().toLowerCase();
-			$('.table tbody tr').filter(function() {
-				$(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
-			});
-		});
-
-		// View user details
-		$(document).on('click', '.btn-view', function() {
-			var userId = $(this).data('id');
-			var step = $(this).data('step');
-			currentUserId = userId;
-			$('#modalUserId').val(userId);
-			// console.log("userId: ",userId);
-			$('#userDetailsContent').html('<div class="text-center my-4"><div class="spinner-border text-info" role="status"><span class="visually-hidden">Loading...</span></div></div>');
-			$('#modalFooterActionButtons').empty();
-			$('#userDetailsModal').modal('show');
-
-			$.get(`/Admin/GetUserDetails/${userId}`, function(html) {
-				$('#userDetailsContent').html(html);
-				$.get(`/Admin/GetUserStatusJson/${userId}`, function(user) {
-					// console.log(step);
-					renderModalFooterButtons(user, step);
-				});
-			});
-		});
-
-		let userId2 = 0;
-		let previousAccountStatus = false;
-		let previousMarketplaceStatus = "";
-		let name = "";
-		let userEmail = "";
-
-		// Change status modal
-		$(document).on('click', '.btn-status', function() {
-			var userId = $(this).data('id');
-			// console.log('/Admin/GetUserStatusJson/', userId);
-			$.get('/Admin/GetUserStatusJson/' + userId, function(user) {
-				$('#verifiedStatus').val(user.isVerified ? 'true' : 'false');
-
-				// Convert enum to numeric value for the select
-				let marketplaceValue;
-				switch(user.marketplaceStatus) {
-					case "Pending": marketplaceValue = 0; break;
-					case "Requesting": marketplaceValue = 1; break;
-					case "Approved": marketplaceValue = 2; break;
-					case "Rejected": marketplaceValue = 3; break;
-					default: marketplaceValue = 0;
-				}
-
-				$('#modalUserId2').val(userId);
-				$('#marketplaceStatus').val(marketplaceValue);
-				// console.log('marketplaceStatus: ', marketplaceValue);
-				$('#changeStatusModal').modal('show');
-			});
-		});
-
-		// Updated Save Status Changes with loading indicator
-		$('#saveStatusChanges').click(async function () {
-			var userId = $('#modalUserId2').val();
-			var isVerified = $('#verifiedStatus').val() === 'true';
-			var marketplaceValue = parseInt($('#marketplaceStatus').val());
-			// console.log('saveStatusChanges userId: ', userId);
-			// console.log('saveStatusChanges isVerified: ', isVerified);
-			// console.log('saveStatusChanges marketplaceValue: ', marketplaceValue);
-			showLoading();
-			try {
-				const response = await $.ajax({
-					url: '@Url.Action("ChangeUserStatus", "Admin")',
-					type: 'POST',
-					headers: {
-						"RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val()
-					},
-					data: {
-						id: parseInt(userId),
-						isVerified: isVerified,
-						MarkerPlaceStatus2: marketplaceValue
-					}
-				});
-
-				if (response.success) {
-					hideLoading();
-					location.reload();
-				} else {
-					hideLoading();
-					Swal.fire('Error', response.message || 'Failed to update status', 'error');
-				}
-			} catch (err) {
-				hideLoading();
-				console.error(err);
-				Swal.fire('Error', 'Failed to update status', 'error');
-			}
-		});
-
-
-		// Updated Verify User function with loading indicator
-		$(document).on('click', '.btn-verify, #btn-verify-modal', function() {
-			var userId = $(this).data('id');
-
-			Swal.fire({
-				title: 'Verify User',
-				html: `
-					<div class="mb-3">
-						<label for="customMessage" class="form-label">Custom Message</label>
-						<textarea id="customMessage" class="form-control" rows="3">Congratulations! Your account has been verified. Please complete your registration.</textarea>
-					</div>
-					<div class="mb-3">
-						<label for="verificationLink" class="form-label">Verification Link</label>
-						<input type="url" id="verificationLink" class="form-control" value="${window.location.origin}/Register/SecondRegistration?userId=${userId}" placeholder="Enter verification link">
-					</div>
-				`,
-				showCancelButton: true,
-				confirmButtonText: 'Verify & Send Email',
-				cancelButtonText: 'Cancel',
-				focusConfirm: false,
-				preConfirm: () => {
-					return {
-						customMessage: document.getElementById('customMessage').value,
-						verificationLink: document.getElementById('verificationLink').value
-					}
-				}
-			}).then(async (result) => {
-				if (result.isConfirmed) {
-					try {
-						showLoading();
-						const { customMessage, verificationLink } = result.value;
-
-						const response = await $.ajax({
-							url: '@Url.Action("VerifyUser", "Admin")',
-							type: 'POST',
-							headers: {
-								"RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val()
-							},
-							data: {
-								id: userId,
-								customMessage: customMessage,
-								verificationLink: verificationLink
-							}
-						});
-
-						if (response.success) {
-							await emailjs.send('service_jmbqcmr', 'template_generalize', {
-								subject: 'Account Verification',
-								message: `${customMessage}\n\nVerification link: ${verificationLink}`,
-								to_email: response.user.email
-							});
-
-							hideLoading();
-							Swal.fire({
-								icon: 'success',
-								title: 'Verified',
-								text: 'User verified and email sent'
-							}).then(() => location.reload());
-						}
-					} catch (error) {
-						hideLoading();
-						Swal.fire('Error', 'Failed to verify user', 'error');
-					}
-				}
-			});
-		});
-
-		// Updated Accept Marketplace Access with loading indicator
-		$(document).on('click', '.btn-accept, #btn-allow-modal', function() {
-			var userId = $(this).data('id');
-			Swal.fire({
-				title: 'Allow Marketplace Access?',
-				text: 'This will grant the user access to the marketplace',
-				icon: 'question',
-				showCancelButton: true,
-				confirmButtonText: 'Yes, Allow Access',
-				cancelButtonText: 'Cancel'
-			}).then(async (result) => {
-				if (result.isConfirmed) {
-					try {
-						showLoading();
-						const response = await $.ajax({
-							url: '@Url.Action("AllowMarketplace", "Admin")',
-							type: 'POST',
-							headers: {
-								"RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val()
-							},
-							data: { id: userId }
-						});
-
-						if (response.success) {
-							await emailjs.send('service_jmbqcmr', 'template_marketplace', {
-								subject: 'Marketplace Access Approved',
-								message: 'Congratulations! Your marketplace access has been approved.',
-								to_email: response.user.email,
-								to_name: response.user.name
-							});
-
-							hideLoading();
-							Swal.fire({
-								icon: 'success',
-								title: 'Access Granted',
-								text: 'User can now access the marketplace'
-							}).then(() => location.reload());
-						}
-					} catch (error) {
-						hideLoading();
-						Swal.fire('Error', 'Failed to grant access', 'error');
-					}
-				}
-			});
-		});
-
-		// Rejection reason toggle
-		$('#rejectionReason').change(function() {
-			const isOther = $(this).val() === 'Other';
-			$('#customReasonContainer').toggle(isOther);
-
-			// Reset validation when changing reason
-			if (!isOther) {
-				$('#customReason').val('').removeClass('is-invalid');
-			}
-		});
-
-		// Unified reject button handler
-		$(document).on('click', '.btn-reject, .btn-reject-marketplace, #btn-reject-modal, #btn-unverify-toggle, #btn-disallow-toggle', function() {
-			const userId = $(this).data('id');
-			const isMarketplace = $(this).hasClass('btn-reject-marketplace');
-
-			$('#rejectionUserId').val(userId);
-			$('#rejectionType').val(isMarketplace ? 'marketplace' : 'account');
-			$('#emailSubject').val(isMarketplace
-				? 'Marketplace Access Rejected'
-				: 'Account Application Rejected');
-			$('#rejectionReason').val('Incomplete documentation');
-			$('#customReason').val('');
-			$('#customReasonContainer').hide();
-			$('#additionalMessage').val(
-				'If you have any questions, please contact our support team.\n\nBest regards,\nGrowSphere Team'
-			);
-
-			$('#rejectionModal').modal('show');
-		});
-
-		// Updated Reject User with validation
-		$('#confirmRejection').click(async function() {
-			// Reset validation states
-			$('#rejectionForm').removeClass('was-validated');
-			$('.is-invalid').removeClass('is-invalid');
-
-			// Get form elements
-			const form = document.getElementById('rejectionForm');
-			const userId = $('#rejectionUserId').val();
-			const rejectionType = $('#rejectionType').val();
-			const subject = $('#emailSubject').val();
-			const reasonSelect = $('#rejectionReason');
-			let reason = reasonSelect.val();
-
-			// Manually validate required fields
-			let isValid = true;
-
-			// Validate email subject
-			if (!subject) {
-				$('#emailSubject').addClass('is-invalid');
-				isValid = false;
-			}
-
-			// Validate reason selection
-			if (!reason) {
-				reasonSelect.addClass('is-invalid');
-				isValid = false;
-			}
-
-			// Validate custom reason if "Other" is selected
-			if (reason === 'Other') {
-				const customReason = $('#customReason').val();
-				if (!customReason.trim()) {
-					$('#customReason').addClass('is-invalid');
-					isValid = false;
-				} else {
-					reason = customReason;
-				}
-			}
-
-			if (!isValid) {
-				$('#rejectionForm').addClass('was-validated');
-				return;
-			}
-
-			const additionalMessage = $('#additionalMessage').val();
-			const emailMessage = `Dear User,\n\nWe regret to inform you that your ${rejectionType === 'marketplace' ? 'marketplace access' : 'account'} application has been rejected.\n\nReason: ${reason}\n\n${additionalMessage}`;
-
-			try {
-				showLoading();
-				$('#rejectionModal').modal('hide');
-
-				const endpoint = rejectionType === 'marketplace'
-					? '@Url.Action("RejectMarketplace", "Admin")'
-					: '@Url.Action("RejectUser", "Admin")';
-
-				const response = await $.ajax({
-					url: endpoint,
-					type: 'POST',
-					headers: {
-						"RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val()
-					},
-					data: {
-						id: userId,
-						rejectionReason: reason
-					}
-				});
-
-				if (response.success) {
-					await emailjs.send('service_jmbqcmr', 'template_generalize', {
-						subject: subject,
-						message: emailMessage,
-						to_email: response.user.email
-					});
-
-					hideLoading();
-					Swal.fire({
-						icon: 'success',
-						title: 'Rejected',
-						text: 'User has been rejected and notified'
-					}).then(() => location.reload());
-				}
-			} catch (error) {
-				hideLoading();
-				Swal.fire('Error', 'Failed to process rejection', 'error');
-			}
-		});
-
-		// Handle marketplace status changes from modal footer
-		$(document).on('click', '#btn-approve-marketplace', function() {
-			const userId = $(this).data('id');
-			updateMarketplaceStatus(userId, 2);
-		});
-
-		$(document).on('click', '#btn-request-marketplace', function() {
-			const userId = $(this).data('id');
-			updateMarketplaceStatus(userId, 1);
-		});
-
-		$(document).on('click', '#btn-reject-marketplace', function() {
-			const userId = $(this).data('id');
-			updateMarketplaceStatus(userId, 3);
-		});
-
-		// Helper function to update marketplace status
-		function updateMarketplaceStatus(userId, status) {
-			showLoading();
-			$.ajax({
-				url: '@Url.Action("ChangeUserMarketPlaceStatus", "Admin")',
-				type: 'POST',
-				headers: {
-					"RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val()
-				},
-				data: {
-					id: parseInt(userId),
-					MarkerPlaceStatus2: status.toString()
-				},
-				success: function(response) {
-					hideLoading();
-					if (response.success) {
-						location.reload();
-					} else {
-						Swal.fire('Error', response.message || 'Failed to update status', 'error');
-					}
-				},
-				error: function(xhr) {
-					hideLoading();
-					Swal.fire('Error', 'Failed to update marketplace status: ' + xhr.responseText, 'error');
-				}
-			});
-		}
-
-		// Handle verification toggles
-		$(document).on('click', '#btn-verify-toggle', function() {
-			const userId = $(this).data('id');
-			updateVerificationStatus(userId, true);
-		});
-
-		// $(document).on('click', '#btn-unverify-toggle', function() {
-		// 	const userId = $(this).data('id');
-		// 	updateVerificationStatus(userId, false);
-		// });
-
-		// Helper function to update verification status
-		function updateVerificationStatus(userId, isVerified) {
-			showLoading();
-			$.ajax({
-				url: '@Url.Action("ToggleUserStatus", "Admin")',
-				type: 'POST',
-				headers: {
-					"RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val()
-				},
-				data: {
-					id: userId,
-					isVerified: isVerified,
-				},
-				success: function() {
-					hideLoading();
-					location.reload();
-				},
-				error: function(xhr) {
-					hideLoading();
-					Swal.fire('Error', 'Failed to update verification status: ' + xhr.responseText, 'error');
-				}
-			});
-		}
-
-		// Helper function to render modal buttons
-		function renderModalFooterButtons(user, step) {
-			var html = '';
-			if (step === 1) {
-				html += `<button class="btn btn-success me-2" id="btn-verify-modal" data-id="${user.id}">
-					<i class="bi bi-check-circle"></i> Verify
-				</button>`;
-				html += `<button class="btn btn-outline-danger" id="btn-reject-modal" data-id="${user.id}">
-					<i class="bi bi-x-octagon"></i> Reject
-				</button>`;
-			} else if (step === 2) {
-				html += `<button class="btn btn-success me-2" id="btn-allow-modal" data-id="${user.id}">
-					<i class="bi bi-shop"></i> Allow Marketplace
-				</button>`;
-				html += `<button class="btn btn-outline-danger" id="btn-reject-mp-modal" data-id="${user.id}">
-					<i class="bi bi-x-octagon"></i> Reject
-				</button>`;
-			} else if (step === 3) {
-				// For Step 3 users, show both verification and marketplace status controls
-				html += `<div class="btn-group me-2">
-					<button class="btn ${user.isVerified ? 'btn-success' : 'btn-outline-secondary'}" id="btn-verify-toggle" data-id="${user.id}">
-						<i class="bi bi-person-check"></i> ${user.isVerified ? 'Verified' : 'Verified'}
-					</button>
-					<button class="btn ${!user.isVerified ? 'btn-danger' : 'btn-outline-secondary'}" id="btn-unverify-toggle" data-id="${user.id}">
-						<i class="bi bi-person-x"></i> ${!user.isVerified ? 'Unverified' : 'Unverified'}
-					</button>
-				</div>`;
-
-				// Marketplace status controls
-				html += `<div class="btn-group">
-					<button class="btn ${user.isAllowedToMarketPlace === 'Approved' ? 'btn-success' : 'btn-outline-secondary'}"
-							id="btn-approve-marketplace" data-id="${user.id}">
-						<i class="bi bi-check-circle"></i> Approve
-					</button>
-					<button class="btn ${user.isAllowedToMarketPlace === 'Requesting' ? 'btn-warning' : 'btn-outline-warning'}"
-							id="btn-request-marketplace" data-id="${user.id}">
-						<i class="bi bi-hourglass"></i> Requesting
-					</button>
-					<button class="btn ${user.isAllowedToMarketPlace === 'Rejected' ? 'btn-danger' : 'btn-outline-danger'}"
-							id="btn-reject-marketplace" data-id="${user.id}">
-						<i class="bi bi-x-circle"></i> Reject
-					</button>
-				</div>`;
-			}
-			$('#modalFooterActionButtons').html(html);
-		}
-	});
-</script>
-<script>
-	$(document).ready(function(){
-		// Enhanced search functionality for each table
-		$('.search-input').on('keyup', function() {
-			const tableId = $(this).data('table') + 'Table';
-			const value = $(this).val().toLowerCase();
-			$(`#${tableId} tbody tr`).filter(function() {
-				$(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
-			});
-		});
-
-		// Sorting functionality
-		$('.sort').click(function() {
-			const table = $(this).closest('table');
-			const index = $(this).index();
-			const rows = table.find('tbody > tr').get();
-			const isAsc = $(this).hasClass('asc');
-
-			// Remove all sort classes
-			table.find('.sort').removeClass('asc desc');
-
-			// Sort rows
-			rows.sort(function(a, b) {
-				const aVal = $(a).find('td').eq(index).text().toLowerCase();
-				const bVal = $(b).find('td').eq(index).text().toLowerCase();
-
-				if (index === 3 || index === 4) {
-					// For status columns, sort by badge text
-					const aBadge = $(a).find('td').eq(index).find('.badge').text().toLowerCase();
-					const bBadge = $(b).find('td').eq(index).find('.badge').text().toLowerCase();
-					return isAsc ? aBadge.localeCompare(bBadge) : bBadge.localeCompare(aBadge);
-				} else {
-					return isAsc ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
-				}
-			});
-
-			// Re-add rows in new order
-			$.each(rows, function(index, row) {
-				table.find('tbody').append(row);
-			});
-
-			// Add appropriate class to header
-			$(this).addClass(isAsc ? 'desc' : 'asc');
-		});
-
-		// Filter by category
-		$('#step3SortCategory').change(function () {
-			const category = $(this).val();
-			$('#step3Table tbody tr').each(function () {
-				const rowCategory = $(this).data('category');
-				if (!category || category === 'Filter by category' || category === 'All' || rowCategory === category) {
-					$(this).show();
-				} else {
-					$(this).hide();
-				}
-			});
-		});
-
-		$('#sortMarketplaceOnly').change(function () {
-			const selectedStatus = $(this).val();
-			$('#step3Table tbody tr').each(function () {
-				const marketplaceStatus = $(this).data('marketplace');
-
-				if (!selectedStatus || selectedStatus === 'Sort MarketPlace' || selectedStatus === 'All') {
-					$(this).show();
-				} else if (marketplaceStatus === selectedStatus) {
-					$(this).show();
-				} else {
-					$(this).hide();
-				}
-			});
-		});
-	});
-</script>
-
-<!-- Add this script to fix Account dropdown clicking issues -->
-<script>
-	// Make sure the Account dropdown works correctly
-	$(document).ready(function() {
-		// Manually initialize dropdowns
-		var dropdownElements = document.querySelectorAll('.dropdown-toggle');
-		dropdownElements.forEach(function(element) {
-			new bootstrap.Dropdown(element);
-		});
-		
-		// Add an explicit event handler for the Account dropdown
-		$('.navbar-auth-buttons .dropdown-toggle').on('click', function(e) {
-			e.stopPropagation();
-			$(this).dropdown('toggle');
-		});
-		
-		// Make sure the logout button in the dropdown works
-		$('.dropdown-menu form button').on('click', function() {
-			$(this).closest('form').submit();
-		});
-	});
-</script>
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Business Categories Chart
+            var ctxBusinessCategories = document.getElementById("businessCategoriesChart");
+            var businessCategoriesData = {
+                labels: [
+        @if (Model.BusinessCategories != null && Model.BusinessCategories.Any())
+        {
+            @foreach (var category in Model.BusinessCategories)
+            {
+                @Html.Raw($"\"{category}\",")
+            }
+        }
+                ],
+                datasets: [{
+                    data: [
+        @if (Model.BusinessCategories != null && Model.BusinessCategories.Any())
+        {
+            @foreach (var category in Model.BusinessCategories)
+            {
+                @Html.Raw($"{Model.AllUsers.Count(u => u.CategoryOfBusiness == category)},")
+            }
+        }
+                    ],
+                    backgroundColor: [
+        @if (Model.BusinessCategories != null && Model.BusinessCategories.Any())
+        {
+            @foreach (var category in Model.BusinessCategories)
+            {
+                @Html.Raw($"\"#{Math.Abs(category.GetHashCode()).ToString("X6").Substring(0, 6)}\",")
+            }
+        }
+                    ],
+                    hoverBackgroundColor: [
+        @if (Model.BusinessCategories != null && Model.BusinessCategories.Any())
+        {
+            @foreach (var category in Model.BusinessCategories)
+            {
+                @Html.Raw($"\"#{Math.Abs(category.GetHashCode()).ToString("X6").Substring(0, 6)}\",")
+            }
+        }
+                    ],
+                    hoverBorderColor: "rgba(234, 236, 244, 1)",
+                }],
+            };
+
+            if (ctxBusinessCategories) {
+                var businessCategoriesChart = new Chart(ctxBusinessCategories, {
+                    type: 'doughnut',
+                    data: businessCategoriesData,
+                    options: {
+                        maintainAspectRatio: false,
+                        tooltips: {
+                            backgroundColor: "rgb(255,255,255)",
+                            bodyFontColor: "#858796",
+                            borderColor: '#dddfeb',
+                            borderWidth: 1,
+                            xPadding: 15,
+                            yPadding: 15,
+                            displayColors: false,
+                            caretPadding: 10,
+                        },
+                        legend: {
+                            display: false
+                        },
+                        cutoutPercentage: 70,
+                    },
+                });
+            }
+
+            // Marketplace Status Chart
+            var ctxMarketplaceStatus = document.getElementById("marketplaceStatusChart");
+            var approvedCount = @Model.AllUsers.Count(u => u.MarkerPlaceStatus == Project_Creation.Models.Entities.Users.MarketplaceStatus.Authorized);
+            var requestingCount = @Model.AllUsers.Count(u => u.MarkerPlaceStatus == Project_Creation.Models.Entities.Users.MarketplaceStatus.AwaitingApproval);
+            var pendingCount = @Model.AllUsers.Count(u => u.MarkerPlaceStatus == Project_Creation.Models.Entities.Users.MarketplaceStatus.NotApplied);
+            var rejectedCount = @Model.AllUsers.Count(u => u.MarkerPlaceStatus == Project_Creation.Models.Entities.Users.MarketplaceStatus.Rejected);
+
+            var marketplaceStatusData = {
+                labels: ["Authorized", "Awaiting Approval", "Not Applied", "Rejected"],
+                datasets: [{
+                    data: [approvedCount, requestingCount, pendingCount, rejectedCount],
+                    backgroundColor: ['#1cc88a', '#f6c23e', '#858796', '#e74a3b'],
+                    hoverBackgroundColor: ['#17a673', '#dda20a', '#60616f', '#be2617'],
+                    hoverBorderColor: "rgba(234, 236, 244, 1)",
+                }],
+            };
+
+            if (ctxMarketplaceStatus) {
+                var marketplaceStatusChart = new Chart(ctxMarketplaceStatus, {
+                    type: 'doughnut',
+                    data: marketplaceStatusData,
+                    options: {
+                        maintainAspectRatio: false,
+                        tooltips: {
+                            backgroundColor: "rgb(255,255,255)",
+                            bodyFontColor: "#858796",
+                            borderColor: '#dddfeb',
+                            borderWidth: 1,
+                            xPadding: 15,
+                            yPadding: 15,
+                            displayColors: false,
+                            caretPadding: 10,
+                        },
+                        legend: {
+                            display: false
+                        },
+                        cutoutPercentage: 70,
+                    },
+                });
+            }
+        });
+    </script>
+}

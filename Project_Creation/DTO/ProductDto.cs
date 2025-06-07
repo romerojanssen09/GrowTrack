@@ -60,9 +60,9 @@ namespace Project_Creation.DTO
         public decimal SellingPrice { get; set; }
         public DateTime? CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
-        public List<Supplier2> Suppliers { get; set; } = new List<Supplier2>();
+        public List<Supplier> Suppliers { get; set; } = new List<Supplier>();
         public List<Category> Category { get; set; } = new List<Category>();
-        public Supplier2? Supplier2 { get; set; }
+        public Supplier? Supplier2 { get; set; }
         public List<ProductImage>? Images { get; set; }
         public string Category2 { get; set; } = string.Empty; // For existing categories
 

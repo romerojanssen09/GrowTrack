@@ -4,59 +4,128 @@
     ViewData["Title"] = "Record Stock In";
 }
 
-<div class="container">
-    <h1>Record Stock In</h1>
-    <hr />
-
-    <form asp-action="StockIn">
-        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label asp-for="ProductId" class="control-label"></label>
-                    <select asp-for="ProductId" class="form-control"
-                            asp-items="@(new SelectList(Model.AvailableProducts, "Id", "ProductName"))">
-                        <option value="">-- Select Product --</option>
-                    </select>
-                    <span asp-validation-for="ProductId" class="text-danger"></span>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label asp-for="Quantity" class="control-label"></label>
-                    <input asp-for="Quantity" class="form-control" />
-                    <span asp-validation-for="Quantity" class="text-danger"></span>
-                </div>
-            </div>
+<div class="container mt-4">
+    <div class="card shadow-sm mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h4 class="mb-0 text-accent">Record Stock In</h4>
+            <a asp-action="Index" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-1"></i>
+                Back to Inventory
+            </a>
         </div>
-
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label asp-for="ReceivingDate" class="control-label"></label>
-                    <input asp-for="ReceivingDate" class="form-control" />
-                    <span asp-validation-for="ReceivingDate" class="text-danger"></span>
+        <div class="card-body">
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="alert alert-danger">
+                    <ul>
+                        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                        {
+                            <li>@error.ErrorMessage</li>
+                        }
+                    </ul>
                 </div>
-            </div>
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label asp-for="Notes" class="control-label"></label>
-                    <input asp-for="Notes" class="form-control" />
-                    <span asp-validation-for="Notes" class="text-danger"></span>
-                </div>
-            </div>
-        </div>
+            }
 
-        <div class="form-group">
-            <input type="submit" value="Record Stock In" class="btn btn-primary" />
-            <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+            <form asp-action="StockIn">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <div class="row mb-4 p-3 bg-white">
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label asp-for="ProductId" class="form-label">Product</label>
+                            <select asp-for="ProductId" class="form-select" id="productSelect"
+                                    asp-items="@(new SelectList(Model.AvailableProducts, "Id", "ProductName"))">
+                                <option value="">-- Select Product --</option>
+                            </select>
+                            <span asp-validation-for="ProductId" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label asp-for="Quantity" class="form-label">Quantity to Add</label>
+                            <input asp-for="Quantity" class="form-control" min="1" />
+                            <span asp-validation-for="Quantity" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label asp-for="ReceivingDate" class="form-label">Receiving Date</label>
+                            <input asp-for="ReceivingDate" class="form-control" />
+                            <span asp-validation-for="ReceivingDate" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label asp-for="Notes" class="form-label">Notes</label>
+                            <input asp-for="Notes" class="form-control" placeholder="Optional notes about this stock addition" />
+                            <span asp-validation-for="Notes" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-12 mt-2">
+                        <div class="alert alert-info" id="currentStockInfo" style="display: none;">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Current stock: <span id="currentStock">0</span> units
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i> Record Stock In
+                    </button>
+                </div>
+            </form>
         </div>
-    </form>
+    </div>
 </div>
 
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+
+    <script>
+        $(document).ready(function () {
+            // Create a dictionary of product IDs to their quantities
+            const productStocks = {};
+            
+            @foreach (var product in Model.AvailableProducts)
+            {
+                @:productStocks[@product.Id] = @product.QuantityInStock;
+            }
+
+            // Update the current stock display when a product is selected
+            $("#productSelect").change(function () {
+                const productId = $(this).val();
+                if (productId) {
+                    const currentStock = productStocks[productId] || 0;
+                    $("#currentStock").text(currentStock);
+                    $("#currentStockInfo").show();
+                } else {
+                    $("#currentStockInfo").hide();
+                }
+            });
+
+            // Initialize if a product is already selected
+            if ($("#productSelect").val()) {
+                $("#productSelect").trigger("change");
+            }
+
+            // Check for SweetAlert success message
+            @if (TempData["SwalSuccess"] != null)
+            {
+                <text>
+                Swal.fire({
+                    title: 'Stock Updated',
+                    text: '@TempData["SwalSuccess"]',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                });
+                </text>
+            }
+        });
+    </script>
 }

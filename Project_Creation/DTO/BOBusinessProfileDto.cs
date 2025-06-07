@@ -23,11 +23,11 @@ namespace Project_Creation.DTO
         public string? ContactNumber { get; set; }
         
         // Products associated with this business profile
-        public ICollection<Product2>? Products { get; set; } = new List<Product2>();
+        public ICollection<Product>? Products { get; set; } = new List<Product>();
         
         // Flag to indicate if this is the current user's profile
         public bool IsCurrentUser { get; set; } = false;
 
-        public Dictionary<string, List<Product2>> ProductsByCategory { get; set; } = new();
+        public Dictionary<string, List<Product>> ProductsByCategory { get; set; } = new();
     }
 }

@@ -1,20 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Project_Creation.Data;
 using Project_Creation.Models.Entities;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Security.Claims;
 using Project_Creation.DTO;
-using Microsoft.Extensions.Logging;
 using Project_Creation.Models;
 using System.Diagnostics;
-using System.Collections.Generic;
 using static Project_Creation.Controllers.Inventory1Controller;
-using System.IO;
 using System.Text;
-using System.Globalization;
 using ClosedXML.Excel;
 
 namespace Project_Creation.Controllers
@@ -38,8 +31,8 @@ namespace Project_Creation.Controllers
         }
 
         // GET: Reports/Sales
-        [HttpGet("Reports/Sales")]
-        public async Task<IActionResult> Sales(DateTime? startDate, DateTime? endDate, string productName, 
+        [HttpGet]
+        public async Task<IActionResult> Sales(DateTime? startDate, DateTime? endDate, string productName,
             string customerName, string timePeriod = "custom", string viewType = "cards")
         {
             try
@@ -83,7 +76,6 @@ namespace Project_Creation.Controllers
                 var salesDto = sales.Select(s => new SaleDto
                 {
                     Id = s.Id,
-                    BOId = s.BOId,
                     CustomerName = s.CustomerName,
                     TotalAmount = s.TotalAmount,
                     SaleDate = s.SaleDate,
@@ -113,7 +105,7 @@ namespace Project_Creation.Controllers
                 ViewBag.StartDate = startDate?.ToString("yyyy-MM-dd");
                 ViewBag.EndDate = endDate?.ToString("yyyy-MM-dd");
                 ViewBag.ProductName = productName;
-                ViewBag.CustomerName = customerName; 
+                ViewBag.CustomerName = customerName;
                 ViewBag.TimePeriod = timePeriod;
                 ViewBag.ViewType = viewType;
                 ViewBag.Customers = customers;
@@ -131,8 +123,8 @@ namespace Project_Creation.Controllers
         }
 
         // GET: Reports/ExportSales
-        [HttpGet("Reports/ExportSales")]
-        public async Task<IActionResult> ExportSales(DateTime? startDate, DateTime? endDate, string productName, 
+        [HttpGet]
+        public async Task<IActionResult> ExportSales(DateTime? startDate, DateTime? endDate, string productName,
             string customerName, string timePeriod = "custom", string format = "csv")
         {
             try
@@ -232,7 +224,7 @@ namespace Project_Creation.Controllers
         }
 
         // GET: Reports/Movements
-        public async Task<IActionResult> Movements(DateTime? startDate, DateTime? endDate, string productName, string movementType)
+        public async Task<IActionResult> Movements(DateTime? startDate, DateTime? endDate, string productName, string movementType, int page = 1, int pageSize = 50, int realTimeAdditions = 0)
         {
             try
             {
@@ -256,9 +248,27 @@ namespace Project_Creation.Controllers
                 if (!string.IsNullOrEmpty(movementType))
                     query = query.Where(l => l.MovementType == movementType);
 
-                // Get filtered movements
+                // Get total count for pagination
+                var totalItems = await query.CountAsync();
+                
+                // Calculate real offset based on page and real-time additions
+                // Only adjust for real-time additions if we're not on the first page
+                int effectiveOffset = (page - 1) * pageSize;
+                if (page > 1 && realTimeAdditions > 0)
+                {
+                    // Adjust offset to account for real-time additions
+                    effectiveOffset += realTimeAdditions;
+                    
+                    // Log the adjustment for debugging
+                    _logger.LogDebug("Adjusted pagination offset for real-time additions: original={OriginalOffset}, adjusted={AdjustedOffset}, realTimeAdditions={RealTimeAdditions}", 
+                        (page - 1) * pageSize, effectiveOffset, realTimeAdditions);
+                }
+                
+                // Get paginated movements
                 var movements = await query
                     .OrderByDescending(l => l.Timestamp)
+                    .Skip(effectiveOffset)
+                    .Take(pageSize)
                     .ToListAsync();
 
                 // Populate filter dropdowns
@@ -285,18 +295,25 @@ namespace Project_Creation.Controllers
                 ViewBag.EndDate = endDate?.ToString("yyyy-MM-dd");
                 ViewBag.ProductName = productName;
                 ViewBag.MovementType = movementType;
+                
+                // Pagination data
+                ViewBag.CurrentPage = page;
+                ViewBag.PageSize = pageSize;
+                ViewBag.TotalItems = totalItems;
+                ViewBag.TotalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+                ViewBag.RealTimeAdditions = realTimeAdditions;
 
                 return View(movements);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error generating inventory movements report");
+                _logger.LogError(ex, "Error generating inventory movements report: {Message}", ex.Message);
                 return View("Error");
             }
         }
 
         // GET: Reports/ExportMovements
-        [HttpGet("Reports/ExportMovements")]
+        [HttpGet]
         public async Task<IActionResult> ExportMovements(
             DateTime? startDate,
             DateTime? endDate,
@@ -376,62 +393,68 @@ namespace Project_Creation.Controllers
 
         private int GetCurrentUserId()
         {
-            try
+            var userIdClaim = "0";
+            if (User.FindFirstValue(ClaimTypes.Role) == "Staff")
             {
-                var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
-                {
-                    _logger.LogWarning("Invalid or missing user ID claim");
-                    throw new InvalidOperationException("User is not authenticated");
-                }
+                userIdClaim = User.FindFirstValue("BOId");
+            }
+            else
+            {
+                userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            }
+
+            if (string.IsNullOrEmpty(userIdClaim))
+            {
+                return 0;
+            }
+
+            if (int.TryParse(userIdClaim, out int userId))
+            {
                 return userId;
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting current user ID");
-                throw;
-            }
+
+            return 0;
         }
 
         private (DateTime?, DateTime?) GetDateRangeFromTimePeriod(string timePeriod, DateTime? startDate, DateTime? endDate)
         {
             var today = DateTime.Today;
-            
+
             switch (timePeriod)
             {
                 case "today":
                     return (today, today);
-                    
+
                 case "yesterday":
                     return (today.AddDays(-1), today.AddDays(-1));
-                    
+
                 case "thisWeek":
                     var firstDayOfWeek = today.AddDays(-(int)today.DayOfWeek);
                     return (firstDayOfWeek, today);
-                    
+
                 case "lastWeek":
                     var lastWeekStart = today.AddDays(-(int)today.DayOfWeek - 7);
                     var lastWeekEnd = lastWeekStart.AddDays(6);
                     return (lastWeekStart, lastWeekEnd);
-                    
+
                 case "thisMonth":
                     var firstDayOfMonth = new DateTime(today.Year, today.Month, 1);
                     return (firstDayOfMonth, today);
-                    
+
                 case "lastMonth":
                     var firstDayOfLastMonth = new DateTime(today.Year, today.Month, 1).AddMonths(-1);
                     var lastDayOfLastMonth = new DateTime(today.Year, today.Month, 1).AddDays(-1);
                     return (firstDayOfLastMonth, lastDayOfLastMonth);
-                    
+
                 case "thisYear":
                     var firstDayOfYear = new DateTime(today.Year, 1, 1);
                     return (firstDayOfYear, today);
-                    
+
                 case "lastYear":
                     var firstDayOfLastYear = new DateTime(today.Year - 1, 1, 1);
                     var lastDayOfLastYear = new DateTime(today.Year - 1, 12, 31);
                     return (firstDayOfLastYear, lastDayOfLastYear);
-                    
+
                 case "custom":
                 default:
                     return (startDate, endDate);
@@ -441,27 +464,27 @@ namespace Project_Creation.Controllers
         private FileContentResult ExportToCsv<T>(IEnumerable<T> data, string fileName)
         {
             var sb = new StringBuilder();
-            
+
             // Add headers
             var properties = typeof(T).GetProperties();
             sb.AppendLine(string.Join(",", properties.Select(p => $"\"{p.Name}\"")));
-            
+
             // Add data rows
             foreach (var item in data)
             {
-                var values = properties.Select(p => 
+                var values = properties.Select(p =>
                 {
                     var value = p.GetValue(item);
                     if (value == null)
                         return "\"\"";
-                    
+
                     // Escape quotes and format the value
                     return $"\"{value.ToString().Replace("\"", "\"\"").Replace("\r\n", " ").Replace("\n", " ")}\"";
                 });
-                
+
                 sb.AppendLine(string.Join(",", values));
             }
-            
+
             byte[] bytes = Encoding.UTF8.GetBytes(sb.ToString());
             return File(bytes, "text/csv", $"{fileName}.csv");
         }
@@ -471,14 +494,14 @@ namespace Project_Creation.Controllers
             using (var workbook = new XLWorkbook())
             {
                 var worksheet = workbook.Worksheets.Add("Sales Report");
-                
+
                 // Add headers
                 var properties = typeof(T).GetProperties();
                 for (int i = 0; i < properties.Length; i++)
                 {
                     worksheet.Cell(1, i + 1).Value = properties[i].Name;
                 }
-                
+
                 // Add data
                 int row = 2;
                 foreach (var item in data)
@@ -490,15 +513,15 @@ namespace Project_Creation.Controllers
                     }
                     row++;
                 }
-                
+
                 // Format headers
                 var headerRow = worksheet.Row(1);
                 headerRow.Style.Font.Bold = true;
                 headerRow.Style.Fill.BackgroundColor = XLColor.LightGray;
-                
+
                 // Auto-fit columns
                 worksheet.Columns().AdjustToContents();
-                
+
                 using (var stream = new MemoryStream())
                 {
                     workbook.SaveAs(stream);
@@ -508,8 +531,90 @@ namespace Project_Creation.Controllers
             }
         }
 
+        // GET: Reports/CompareSales
+        [HttpGet]
+        public IActionResult CompareSales()
+        {
+            _logger.LogInformation("Accessed Compare Sales page (GET)");
+            var viewModel = new SalesComparisonViewModel();
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CompareSales(SalesComparisonViewModel model)
+        {
+            _logger.LogInformation("Processing Compare Sales page (POST)");
+
+            if (!model.Period1StartDate.HasValue || !model.Period1EndDate.HasValue ||
+                !model.Period2StartDate.HasValue || !model.Period2EndDate.HasValue)
+            {
+                ModelState.AddModelError("", "All date fields are required for comparison.");
+                // Ensure summaries are not null for the view
+                model.Period1Summary ??= new SalesPeriodSummaryDto { PeriodName = "Period 1" };
+                model.Period2Summary ??= new SalesPeriodSummaryDto { PeriodName = "Period 2" };
+                return View(model);
+            }
+
+            if (model.Period1EndDate < model.Period1StartDate || model.Period2EndDate < model.Period2StartDate)
+            {
+                ModelState.AddModelError("", "End date cannot be earlier than start date for a period.");
+                model.Period1Summary ??= new SalesPeriodSummaryDto { PeriodName = "Period 1" };
+                model.Period2Summary ??= new SalesPeriodSummaryDto { PeriodName = "Period 2" };
+                return View(model);
+            }
+
+            var userId = GetCurrentUserId();
+
+            model.Period1Summary = await GetSalesSummaryForPeriod(userId, model.Period1StartDate.Value, model.Period1EndDate.Value, "Period 1");
+            model.Period2Summary = await GetSalesSummaryForPeriod(userId, model.Period2StartDate.Value, model.Period2EndDate.Value, "Period 2");
+
+            model.ShowResults = true; // Indicate that results should be shown
+
+            return View(model);
+        }
+
+        private async Task<SalesPeriodSummaryDto> GetSalesSummaryForPeriod(int userId, DateTime startDate, DateTime endDate, string periodName)
+        {
+            // Adjust endDate to include the entire day
+            var endDateWithTime = endDate.AddDays(1).AddSeconds(-1);
+
+            var salesInPeriod = await _context.Sales
+                .Include(s => s.SaleItems)
+                .Where(s => s.BOId == userId && s.SaleDate >= startDate && s.SaleDate <= endDateWithTime)
+                .ToListAsync();
+
+            if (!salesInPeriod.Any())
+            {
+                return new SalesPeriodSummaryDto
+                {
+                    PeriodName = periodName,
+                    StartDate = startDate,
+                    EndDate = endDate,
+                    IsDataAvailable = false
+                };
+            }
+
+            var totalRevenue = salesInPeriod.Sum(s => s.TotalAmount);
+            var totalSalesCount = salesInPeriod.Count;
+            var totalProductsSold = salesInPeriod.SelectMany(s => s.SaleItems).Sum(i => i.Quantity);
+            var averageSaleValue = totalSalesCount > 0 ? totalRevenue / totalSalesCount : 0;
+
+            return new SalesPeriodSummaryDto
+            {
+                PeriodName = periodName,
+                StartDate = startDate,
+                EndDate = endDate,
+                TotalSalesCount = totalSalesCount,
+                TotalRevenue = totalRevenue,
+                TotalProductsSold = totalProductsSold,
+                AverageSaleValue = averageSaleValue,
+                IsDataAvailable = true
+            };
+        }
+
         // GET: Reports/ExportInventory
-        [HttpGet("Reports/ExportInventory")]
+        [HttpGet]
         public async Task<IActionResult> ExportInventory(string format = "csv")
         {
             try

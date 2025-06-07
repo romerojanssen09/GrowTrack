@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Project_Creation.Models.Entities
@@ -18,7 +18,14 @@ namespace Project_Creation.Models.Entities
         public DateTime? UpdatedAt { get; set; }
         public OnlineStatus? IsOnline { get; set; } = OnlineStatus.Offline;
         public DateTime LastLoginDate { get; set; } = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Singapore"));
+        public bool AllowLoginAlerts { get; set; } = false;
+        public bool AllowEmailNotifications { get; set; } = true;
+        public bool TwoFactorAuthentication { get; set; } = false;
+        public int? TwoFactorAuthenticationCode { get; set; }
 
+        //foriegn key
+        public int BOId { get; set; }
+        public Users User { get; set; }
         public enum OnlineStatus
         {
             Online,
@@ -41,10 +48,14 @@ namespace Project_Creation.Models.Entities
     public enum StaffAccessLevel
     {
         None = 0,
-        Inventory = 1 << 0,       // 1
-        Leads = 1 << 1,           // 2
-        Product = 1 << 2,         // 4
-        QuickSales = 1 << 3,      // 8
-        InventoryAndPublishes = 1 << 4 // 16
+        Inventory = 1 << 0,          // 1
+        Leads = 1 << 1,              // 2
+        QuickSales = 1 << 2,         // 4
+        PublishedProducts = 1 << 3,  // 8
+        Campaigns = 1 << 4,          // 16
+        Reports = 1 << 5,            // 32
+        Notifications = 1 << 6,      // 64
+        Calendar = 1 << 7,           // 128
+        Chat = 1 << 8                // 256
     }
 }

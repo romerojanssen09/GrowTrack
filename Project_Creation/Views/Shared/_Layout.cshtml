@@ -1,862 +1,1594 @@
+@using System.Security.Claims
+@using Project_Creation.Models.Entities
+
+@{
+	var accessLevelClaim = User.FindFirstValue("AccessLevel");
+	var staffAccessLevel = !string.IsNullOrEmpty(accessLevelClaim) &&
+	Enum.TryParse<StaffAccessLevel>(accessLevelClaim, out var level) ? level : StaffAccessLevel.None;
+}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - SME CRM</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>@ViewData["Title"] - GrowTrack</title>
 
-    <!-- ✅ Bootstrap 5.3 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+	<!-- ✅ Bootstrap 5.3 CSS -->
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
 
-    <!-- ✅ FullCalendar CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
+	<!-- ✅ FullCalendar CSS -->
+	<link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
 
-    <!-- ✅ Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+	<!-- ✅ Font Awesome -->
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
-    <!-- ✅ SweetAlert2 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet" />
+	<!-- ✅ SweetAlert2 CSS -->
+	<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet" />
 
-    <!-- ✅ Bootstrap Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+	<!-- ✅ Bootstrap Icons -->
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
 
-    <!-- ✅ Select2 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    
-    <!-- ✅ DataTables CSS -->
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" />
+	<!-- ✅ Select2 CSS -->
+	<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
-    <!-- ✅ Theme Styles -->
-    <link rel="stylesheet" href="~/css/theme.css" asp-append-version="true" />
-    
-    <!-- ✅ Your Site Styles -->
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+	<!-- ✅ DataTables CSS -->
+	<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" />
+	<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css" />
 
-    <style>
-        :root {
-            --primary-bg: #F7F5EF;
-            --secondary-bg: #E9F3F6;
-            --accent-color: #F3993E;
-            --dark-color: #304251;
-            --accent-hover: #e48a30;
-            --dark-hover: #263440;
-            --accent-light: rgba(243, 153, 62, 0.1);
-            --text-light: #ffffff;
-            --text-dark: #304251;
-        }
+	<!-- ✅ Google Fonts -->
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
 
-        /* Override Bootstrap table styles */
-        .table thead th {
-            background-color: var(--secondary-bg) !important;
-            color: var(--text-dark) !important;
-            border-color: #dee2e6 !important;
-        }
-        
-        .dataTables_wrapper .dataTables_paginate .paginate_button.current, 
-        .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
-            background: var(--secondary-bg) !important;
-            color: var(--text-dark) !important;
-            border-color: var(--border-light) !important;
-        }
-        
-        .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
-            background: var(--accent-light) !important;
-            color: var(--accent-color) !important;
-            border-color: var(--accent-color) !important;
-        }
-        
-        /* Override SweetAlert colors */
-        .swal2-confirm {
-            background-color: var(--accent-color) !important;
-        }
-        
-        /* Override Select2 colors */
-        .select2-container--default .select2-results__option--highlighted[aria-selected] {
-            background-color: var(--accent-color) !important;
-        }
-        
-        /* Modern sticky navbar styles */
-        .navbar-modern {
-            background-color: #FFFFFF;
-            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
-            /* padding: 0.75rem 1rem; */
-            transition: all 0.3s ease;
-            z-index: 1030;
-        }
-        
-        .navbar-modern.scrolled {
-            /* padding: 0.5rem 1rem; */
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-        }
-        
-        .navbar-modern .navbar-brand {
-            font-weight: 700;
-            color: var(--dark-color);
-        }
-        
-        .navbar-modern .nav-link {
-            font-weight: 500;
-            color: var(--dark-color) !important;
-            /* padding: 0.5rem 1rem; */
-            position: relative;
-            transition: all 0.3s ease;
-        }
-        
-        .navbar-modern .nav-link:after {
-            content: '';
-            position: absolute;
-            width: 0;
-            height: 2px;
-            bottom: 0;
-            left: 50%;
-            background-color: var(--accent-color);
-            transition: all 0.3s ease;
-        }
-        
-        .navbar-modern .nav-link:hover:after,
-        .navbar-modern .nav-link.active:after {
-            width: 80%;
-            left: 10%;
-        }
-        
-        .navbar-modern .nav-link:hover,
-        .navbar-modern .nav-link.active {
-            color: var(--accent-color) !important;
-        }
-        
-        .navbar-auth-buttons .btn {
-            border-radius: 50px;
-            padding: 0.375rem 1.5rem;
-            font-weight: 500;
-        }
-        
-        .navbar-toggler {
-            border: none;
-            padding: 0;
-        }
-        
-        .navbar-toggler:focus {
-            box-shadow: none;
-        }
-        
-        /* Adjust top spacing for content */
-        body.has-navbar .content-area {
-            margin-top: 50px;
-        }
-        
-        /* Admin navbar styles */
-        .admin-navbar {
-            background-color: #304251 !important;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            margin-top: 56px;
-            z-index: 1020;
-        }
-        
-        .admin-navbar .navbar-brand {
-            color: #fff;
-            font-weight: 600;
-        }
-        
-        .admin-navbar .nav-link {
-            color: rgba(255, 255, 255, 0.85) !important;
-            padding: 0.6rem 1rem;
-            transition: all 0.2s ease;
-        }
-        
-        .admin-navbar .nav-link:hover, 
-        .admin-navbar .nav-link.active {
-            color: #fff !important;
-            background-color: rgba(255, 255, 255, 0.1);
-            border-radius: 4px;
-        }
-        
-        .admin-navbar .navbar-toggler {
-            border: none;
-            padding: 0.25rem 0.5rem;
-        }
-        
-        .admin-navbar .navbar-toggler:focus {
-            box-shadow: none;
-        }
-        
-        .admin-navbar .btn-outline-danger {
-            border-color: rgba(255, 255, 255, 0.5);
-            color: white;
-        }
-        
-        .admin-navbar .btn-outline-danger:hover {
-            background-color: #dc3545;
-            border-color: #dc3545;
-        }
-        
-        /* Full width content styles */
-        #wrapper {
-            display: block; /* Changed from flex to block since we removed the sidebar */
-        }
-        
-        #page-content-wrapper {
-            width: 100% !important;
-            margin-left: 0 !important;
-        }
-        
-        /* Dropdown styling for many navigation links */
-        .navbar-nav .dropdown-menu {
-            border: none;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-        }
-        
-        /* Adjust spacing for top nav with many links */
-        @@media (min-width: 992px) {
-            .navbar-nav .nav-link {
-                padding: 0.5rem 0.75rem;
-            }
-            
-            .navbar-modern {
-                padding: 0.5rem 1rem;
-            }
-        }
-        
-        /* Adjust content padding for admin users */
-        body.user-authenticated .content-area {
-            padding-top: 20px;
-        }
-        
-        @@media (max-width: 991.98px) {
-            .admin-navbar {
-                margin-top: 48px;
-            }
-            
-            /* Improved mobile navigation */
-            .navbar-collapse {
-                max-height: 80vh;
-                overflow-y: auto;
-            }
-        }
-    </style>
+	<!-- ✅ Theme Styles -->
+	<link rel="stylesheet" href="~/css/theme.css" asp-append-version="true" />
+	
+	<!-- ✅ Side Navigation Styles -->
+	<link rel="stylesheet" href="~/css/sidenav.css" asp-append-version="true" />
 
-    @await RenderSectionAsync("Styles", required: false)
+	<style>
+		/* Notification styles */
+		.notification-item {
+			transition: all 0.2s ease;
+			border-left: 3px solid transparent;
+			padding: 12px 15px !important;
+			margin-bottom: 5px;
+			display: flex;
+			align-items: flex-start;
+		}
+		
+		.notification-item.unread {
+			border-left-color: var(--accent-color);
+			background-color: rgba(243, 153, 62, 0.08);
+		}
+		
+		.notification-item:hover {
+			background-color: rgba(0, 0, 0, 0.05);
+			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+		}
+		
+		/* Style for business owner notifications in dropdown */
+		.notification-item.business-owner-notification {
+			border-right: 3px solid #0dcaf0;
+		}
+		
+		.notification-dropdown .dropdown-menu {
+			box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+			border-radius: 0.5rem;
+			overflow: hidden;
+			border: none;
+		}
+		
+		.notification-icon, .chat-icon {
+			cursor: pointer;
+		}
+		
+		/* Badge styles for notifications and messages */
+		.notification-badge, .message-badge {
+			position: absolute;
+			top: -5px;
+			right: -5px;
+			background-color: var(--accent-color);
+			color: white;
+			border-radius: 50%;
+			width: 18px;
+			height: 18px;
+			font-size: 0.7rem;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			font-weight: 600;
+		}
+		
+		.mark-all-read-btn {
+			color: var(--accent-color);
+			cursor: pointer;
+			font-size: 0.85rem;
+			font-weight: 500;
+		}
+		
+		.mark-all-read-btn:hover {
+			text-decoration: underline !important;
+		}
+		
+		/* Hide scrollbar for Chrome, Safari and Opera */
+		.notification-menu::-webkit-scrollbar {
+			display: none;
+		}
+		
+		/* Hide scrollbar for IE, Edge and Firefox */
+		.notification-menu {
+			-ms-overflow-style: none;  /* IE and Edge */
+			scrollbar-width: none;  /* Firefox */
+		}
+		
+		.notification-item p {
+			word-wrap: break-word;
+			overflow-wrap: break-word;
+			white-space: normal;
+			margin-bottom: 0.25rem;
+			font-size: 0.9rem;
+		}
+		
+		.notification-header {
+			background-color: #f8f9fa;
+			border-bottom: 1px solid #e9ecef;
+		}
+		
+		.notification-details {
+			flex: 1;
+		}
+		
+		.notification-title {
+			margin-bottom: 0.25rem;
+			font-size: 0.95rem;
+			font-weight: 600;
+			color: #333;
+		}
+		
+		.notification-text {
+			color: #666;
+			font-size: 0.85rem;
+			margin-bottom: 0.5rem;
+		}
+		
+		.notification-time {
+			color: #888;
+			font-size: 0.75rem;
+			display: block;
+		}
+		
+		.notification-icon {
+			margin-right: 12px;
+			margin-top: 2px;
+		}
+		
+		.icon-circle {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			width: 32px;
+			height: 32px;
+			border-radius: 50%;
+			color: white;
+		}
+		
+		/* Notification type colors */
+		.notification-calendar .icon-circle {
+			background-color: #0dcaf0; /* Info blue */
+		}
+		
+		.notification-rejection .icon-circle {
+			background-color: #dc3545; /* Danger red */
+		}
+
+		/* Business-themed Loading Animation */
+		.business-loading-overlay {
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			background: rgba(28, 49, 68, 0.95);
+			backdrop-filter: blur(8px);
+			-webkit-backdrop-filter: blur(8px);
+			z-index: 9999;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			opacity: 0;
+			visibility: hidden;
+			transition: opacity 0.3s ease, visibility 0.3s ease;
+		}
+		
+		.business-loading-overlay.active {
+			opacity: 1;
+			visibility: visible;
+		}
+		
+		.business-loader-container {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+		}
+		
+		.business-loader {
+			position: relative;
+			width: 150px;
+			height: 150px;
+		}
+		
+		/* Chart Bar Animation */
+		.chart-container {
+			position: absolute;
+			bottom: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			display: flex;
+			justify-content: space-between;
+			align-items: flex-end;
+			padding: 25px;
+		}
+		
+		.chart-bar {
+			width: 12%;
+			background: linear-gradient(to top, #F3993E, rgba(243, 153, 62, 0.5));
+			border-radius: 4px 4px 0 0;
+			animation: bar-rise 1.5s ease-in-out infinite;
+		}
+		
+		.bar1 { height: 40%; animation-delay: 0s; }
+		.bar2 { height: 70%; animation-delay: 0.2s; }
+		.bar3 { height: 90%; animation-delay: 0.4s; }
+		.bar4 { height: 50%; animation-delay: 0.6s; }
+		.bar5 { height: 80%; animation-delay: 0.8s; }
+		
+		@@keyframes bar-rise {
+			0%, 100% { transform: scaleY(1); }
+			50% { transform: scaleY(0.6); }
+		}
+		
+		/* Circular Progress */
+		.circular-progress {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+		}
+		
+		.circular-progress svg {
+			width: 100%;
+			height: 100%;
+			transform: rotate(-90deg);
+		}
+		
+		.progress-bg {
+			fill: none;
+			stroke: rgba(255, 255, 255, 0.1);
+			stroke-width: 5;
+		}
+		
+		.progress-circle {
+			fill: none;
+			stroke: #F3993E;
+			stroke-width: 5;
+			stroke-linecap: round;
+			stroke-dasharray: 283;
+			stroke-dashoffset: 283;
+			animation: circle-progress 2s linear infinite;
+		}
+		
+		@@keyframes circle-progress {
+			0% { stroke-dashoffset: 283; }
+			50% { stroke-dashoffset: 0; }
+			100% { stroke-dashoffset: 283; }
+		}
+		
+		.progress-icon {
+			position: absolute;
+			font-size: 1.8rem;
+			color: #F3993E;
+			animation: icon-pulse 2s ease-in-out infinite;
+		}
+		
+		@@keyframes icon-pulse {
+			0%, 100% { transform: scale(1); opacity: 1; }
+			50% { transform: scale(1.2); opacity: 0.8; }
+		}
+		
+		/* Data Points */
+		.data-points {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+		}
+		
+		.data-point {
+			position: absolute;
+			width: 8px;
+			height: 8px;
+			background-color: #F3993E;
+			border-radius: 50%;
+			opacity: 0;
+			animation: point-pulse 3s ease-in-out infinite;
+		}
+		
+		.point1 {
+			top: 20%;
+			left: 30%;
+			animation-delay: 0s;
+		}
+		
+		.point2 {
+			top: 70%;
+			left: 65%;
+			animation-delay: 0.5s;
+		}
+		
+		.point3 {
+			top: 40%;
+			left: 80%;
+			animation-delay: 1s;
+		}
+		
+		.point4 {
+			top: 60%;
+			left: 20%;
+			animation-delay: 1.5s;
+		}
+		
+		@@keyframes point-pulse {
+			0%, 100% { transform: scale(0); opacity: 0; }
+			20% { transform: scale(1.5); opacity: 1; }
+			40% { transform: scale(1); opacity: 0.8; }
+			60% { transform: scale(1.2); opacity: 0.6; }
+			80% { transform: scale(0.8); opacity: 0.2; }
+		}
+		
+		/* Responsive adjustments */
+		@@media (max-width: 767px) {
+			.business-loader {
+				width: 120px;
+				height: 120px;
+			}
+			
+			.progress-icon {
+				font-size: 1.5rem;
+			}
+		}
+		
+		@@media (max-width: 480px) {
+			.business-loader {
+				width: 100px;
+				height: 100px;
+			}
+			
+			.progress-icon {
+				font-size: 1.2rem;
+			}
+			
+			.chart-container {
+				padding: 20px;
+			}
+			
+			.data-point {
+				width: 6px;
+				height: 6px;
+			}
+		}
+		
+		/* Loading Text Animation */
+		.loading-dots {
+			display: inline-block;
+			width: 24px;
+			position: relative;
+			animation: loadingDots 1.5s infinite;
+		}
+		
+		@@keyframes loadingDots {
+			0%, 20% { content: "."; }
+			40% { content: ".."; }
+			60%, 100% { content: "..."; }
+		}
+	</style>
+
+	@await RenderSectionAsync("Styles", required: false)
 </head>
-<body class="has-navbar @(User.Identity.IsAuthenticated ? "user-authenticated" : "")">
-    <!-- Modern Sticky Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-modern fixed-top">
-        <div class="d-flex px-4 justify-content-between w-100">
-            <div>
-                <a class="navbar-brand d-flex align-items-center" asp-area="" asp-controller="Home" asp-action="Index">
-                    <i class="fas fa-building me-2" style="color: var(--accent-color);"></i>
-                    <span>GrowTrack</span>
-                </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                    <i class="fas fa-bars" style="color: var(--accent-color); font-size: 1.4rem;"></i>
-                </button>
-            </div>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav mx-auto d-flex align-items-lg-center justify-content-center">
-                    <li class="nav-item">
-                        <a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Dashboard" && ViewContext.RouteData.Values["Action"].ToString() == "Dashboard" ? "active" : "")" 
-                           asp-controller="Home" asp-action="Index">Home</a>
-                    </li>
-                    @if (User.Identity.IsAuthenticated)
-                    {
-                        @if(!User.IsInRole("Admin"))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Inventory1" ? "active" : "")" href="@Url.Action("Index", "Inventory1")">
-                                    <i class="fas fa-boxes me-1"></i>Inventory
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "MarketPlace" ? "active" : "")" href="@Url.Action("Index", "MarketPlace")">
-                                    <i class="fas fa-store me-1"></i>Marketplace
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Leads" ? "active" : "")" href="@Url.Action("Index", "Leads")">
-                                    <i class="fas fa-user-tag me-1"></i>Leads
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Campaigns" ? "active" : "")" href="@Url.Action("Index", "Campaigns")">
-                                    <i class="fas fa-bullhorn me-1"></i>Campaigns
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Reports" ? "active" : "")" href="@Url.Action("Index", "Reports")">
-                                    <i class="fas fa-chart-bar me-1"></i>Reports
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Calendar" ? "active" : "")" href="@Url.Action("Index","Calendar")">
-                                    <i class="bi bi-calendar-event me-1"></i> Calendar
-                                </a>
-                            </li>
-                        }
-                    }
-                </ul>
-                <div class="navbar-auth-buttons d-flex align-items-center gap-2">
-                    @if (User.Identity.IsAuthenticated)
-                    {
-                        <div class="dropdown">
-                            <a class="btn btn-light dropdown-toggle d-flex align-items-center gap-2" href="#" role="button" data-bs-toggle="dropdown">
-                                <i class="fas fa-user-circle"></i>
-                                <span>Account</span>
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" href="@Url.Action("Index", "Profile")"><i class="fas fa-user me-2"></i>Profile</a></li>
-                                <li><a class="dropdown-item" href="@Url.Action("Settings", "Profile")"><i class="fas fa-cog me-2"></i>Settings</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li>
-                                    <form asp-controller="Home" asp-action="Logout" method="post" class="m-0">
-                                        <button type="submit" class="dropdown-item text-danger">
-                                            <i class="fas fa-sign-out-alt me-2"></i>Logout
-                                        </button>
-                                    </form>
-                                </li>
-                            </ul>
-                        </div>
-                        <a class="nav-link position-relative ms-2" href="#" title="Notifications">
-                            <i class="fas fa-bell fa-lg" style="color: var(--dark-color);"></i>
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill" style="background-color: var(--accent-color); color: white; font-size: 0.5em;">!</span>
-                        </a>
-                        <a class="nav-link position-relative ms-2" href="@Url.Action("Index","Chat")" title="Chat">
-                            <i class="fas fa-message fa-lg" style="color: var(--dark-color);"></i>
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill" style="background-color: var(--accent-color); color: white; font-size: 0.5em;">!</span>
-                        </a>
-                    }
-                    else
-                    {
-                        <a asp-controller="Login" asp-action="Login" class="btn btn-outline-primary">Login</a>
-                        <a asp-controller="Register" asp-action="Register" class="btn btn-primary">Sign Up</a>
-                    }
-                </div>
-            </div>
-        </div>
-    </nav>
+<body class="@(User.Identity.IsAuthenticated ? "user-authenticated" : "")">
+					@if (User.Identity.IsAuthenticated)
+					{
+		<!-- Side Navigation -->
+		<nav class="side-nav">
+			<!-- Brand Section -->
+			<div class="side-nav-brand">
+				<i class="fas fa-building" style="color: #F3993E; font-size: 1.5rem;"></i>
+				<span class="brand-text">GrowTrack</span>
+			</div>
+			
+			<!-- Scrollable Menu Container -->
+			<div class="side-nav-menu-container">
+				<!-- Navigation Menu -->
+				<ul class="side-nav-menu">
+					@if (User.IsInRole("Admin"))
+					{
+						<li class="side-nav-item">
+							<a class="side-nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Admin" && ViewContext.RouteData.Values["Action"].ToString() == "Index" ? "active" : "")" asp-action="Index" asp-controller="Admin">
+								<div class="side-nav-icon"><i class="fas fa-tachometer-alt"></i></div>
+								<span class="side-nav-text">Dashboard</span>
+							</a>
+						</li>
+						
+						<li class="side-nav-item">
+							<a class="side-nav-link side-nav-dropdown @(ViewContext.RouteData.Values["Controller"].ToString() == "Admin" && (ViewContext.RouteData.Values["Action"].ToString() == "BOApproval" || ViewContext.RouteData.Values["Action"].ToString() == "MarketplaceApproval" || ViewContext.RouteData.Values["Action"].ToString() == "BusinessOwners" || ViewContext.RouteData.Values["Action"].ToString() == "StaffLimits") ? "active" : "")">
+								<div class="side-nav-icon"><i class="fas fa-tasks"></i></div>
+								<span class="side-nav-text">Admin Management</span>
+							</a>
+							<ul class="side-nav-submenu">
+								<li class="side-nav-item">
+									<a class="side-nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Admin" && ViewContext.RouteData.Values["Action"].ToString() == "BOApproval" ? "active" : "")" asp-action="BOApproval" asp-controller="Admin">
+										<div class="side-nav-icon"><i class="fas fa-user-check"></i></div>
+										<span class="side-nav-text">BO Approval</span>
+									</a>
+								</li>
+								<li class="side-nav-item">
+									<a class="side-nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Admin" && ViewContext.RouteData.Values["Action"].ToString() == "MarketplaceApproval" ? "active" : "")" asp-action="MarketplaceApproval" asp-controller="Admin">
+										<div class="side-nav-icon"><i class="fas fa-store-alt"></i></div>
+										<span class="side-nav-text">Marketplace Approval</span>
+									</a>
+								</li>
+								<li class="side-nav-item">
+									<a class="side-nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Admin" && ViewContext.RouteData.Values["Action"].ToString() == "BusinessOwners" ? "active" : "")" asp-action="BusinessOwners" asp-controller="Admin">
+										<div class="side-nav-icon"><i class="fas fa-users"></i></div>
+										<span class="side-nav-text">Business Owners</span>
+									</a>
+								</li>
+								<li class="side-nav-item">
+									<a class="side-nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Admin" && ViewContext.RouteData.Values["Action"].ToString() == "StaffLimits" ? "active" : "")" asp-action="StaffLimits" asp-controller="Admin">
+										<div class="side-nav-icon"><i class="fas fa-user-cog"></i></div>
+										<span class="side-nav-text">Staff Limits</span>
+									</a>
+								</li>
+							</ul>
+						</li>
+						<li class="side-nav-item">
+							<a class="side-nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Admin" && ViewContext.RouteData.Values["Action"].ToString() == "ContactMessages" ? "active" : "")" asp-action="ContactMessages" asp-controller="Admin">
+								<div class="side-nav-icon"><i class="fas fa-envelope"></i></div>
+								<span class="side-nav-text">Contact Messages</span>
+							</a>
+						</li>
+						<li class="side-nav-item">
+						<a class="side-nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Calendar" && ViewContext.RouteData.Values["Action"].ToString() == "Index" ? "active" : "")" asp-action="Index" asp-controller="Calendar">
+							<div class="side-nav-icon"><i class="bi bi-calendar-event"></i></div>
+							<span class="side-nav-text">Calendar</span>
+						</a>
+					</li>
+				}
+				else
+				{
+					<li class="side-nav-item">
+							<a class="side-nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Pages" && ViewContext.RouteData.Values["Action"].ToString() == "Dashboard" ? "active" : "")" asp-action="Dashboard" asp-controller="Pages">
+								<div class="side-nav-icon"><i class="fas fa-tachometer-alt"></i></div>
+								<span class="side-nav-text">Dashboard</span>
+							</a>
+						</li>
 
-    <div class="d-flex" id="wrapper">
-        <!-- Page Content -->
-        <div id="page-content-wrapper" class="@(!User.Identity.IsAuthenticated ? "w-100 ml-0" : "")">
-            <!-- Main Content - Scrollable Area -->
-            <div class="content-area" style="background-color: #F7F5EF;">
-                <div class="container-fluid px-4 py-3">
-                    @RenderBody()
-                </div>
-            </div>
-        </div>
-    </div>
+						@if (User.IsInRole("BusinessOwner") || staffAccessLevel.HasFlag(StaffAccessLevel.Inventory) || staffAccessLevel.HasFlag(StaffAccessLevel.QuickSales))
+						{
+							var isInventoryActive = ViewContext.RouteData.Values["Controller"].ToString() == "Inventory1";
+							<li class="side-nav-item">
+								<a class="side-nav-link side-nav-dropdown @(isInventoryActive ? "active" : "")">
+									<div class="side-nav-icon"><i class="fas fa-boxes"></i></div>
+									<span class="side-nav-text">Inventory</span>
+								</a>
+								<ul class="side-nav-submenu">
+									@if (User.IsInRole("BusinessOwner") || staffAccessLevel.HasFlag(StaffAccessLevel.Inventory))
+									{
+										<li class="side-nav-item">
+											<a class="side-nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Inventory1" && ViewContext.RouteData.Values["Action"].ToString() == "Index" ? "active" : "")" asp-action="Index" asp-controller="Inventory1">
+												<div class="side-nav-icon"><i class="fas fa-list"></i></div>
+												<span class="side-nav-text">View Inventory</span>
+											</a>
+										</li>
+										<li class="side-nav-item">
+											<a class="side-nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Inventory1" && ViewContext.RouteData.Values["Action"].ToString() == "Create" ? "active" : "")" asp-action="Create" asp-controller="Inventory1">
+												<div class="side-nav-icon"><i class="fas fa-plus-circle"></i></div>
+												<span class="side-nav-text">Add Product</span>
+											</a>
+										</li>
+										<li class="side-nav-item">
+											<a class="side-nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Inventory1" && ViewContext.RouteData.Values["Action"].ToString() == "StockIn" ? "active" : "")" asp-action="StockIn" asp-controller="Inventory1">
+												<div class="side-nav-icon"><i class="fas fa-arrow-down"></i></div>
+												<span class="side-nav-text">Stock In</span>
+											</a>
+										</li>
+									}
+									@if (User.IsInRole("BusinessOwner") || staffAccessLevel.HasFlag(StaffAccessLevel.QuickSales))
+									{
+										<li class="side-nav-item">
+											<a class="side-nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Inventory1" && ViewContext.RouteData.Values["Action"].ToString() == "QuickSale" ? "active" : "")" asp-action="QuickSale" asp-controller="Inventory1">
+												<div class="side-nav-icon"><i class="fas fa-cash-register"></i></div>
+												<span class="side-nav-text">Process Sale</span>
+											</a>
+										</li>
+									}
+								</ul>
+							</li>
+						}
+						@if (User.IsInRole("BusinessOwner") || staffAccessLevel.HasFlag(StaffAccessLevel.PublishedProducts))
+						{
+							<li class="side-nav-item">
+								<a class="side-nav-link @(ViewContext.RouteData.Values["Controller"].ToString().Equals("Marketplace", StringComparison.OrdinalIgnoreCase) ? "active" : "")" asp-action="Index" asp-controller="Marketplace">
+									<div class="side-nav-icon"><i class="fas fa-store"></i></div>
+									<span class="side-nav-text">Marketplace</span>
+								</a>
+							</li>
+							<li class="side-nav-item">
+								<a class="side-nav-link @(ViewContext.RouteData.Values["Controller"].ToString().Equals("ProductOrders", StringComparison.OrdinalIgnoreCase) ? "active" : "")" asp-action="Index" asp-controller="ProductOrders">
+									<div class="side-nav-icon"><i class="fas fa-shopping-cart"></i></div>
+									<span class="side-nav-text">Orders</span>
+								</a>
+							</li>
+						}
+						@if (User.IsInRole("BusinessOwner") || staffAccessLevel.HasFlag(StaffAccessLevel.Leads))
+						{
+							<li class="side-nav-item">
+								<a class="side-nav-link @(ViewContext.RouteData.Values["Controller"].ToString().Equals("Leads", StringComparison.OrdinalIgnoreCase) ? "active" : "")" asp-action="Index" asp-controller="Leads">
+									<div class="side-nav-icon"><i class="fas fa-user-tag"></i></div>
+									<span class="side-nav-text">Leads</span>
+								</a>
+							</li>
+						}
+						@if (User.IsInRole("BusinessOwner") || staffAccessLevel.HasFlag(StaffAccessLevel.Campaigns) || staffAccessLevel.HasFlag(StaffAccessLevel.Reports))
+						{
+							var isGrowthToolsActive = ViewContext.RouteData.Values["Controller"].ToString() == "Campaigns" || ViewContext.RouteData.Values["Controller"].ToString() == "Reports";
+							<li class="side-nav-item">
+								<a class="side-nav-link side-nav-dropdown @(isGrowthToolsActive ? "active" : "")">
+									<div class="side-nav-icon"><i class="fas fa-rocket"></i></div>
+									<span class="side-nav-text">Growth Tools</span>
+								</a>
+								<ul class="side-nav-submenu">
+									@if (User.IsInRole("BusinessOwner") || staffAccessLevel.HasFlag(StaffAccessLevel.Campaigns))
+									{
+										<li class="side-nav-item">
+											<a class="side-nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Campaigns" && ViewContext.RouteData.Values["Action"].ToString() == "Index" ? "active" : "")" asp-action="Index" asp-controller="Campaigns">
+												<div class="side-nav-icon"><i class="fas fa-bullhorn"></i></div>
+												<span class="side-nav-text">Campaigns</span>
+											</a>
+										</li>
+									}
+									@if (User.IsInRole("BusinessOwner") || staffAccessLevel.HasFlag(StaffAccessLevel.Reports))
+									{
+										<li class="side-nav-item">
+											<a class="side-nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Reports" && ViewContext.RouteData.Values["Action"].ToString() == "Index" ? "active" : "")" asp-action="Index" asp-controller="Reports">
+												<div class="side-nav-icon"><i class="fas fa-chart-bar"></i></div>
+												<span class="side-nav-text">Reports</span>
+											</a>
+										</li>
+									}
+								</ul>
+							</li>
+						}
+						@if (User.IsInRole("BusinessOwner") || staffAccessLevel.HasFlag(StaffAccessLevel.Calendar))
+						{
+							<li class="side-nav-item">
+								<a class="side-nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Calendar" && ViewContext.RouteData.Values["Action"].ToString() == "Index" ? "active" : "")" asp-action="Index" asp-controller="Calendar">
+									<div class="side-nav-icon"><i class="bi bi-calendar-event"></i></div>
+									<span class="side-nav-text">Calendar</span>
+								</a>
+							</li>
+						}
+						@if (User.IsInRole("BusinessOwner"))
+						{
+							<li class="side-nav-item">
+								<a class="side-nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Staffs" && ViewContext.RouteData.Values["Action"].ToString() == "Index" ? "active" : "")" asp-action="Index" asp-controller="Staffs">
+									<div class="side-nav-icon"><i class="fas fa-users-cog"></i></div>
+									<span class="side-nav-text">Staffs</span>
+								</a>
+							</li>
+						}
+					}
+				</ul>
+			</div>
+			
+			<!-- Collapse/Expand Button -->
+			<div class="nav-control-section">
+				<button id="sideNavToggler" type="button" class="d-flex align-items-center">
+					<i class="fas fa-chevron-left"></i>
+					<span class="control-text">Collapse Menu</span>
+				</button>
+			</div>
+		</nav>
 
-    <footer class="border-top text-muted py-3 mt-auto" style="background-color: #F7F5EF; color: #304251; border-color: #E9F3F6;">
-        <div class="container">
-            &copy; 2025 - SME CRM - <a asp-area="" asp-controller="Home" asp-action="Privacy" style="color: #304251;">Privacy</a>
-        </div>
-    </footer>
+		<!-- Top Navigation -->
+		<nav class="top-nav">
+			<!-- Mobile Menu Toggler -->
+			<button id="mobileNavToggler" class="d-lg-none btn btn-link text-dark">
+				<i class="fas fa-bars"></i>
+			</button>
 
-    <!-- ✅ jQuery -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+			<div class="ms-auto d-flex align-items-center">
+				<!-- Notifications -->
+				<div class="dropdown notification-dropdown">
+					<a class="nav-link position-relative @(ViewContext.RouteData.Values["Controller"].ToString() == "Notifications" ? "active" : "")" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" id="notificationDropdown">
+						<i class="fas fa-bell notification-icon"></i>
+						<span class="notification-badge" id="notificationBadge" style="display: none;">0</span>
+					</a>
+					<div class="dropdown-menu dropdown-menu-end notification-menu">
+						<div class="notification-header d-flex justify-content-between align-items-center px-3 py-2">
+							<h6 class="mb-0">Notifications</h6>
+							<a href="#" class="text-muted small mark-all-read-btn">Mark all as read</a>
+						</div>
+						<div class="notification-list" id="notificationList">
+							<!-- Notification items will be dynamically added here -->
+							<div class="text-center p-3 loading-notifications">
+								<div class="spinner-border spinner-border-sm text-primary" role="status">
+									<span class="visually-hidden">Loading...</span>
+								</div>
+								<p class="mb-0 mt-2 small">Loading notifications...</p>
+							</div>
+						</div>
+						<a asp-controller="Notifications" asp-action="Index" class="dropdown-item text-center view-all py-2">View All Notifications</a>
+					</div>
+				</div>
 
-    <!-- ✅ Bootstrap Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+				<!-- Messages -->
+				<div class="dropdown message-dropdown">
+					<a class="nav-link position-relative @(ViewContext.RouteData.Values["Controller"].ToString() == "Chat" ? "active" : "")" href="/Chat" role="button">
+						<i class="fas fa-envelope chat-icon"></i>
+						<span class="message-badge" id="messageBadge" style="display: none;">0</span>
+					</a>
+				</div>
 
-    <!-- ✅ Select2 JS -->
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+				<!-- Settings -->
+				<div class="dropdown settings-dropdown">
+					<a class="nav-link" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+						<i class="fas fa-cog"></i>
+					</a>
+					<div class="dropdown-menu dropdown-menu-end">
+						<div class="dropdown-header">
+							<div class="d-flex align-items-center">
+								<div class="user-avatar me-3">
+									<i class="fas fa-user"></i>
+								</div>
+								<div>
+									<h6 class="mb-0">@User.Identity.Name</h6>
+									<small class="text-muted">@(User.IsInRole("BusinessOwner") ? "Business Owner" : User.IsInRole("Admin") ? "Administrator" : "Staff")</small>
+								</div>
+							</div>
+						</div>
+						<div class="dropdown-divider"></div>
+						<a class="dropdown-item" href="/Profile">
+							<i class="fas fa-user-circle me-2"></i>My Profile
+						</a>
+						<a class="dropdown-item" href="/Settings">
+							<i class="fas fa-cog me-2"></i>Settings
+						</a>
+						<div class="dropdown-divider"></div>
+						<form asp-controller="Login" asp-action="Logout" method="post">
+							<button type="submit" class="dropdown-item text-danger">
+								<i class="fas fa-sign-out-alt me-2"></i>Logout
+							</button>
+						</form>
+					</div>
+				</div>
+			</div>
+		</nav>
 
-    <!-- ✅ Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+		<!-- Mobile Navigation Overlay -->
+		<div class="mobile-nav-overlay"></div>
+	}
 
-    <!-- ✅ SignalR -->
-    <script src="https://cdn.jsdelivr.net/npm/@@microsoft/signalr@8.0.7/dist/browser/signalr.min.js"></script>
+	<!-- Main Content -->
+	<main id="wrapper" class="" style="padding: 75px 0 0 75px;">
+		@RenderBody()
+	</main>
 
-    <!-- ✅ SweetAlert2 -->
-    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+	<!-- Business-themed Loading Overlay -->
+	<div class="business-loading-overlay">
+		<div class="business-loader-container">
+			<!-- Business Analytics Loader -->
+			<div class="business-loader">
+				<!-- Chart Visualization -->
+				<div class="chart-container">
+					<div class="chart-bar bar1"></div>
+					<div class="chart-bar bar2"></div>
+					<div class="chart-bar bar3"></div>
+					<div class="chart-bar bar4"></div>
+					<div class="chart-bar bar5"></div>
+				</div>
+				<!-- Circular Progress -->
+				<div class="circular-progress">
+					<svg viewBox="0 0 100 100">
+						<circle class="progress-bg" cx="50" cy="50" r="45"></circle>
+						<circle class="progress-circle" cx="50" cy="50" r="45"></circle>
+					</svg>
+					<div class="progress-icon">
+						<i class="fas fa-chart-line"></i>
+					</div>
+				</div>
+				<!-- Data Points -->
+				<div class="data-points">
+					<div class="data-point point1"></div>
+					<div class="data-point point2"></div>
+					<div class="data-point point3"></div>
+					<div class="data-point point4"></div>
+				</div>
+			</div>
+			<div class="loading-text text-white mt-4">
+				<h5 class="mb-0 text-center" style="font-weight: 500;">Loading <span class="loading-dots">...</span></h5>
+			</div>
+		</div>
+	</div>
 
-    <!-- ✅ DataTables JS -->
-    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+	<!-- Toast container for notifications -->
+	<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1055;"></div>
 
-    <!-- ✅ Your Site Scripts -->
-    <script src="~/js/site.js" asp-append-version="true"></script>
+	<footer class="border-top text-muted py-3 mt-auto" style="background-color: #F7F5EF; color: #304251; border-color: #E9F3F6;">
+		<div class="container">
+			&copy; 2025 - SME CRM - <a asp-area="" asp-controller="Home" asp-action="Privacy" style="color: #304251;">Privacy</a>
+		</div>
+	</footer>
 
-    <script>
-        // Apply theme colors to any new elements added dynamically
-        document.addEventListener('DOMContentLoaded', function() {
-            // Check if user is authenticated
-            const isAuthenticated = document.body.classList.contains('user-authenticated');
-            
-            // Add active class to navbar links - more precise matching
-            const currentPath = window.location.pathname.toLowerCase();
-            const currentController = currentPath.split('/')[1] || '';
-            
-            // First, remove any JavaScript-added active classes
-            document.querySelectorAll('.navbar-nav .nav-link').forEach(link => {
-                // Only remove if not added by server-side code
-                if (!link.getAttribute('data-server-active')) {
-                    link.classList.remove('active');
-                }
-            });
-            
-            // Then add active class only to the exact matching link
-            document.querySelectorAll('.navbar-nav .nav-link').forEach(item => {
-                const href = item.getAttribute('href');
-                if (href) {
-                    const hrefParts = href.toLowerCase().split('/');
-                    const hrefController = hrefParts[1] || '';
-                    
-                    // Only match if controllers match exactly
-                    // Special case for home: only active if path is exactly / or /home
-                    if ((hrefController === 'pages' && (currentPath === '/' || currentPath === '/dashboard' || currentPath === '/pages/dashboard')) ||
-                        (hrefController !== 'pages' && hrefController !== '' && currentController === hrefController) ||
-                        (href === '/login/login')
-                        ) {
-                        item.classList.add('active');
-                    }
-                }
-            });
-            
-            // Highlight active nav item in admin navbar - more precise matching
-            document.querySelectorAll('.admin-navbar .nav-link').forEach(item => {
-                // First remove any JavaScript-added active classes
-                if (!item.getAttribute('data-server-active')) {
-                    item.classList.remove('active');
-                }
-                
-                const href = item.getAttribute('href');
-                if (href) {
-                    const hrefParts = href.toLowerCase().split('/');
-                    const hrefController = hrefParts[1] || '';
-                    
-                    // Only match if controllers match exactly
-                    if (hrefController !== '' && currentController === hrefController) {
-                        item.classList.add('active');
-                    }
-                }
-            });
-            
-            // Navbar scroll effect
-            window.addEventListener('scroll', function() {
-                const navbar = document.querySelector('.navbar-modern');
-                if (window.scrollY > 50) {
-                    navbar.classList.add('scrolled');
-                } else {
-                    navbar.classList.remove('scrolled');
-                }
-            });
-            
-            // File size validation for all file inputs - 5MB limit
-            document.querySelectorAll('input[type="file"]').forEach(fileInput => {
-                // Add a container for feedback if it doesn't exist
-                const parentElement = fileInput.parentElement;
-                let feedbackDiv = parentElement.querySelector('.custom-file-feedback');
-                let previewDiv = parentElement.querySelector('.file-preview');
-                
-                if (!feedbackDiv) {
-                    feedbackDiv = document.createElement('div');
-                    feedbackDiv.className = 'custom-file-feedback';
-                    parentElement.appendChild(feedbackDiv);
-                }
-                
-                if (!previewDiv) {
-                    previewDiv = document.createElement('div');
-                    previewDiv.className = 'file-preview';
-                    parentElement.appendChild(previewDiv);
-                }
-                
-                // Mark this input as having validation (for form submission check)
-                fileInput.setAttribute('data-file-validated', 'true');
-                
-                fileInput.addEventListener('change', function() {
-                    const maxSize = 5 * 1024 * 1024; // 5MB in bytes
-                    let validFiles = true;
-                    let overSizeFiles = [];
-                    
-                    // Clear previous previews and feedback
-                    previewDiv.innerHTML = '';
-                    feedbackDiv.innerHTML = '';
-                    feedbackDiv.className = 'custom-file-feedback';
-                    
-                    if (this.files && this.files.length > 0) {
-                        // Check each file for size
-                        for (let i = 0; i < this.files.length; i++) {
-                            const file = this.files[i];
-                            if (file.size > maxSize) {
-                                validFiles = false;
-                                overSizeFiles.push(file.name);
-                            } else {
-                                // Valid file, create preview
-                                const fileInfo = document.createElement('div');
-                                fileInfo.className = 'file-info';
-                                
-                                // Create appropriate preview based on file type
-                                const fileType = file.type;
-                                if (fileType.startsWith('image/')) {
-                                    // Create image preview for image files
-                                    const imgPreview = document.createElement('img');
-                                    imgPreview.className = 'preview-img';
-                                    
-                                    // Read the file and set the preview
-                                    const reader = new FileReader();
-                                    reader.onload = function(e) {
-                                        imgPreview.src = e.target.result;
-                                    };
-                                    reader.readAsDataURL(file);
-                                    
-                                    fileInfo.appendChild(imgPreview);
-                                } else {
-                                    // For non-image files, show an icon
-                                    const iconSpan = document.createElement('span');
-                                    iconSpan.className = 'me-2';
-                                    
-                                    if (fileType.includes('pdf')) {
-                                        iconSpan.innerHTML = '<i class="fas fa-file-pdf fa-2x text-danger"></i>';
-                                    } else if (fileType.includes('word') || fileType.includes('doc')) {
-                                        iconSpan.innerHTML = '<i class="fas fa-file-word fa-2x text-primary"></i>';
-                                    } else if (fileType.includes('excel') || fileType.includes('sheet') || fileType.includes('csv')) {
-                                        iconSpan.innerHTML = '<i class="fas fa-file-excel fa-2x text-success"></i>';
-                                    } else {
-                                        iconSpan.innerHTML = '<i class="fas fa-file fa-2x text-secondary"></i>';
-                                    }
-                                    
-                                    fileInfo.appendChild(iconSpan);
-                                }
-                                
-                                // Add file name and size
-                                const nameSpan = document.createElement('span');
-                                nameSpan.className = 'file-name';
-                                nameSpan.textContent = file.name;
-                                
-                                const sizeSpan = document.createElement('span');
-                                sizeSpan.className = 'file-size ms-2';
-                                sizeSpan.textContent = formatFileSize(file.size);
-                                
-                                fileInfo.appendChild(nameSpan);
-                                fileInfo.appendChild(sizeSpan);
-                                previewDiv.appendChild(fileInfo);
-                            }
-                        }
-                        
-                        if (!validFiles) {
-                            // Reset the file input to completely clear the files
-                            this.value = '';
-                            
-                            // Create a clone of the input element
-                            const newInput = this.cloneNode(true);
-                            
-                            // Replace the old input with the new one
-                            this.parentNode.replaceChild(newInput, this);
-                            
-                            // Reattach the event listener to the new input
-                            newInput.addEventListener('change', arguments.callee);
-                            
-                            // Mark the new input
-                            newInput.setAttribute('data-file-validated', 'false');
-                            
-                            // Clear the preview
-                            previewDiv.innerHTML = '';
-                            
-                            // Show error message with SweetAlert2
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'File Too Large',
-                                html: `The following file(s) exceed the 5MB limit:<br><ul class="text-start"><li>${overSizeFiles.join('</li><li>')}</li></ul>Please select smaller files.`,
-                                confirmButtonColor: '#F3993E',
-                                confirmButtonText: 'OK'
-                            });
-                            
-                            // Show feedback
-                            feedbackDiv.innerHTML = '<i class="fas fa-exclamation-circle me-1"></i> One or more files exceed the 5MB limit.';
-                            feedbackDiv.className = 'custom-file-feedback invalid';
-                        } else {
-                            // Mark this input as valid
-                            this.setAttribute('data-file-validated', 'true');
-                            
-                            // Don't show success feedback, only show feedback for errors
-                            feedbackDiv.innerHTML = '';
-                            feedbackDiv.className = 'custom-file-feedback';
-                        }
-                    } else {
-                        // No files selected, hide preview and feedback
-                        previewDiv.innerHTML = '';
-                        feedbackDiv.className = 'custom-file-feedback';
-                        this.setAttribute('data-file-validated', 'true'); // Mark as valid (no files is valid)
-                    }
-                });
-            });
-            
-            // Prevent form submission if any file inputs have invalid files
-            document.querySelectorAll('form').forEach(form => {
-                form.addEventListener('submit', function(e) {
-                    const fileInputs = this.querySelectorAll('input[type="file"]');
-                    let allValid = true;
-                    
-                    fileInputs.forEach(input => {
-                        if (input.getAttribute('data-file-validated') === 'false') {
-                            allValid = false;
-                        }
-                    });
-                    
-                    if (!allValid) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Invalid Files',
-                            text: 'Please remove or replace any files that exceed the size limit before submitting.',
-                            confirmButtonColor: '#F3993E',
-                            confirmButtonText: 'OK'
-                        });
-                        
-                        return false;
-                    }
-                    
-                    return true;
-                });
-            });
-            
-            // Helper function to format file size in KB, MB
-            function formatFileSize(bytes) {
-                if (bytes === 0) return '0 Bytes';
-                const k = 1024;
-                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-                const i = Math.floor(Math.log(bytes) / Math.log(k));
-                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-            }
-            
-            // Apply theme classes to tables that might be loaded dynamically
-            const applyThemeToTables = function() {
-                document.querySelectorAll('table.table:not(.themed)').forEach(table => {
-                    table.classList.add('themed');
-                    if (!table.classList.contains('table-striped')) {
-                        table.classList.add('table-striped');
-                    }
-                    if (!table.classList.contains('table-hover')) {
-                        table.classList.add('table-hover');
-                    }
-                });
-            };
-            
-            // Apply DataTables styling
-            if ($.fn.dataTable !== undefined) {
-                $.extend(true, $.fn.dataTable.defaults, {
-                    responsive: true,
-                    language: {
-                        search: "",
-                        searchPlaceholder: "Search...",
-                        lengthMenu: "_MENU_ records per page",
-                    },
-                    dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>' +
-                         '<"row"<"col-sm-12"tr>>' +
-                         '<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
-                    initComplete: function() {
-                        $('.dataTables_filter input').addClass('form-control');
-                        $('.dataTables_length select').addClass('form-select');
-                    }
-                });
-            }
-            
-            // Apply themes initially and whenever DOM changes
-            applyThemeToTables();
-            
-            // Monitor DOM for changes
-            const observer = new MutationObserver(function(mutations) {
-                applyThemeToTables();
-                
-                // Also check for new file inputs added to the DOM
-                mutations.forEach(mutation => {
-                    mutation.addedNodes.forEach(node => {
-                        if (node.nodeType === 1) { // Element node
-                            const fileInputs = node.querySelectorAll && node.querySelectorAll('input[type="file"]');
-                            if (fileInputs && fileInputs.length > 0) {
-                                fileInputs.forEach(input => {
-                                    // Skip if already processed
-                                    if (input.getAttribute('data-validator-applied')) return;
-                                    
-                                    // Mark as processed
-                                    input.setAttribute('data-validator-applied', 'true');
-                                    
-                                    // Initialize as valid
-                                    input.setAttribute('data-file-validated', 'true');
-                                    
-                                    // Add a container for feedback if it doesn't exist
-                                    const parentElement = input.parentElement;
-                                    let feedbackDiv = parentElement.querySelector('.custom-file-feedback');
-                                    let previewDiv = parentElement.querySelector('.file-preview');
-                                    
-                                    if (!feedbackDiv) {
-                                        feedbackDiv = document.createElement('div');
-                                        feedbackDiv.className = 'custom-file-feedback';
-                                        parentElement.appendChild(feedbackDiv);
-                                    }
-                                    
-                                    if (!previewDiv) {
-                                        previewDiv = document.createElement('div');
-                                        previewDiv.className = 'file-preview';
-                                        parentElement.appendChild(previewDiv);
-                                    }
-                                    
-                                    // Apply file size validation to dynamically added file inputs
-                                    input.addEventListener('change', function() {
-                                        const maxSize = 5 * 1024 * 1024; // 5MB in bytes
-                                        let validFiles = true;
-                                        let overSizeFiles = [];
-                                        
-                                        // Clear previous previews and feedback
-                                        previewDiv.innerHTML = '';
-                                        feedbackDiv.innerHTML = '';
-                                        feedbackDiv.className = 'custom-file-feedback';
-                                        
-                                        if (this.files && this.files.length > 0) {
-                                            // Check each file for size
-                                            for (let i = 0; i < this.files.length; i++) {
-                                                const file = this.files[i];
-                                                if (file.size > maxSize) {
-                                                    validFiles = false;
-                                                    overSizeFiles.push(file.name);
-                                                } else {
-                                                    // Valid file, create preview
-                                                    const fileInfo = document.createElement('div');
-                                                    fileInfo.className = 'file-info';
-                                                    
-                                                    // Create appropriate preview based on file type
-                                                    const fileType = file.type;
-                                                    if (fileType.startsWith('image/')) {
-                                                        // Create image preview for image files
-                                                        const imgPreview = document.createElement('img');
-                                                        imgPreview.className = 'preview-img';
-                                                        
-                                                        // Read the file and set the preview
-                                                        const reader = new FileReader();
-                                                        reader.onload = function(e) {
-                                                            imgPreview.src = e.target.result;
-                                                        };
-                                                        reader.readAsDataURL(file);
-                                                        
-                                                        fileInfo.appendChild(imgPreview);
-                                                    } else {
-                                                        // For non-image files, show an icon
-                                                        const iconSpan = document.createElement('span');
-                                                        iconSpan.className = 'me-2';
-                                                        
-                                                        if (fileType.includes('pdf')) {
-                                                            iconSpan.innerHTML = '<i class="fas fa-file-pdf fa-2x text-danger"></i>';
-                                                        } else if (fileType.includes('word') || fileType.includes('doc')) {
-                                                            iconSpan.innerHTML = '<i class="fas fa-file-word fa-2x text-primary"></i>';
-                                                        } else if (fileType.includes('excel') || fileType.includes('sheet') || fileType.includes('csv')) {
-                                                            iconSpan.innerHTML = '<i class="fas fa-file-excel fa-2x text-success"></i>';
-                                                        } else {
-                                                            iconSpan.innerHTML = '<i class="fas fa-file fa-2x text-secondary"></i>';
-                                                        }
-                                                        
-                                                        fileInfo.appendChild(iconSpan);
-                                                    }
-                                                    
-                                                    // Add file name and size
-                                                    const nameSpan = document.createElement('span');
-                                                    nameSpan.className = 'file-name';
-                                                    nameSpan.textContent = file.name;
-                                                    
-                                                    const sizeSpan = document.createElement('span');
-                                                    sizeSpan.className = 'file-size ms-2';
-                                                    sizeSpan.textContent = formatFileSize(file.size);
-                                                    
-                                                    fileInfo.appendChild(nameSpan);
-                                                    fileInfo.appendChild(sizeSpan);
-                                                    previewDiv.appendChild(fileInfo);
-                                                }
-                                            }
-                                            
-                                            if (!validFiles) {
-                                                // Reset the file input to completely clear the files
-                                                this.value = '';
-                                                
-                                                // Create a clone of the input element
-                                                const newInput = this.cloneNode(true);
-                                                
-                                                // Replace the old input with the new one
-                                                this.parentNode.replaceChild(newInput, this);
-                                                
-                                                // Reattach the event listener to the new input
-                                                newInput.addEventListener('change', arguments.callee);
-                                                
-                                                // Mark the new input
-                                                newInput.setAttribute('data-file-validated', 'false');
-                                                newInput.setAttribute('data-validator-applied', 'true');
-                                                
-                                                // Clear the preview
-                                                previewDiv.innerHTML = '';
-                                                
-                                                // Show error message with SweetAlert2
-                                                Swal.fire({
-                                                    icon: 'error',
-                                                    title: 'File Too Large',
-                                                    html: `The following file(s) exceed the 5MB limit:<br><ul class="text-start"><li>${overSizeFiles.join('</li><li>')}</li></ul>Please select smaller files.`,
-                                                    confirmButtonColor: '#F3993E',
-                                                    confirmButtonText: 'OK'
-                                                });
-                                                
-                                                // Show feedback
-                                                feedbackDiv.innerHTML = '<i class="fas fa-exclamation-circle me-1"></i> One or more files exceed the 5MB limit.';
-                                                feedbackDiv.className = 'custom-file-feedback invalid';
-                                            } else {
-                                                // Mark this input as valid
-                                                this.setAttribute('data-file-validated', 'true');
-                                                
-                                                // Don't show success feedback, only show feedback for errors
-                                                feedbackDiv.innerHTML = '';
-                                                feedbackDiv.className = 'custom-file-feedback';
-                                            }
-                                        } else {
-                                            // No files selected, hide preview and feedback
-                                            previewDiv.innerHTML = '';
-                                            feedbackDiv.className = 'custom-file-feedback';
-                                            this.setAttribute('data-file-validated', 'true'); // Mark as valid (no files is valid)
-                                        }
-                                    });
-                                });
-                            }
-                        }
-                    });
-                });
-            });
-            
-            observer.observe(document.body, { 
-                childList: true,
-                subtree: true
-            });
-        });
-    </script>
+	<!-- ✅ jQuery -->
+	<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
 
-    @await RenderSectionAsync("Scripts", required: false)
+	<!-- ✅ Bootstrap Bundle with Popper -->
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- ✅ TempData Alerts -->
-    @if (TempData["ErrorMessage"] != null)
-    {
-        <script>
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: '@Html.Raw(TempData["ErrorMessage"])'
-            });
-        </script>
-    }
-    @if (TempData["SuccessMessage"] != null)
-    {
-        <script>
-            Swal.fire({
-                icon: 'success',
-                title: 'Success',
-                text: '@Html.Raw(TempData["SuccessMessage"])'
-            });
-        </script>
-    }
-    @if (TempData["WarningMessage"] != null)
-    {
-        <script>
-            Swal.fire({
-                icon: 'warning',
-                title: 'Warning',
-                text: '@Html.Raw(TempData["WarningMessage"])'
-            });
-        </script>
-    }
+	<!-- ✅ SignalR -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+
+	<!-- ✅ Select2 JS -->
+	<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+	<!-- ✅ Chart.js -->
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+	<!-- ✅ SignalR -->
+	<script src="https://cdn.jsdelivr.net/npm/@@microsoft/signalr@8.0.7/dist/browser/signalr.min.js"></script>
+
+	<!-- ✅ SweetAlert2 -->
+	<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+	<!-- ✅ DataTables JS -->
+	<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+	<script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+	<script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+	<script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
+
+	<!-- ✅ Your Site Scripts -->
+	<script src="~/js/site.js" asp-append-version="true"></script>
+
+	<script>
+		// Apply theme colors to any new elements added dynamically
+		document.addEventListener('DOMContentLoaded', function() {
+			// Check if user is authenticated
+			const isAuthenticated = document.body.classList.contains('user-authenticated');
+			// Authentication buttons loading animation
+			const authButtons = document.querySelectorAll('.auth-btn');
+			const loadingOverlay = document.querySelector('.business-loading-overlay');
+			
+			authButtons.forEach(button => {
+				button.addEventListener('click', function(e) {
+					e.preventDefault();
+					
+					// Show loading overlay
+					loadingOverlay.classList.add('active');
+					
+					// Redirect after a short delay
+					setTimeout(() => {
+						window.location.href = this.getAttribute('href');
+					}, 1200);
+				});
+			});
+
+			// Add active class to navbar links - more precise matching
+			const currentPath = window.location.pathname.toLowerCase();
+			const currentController = currentPath.split('/')[1] || '';
+			const currentAction = currentPath.split('/')[2] || 'index';
+
+			// First, remove any JavaScript-added active classes
+			document.querySelectorAll('.navbar-nav .nav-link').forEach(link => {
+				// Only remove if not added by server-side code
+				if (!link.getAttribute('data-server-active')) {
+					link.classList.remove('active');
+				}
+			});
+
+			// Activate dropdown items based on current controller/action
+			document.querySelectorAll('.dropdown-item').forEach(item => {
+				const href = item.getAttribute('href');
+				if (href) {
+					const hrefParts = href.toLowerCase().split('/');
+					const hrefController = hrefParts[1] || '';
+					const hrefAction = hrefParts[2] || 'index';
+
+					// Check both controller and action for precise matching
+					if (currentController === hrefController && (currentAction === hrefAction || (hrefAction === 'index' && !currentAction))) {
+						item.classList.add('active');
+						// Also activate the parent dropdown toggle
+						const parentDropdown = item.closest('.dropdown');
+						if (parentDropdown) {
+							const dropdownToggle = parentDropdown.querySelector('.dropdown-toggle');
+							if (dropdownToggle) {
+								dropdownToggle.classList.add('active');
+							}
+						}
+					}
+				}
+			});
+
+			// Handle dropdown toggles - if any child items are active, the dropdown should be active
+			document.querySelectorAll('.dropdown').forEach(dropdown => {
+				const hasActiveItem = dropdown.querySelector('.dropdown-item.active');
+				if (hasActiveItem) {
+					const toggle = dropdown.querySelector('.dropdown-toggle');
+					if (toggle) toggle.classList.add('active');
+				}
+			});
+
+			// Then add active class to the exact matching link
+			document.querySelectorAll('.navbar-nav .nav-link').forEach(item => {
+				// Skip dropdown toggles as they're handled separately
+				if (item.classList.contains('dropdown-toggle')) return;
+				
+				const href = item.getAttribute('href');
+				if (href) {
+					const hrefParts = href.toLowerCase().split('/');
+					const hrefController = hrefParts[1] || '';
+					const hrefAction = hrefParts[2] || 'index';
+
+					// Check both controller and action for active state
+					if ((hrefController === 'pages' && (currentPath === '/' || currentPath === '/dashboard' || currentPath === '/pages/dashboard')) ||
+						(hrefController !== 'pages' && hrefController !== '' && currentController === hrefController && 
+						 (currentAction === hrefAction || (hrefAction === 'index' && !currentAction))) ||
+						(href === '/login/login')
+						) {
+						item.classList.add('active');
+					}
+				}
+			});
+
+			// Highlight active nav item in admin navbar - more precise matching
+			document.querySelectorAll('.admin-navbar .nav-link').forEach(item => {
+				// First remove any JavaScript-added active classes
+				if (!item.getAttribute('data-server-active')) {
+					item.classList.remove('active');
+				}
+
+				const href = item.getAttribute('href');
+				if (href) {
+					const hrefParts = href.toLowerCase().split('/');
+					const hrefController = hrefParts[1] || '';
+					const hrefAction = hrefParts[2] || 'index';
+
+					// Match both controller and action for more precise highlighting
+					if (hrefController !== '' && currentController === hrefController && 
+					   (currentAction === hrefAction || (hrefAction === 'index' && !currentAction))) {
+						item.classList.add('active');
+					}
+				}
+			});
+			
+			// Handle dropdown toggles in admin navbar too
+			document.querySelectorAll('.admin-navbar .dropdown').forEach(dropdown => {
+				const hasActiveItem = dropdown.querySelector('.dropdown-item.active');
+				if (hasActiveItem) {
+					const toggle = dropdown.querySelector('.dropdown-toggle');
+					if (toggle) toggle.classList.add('active');
+				}
+			});
+
+			// Navbar scroll effect
+			window.addEventListener('scroll', function() {
+				const navbar = document.querySelector('.navbar-modern');
+				if (window.scrollY > 50) {
+					navbar.classList.add('scrolled');
+				} else {
+					navbar.classList.remove('scrolled');
+				}
+			});
+
+			// File size validation for all file inputs - 5MB limit
+			document.querySelectorAll('input[type="file"]').forEach(fileInput => {
+				// Add a container for feedback if it doesn't exist
+				const parentElement = fileInput.parentElement;
+				let feedbackDiv = parentElement.querySelector('.custom-file-feedback');
+				let previewDiv = parentElement.querySelector('.file-preview');
+
+				if (!feedbackDiv) {
+					feedbackDiv = document.createElement('div');
+					feedbackDiv.className = 'custom-file-feedback';
+					parentElement.appendChild(feedbackDiv);
+				}
+
+				if (!previewDiv) {
+					previewDiv = document.createElement('div');
+					previewDiv.className = 'file-preview';
+					parentElement.appendChild(previewDiv);
+				}
+
+				// Mark this input as having validation (for form submission check)
+				fileInput.setAttribute('data-file-validated', 'true');
+
+				fileInput.addEventListener('change', function() {
+					const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+					let validFiles = true;
+					let overSizeFiles = [];
+
+					// Clear previous previews and feedback
+					previewDiv.innerHTML = '';
+					feedbackDiv.innerHTML = '';
+					feedbackDiv.className = 'custom-file-feedback';
+
+					if (this.files && this.files.length > 0) {
+						// Check each file for size
+						for (let i = 0; i < this.files.length; i++) {
+							const file = this.files[i];
+							if (file.size > maxSize) {
+								validFiles = false;
+								overSizeFiles.push(file.name);
+							} else {
+								// Valid file, create preview
+								const fileInfo = document.createElement('div');
+								fileInfo.className = 'file-info';
+
+								// Create appropriate preview based on file type
+								const fileType = file.type;
+								if (fileType.startsWith('image/')) {
+									// Create image preview for image files
+									const imgPreview = document.createElement('img');
+									imgPreview.className = 'preview-img';
+									imgPreview.style.maxWidth = '100%';
+									imgPreview.style.maxHeight = '75px'; // 75% smaller height
+									imgPreview.style.objectFit = 'contain';
+									imgPreview.style.margin = '5px auto';
+									imgPreview.style.display = 'block';
+
+									// Read the file and set the preview
+									const reader = new FileReader();
+									reader.onload = function(e) {
+										imgPreview.src = e.target.result;
+									};
+									reader.readAsDataURL(file);
+
+									fileInfo.appendChild(imgPreview);
+								} else {
+									// For non-image files, show an icon
+									const iconSpan = document.createElement('span');
+									iconSpan.className = 'me-2';
+
+									if (fileType.includes('pdf')) {
+										iconSpan.innerHTML = '<i class="fas fa-file-pdf fa-2x text-danger"></i>';
+									} else if (fileType.includes('word') || fileType.includes('doc')) {
+										iconSpan.innerHTML = '<i class="fas fa-file-word fa-2x text-primary"></i>';
+									} else if (fileType.includes('excel') || fileType.includes('sheet') || fileType.includes('csv')) {
+										iconSpan.innerHTML = '<i class="fas fa-file-excel fa-2x text-success"></i>';
+									} else {
+										iconSpan.innerHTML = '<i class="fas fa-file fa-2x text-secondary"></i>';
+									}
+
+									fileInfo.appendChild(iconSpan);
+								}
+
+								// Add file name and size
+								const nameSpan = document.createElement('span');
+								nameSpan.className = 'file-name';
+								nameSpan.textContent = file.name;
+
+								const sizeSpan = document.createElement('span');
+								sizeSpan.className = 'file-size ms-2';
+								sizeSpan.textContent = formatFileSize(file.size);
+
+								fileInfo.appendChild(nameSpan);
+								fileInfo.appendChild(sizeSpan);
+								previewDiv.appendChild(fileInfo);
+							}
+						}
+
+						if (!validFiles) {
+							// Reset the file input to completely clear the files
+							this.value = '';
+
+							// Create a clone of the input element
+							const newInput = this.cloneNode(true);
+
+							// Replace the old input with the new one
+							this.parentNode.replaceChild(newInput, this);
+
+							// Reattach the event listener to the new input
+							newInput.addEventListener('change', arguments.callee);
+
+							// Mark the new input
+							newInput.setAttribute('data-file-validated', 'false');
+
+							// Clear the preview
+							previewDiv.innerHTML = '';
+
+							// Show error message with SweetAlert2
+							Swal.fire({
+								icon: 'error',
+								title: 'File Too Large',
+								html: `The following file(s) exceed the 5MB limit:<br><ul class="text-start"><li>${overSizeFiles.join('</li><li>')}</li></ul>Please select smaller files.`,
+								confirmButtonColor: '#F3993E',
+								confirmButtonText: 'OK'
+							});
+
+							// Show feedback
+							feedbackDiv.innerHTML = '<i class="fas fa-exclamation-circle me-1"></i> One or more files exceed the 5MB limit.';
+							feedbackDiv.className = 'custom-file-feedback invalid';
+						} else {
+							// Mark this input as valid
+							this.setAttribute('data-file-validated', 'true');
+
+							// Don't show success feedback, only show feedback for errors
+							feedbackDiv.innerHTML = '';
+							feedbackDiv.className = 'custom-file-feedback';
+						}
+					} else {
+						// No files selected, hide preview and feedback
+						previewDiv.innerHTML = '';
+						feedbackDiv.className = 'custom-file-feedback';
+						this.setAttribute('data-file-validated', 'true'); // Mark as valid (no files is valid)
+					}
+				});
+			});
+
+			// Prevent form submission if any file inputs have invalid files
+			document.querySelectorAll('form').forEach(form => {
+				form.addEventListener('submit', function(e) {
+					const fileInputs = this.querySelectorAll('input[type="file"]');
+					let allValid = true;
+
+					fileInputs.forEach(input => {
+						if (input.getAttribute('data-file-validated') === 'false') {
+							allValid = false;
+						}
+					});
+
+					if (!allValid) {
+						e.preventDefault();
+						e.stopPropagation();
+
+						Swal.fire({
+							icon: 'error',
+							title: 'Invalid Files',
+							text: 'Please remove or replace any files that exceed the size limit before submitting.',
+							confirmButtonColor: '#F3993E',
+							confirmButtonText: 'OK'
+						});
+
+						return false;
+					}
+
+					return true;
+				});
+			});
+
+			// Helper function to format file size in KB, MB
+			function formatFileSize(bytes) {
+				if (bytes === 0) return '0 Bytes';
+				const k = 1024;
+				const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+				const i = Math.floor(Math.log(bytes) / Math.log(k));
+				return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+			}
+
+			// Apply theme classes to tables that might be loaded dynamically
+			const applyThemeToTables = function() {
+				document.querySelectorAll('table.table:not(.themed)').forEach(table => {
+					table.classList.add('themed');
+					if (!table.classList.contains('table-striped')) {
+						table.classList.add('table-striped');
+					}
+					if (!table.classList.contains('table-hover')) {
+						table.classList.add('table-hover');
+					}
+				});
+			};
+
+			// Apply DataTables styling
+			if ($.fn.dataTable !== undefined) {
+				$.extend(true, $.fn.dataTable.defaults, {
+					responsive: true,
+					scrollX: true,
+					language: {
+						search: "",
+						searchPlaceholder: "Search...",
+						lengthMenu: "_MENU_ records per page",
+					},
+					dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>' +
+						 '<"row"<"col-sm-12"tr>>' +
+						 '<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
+					initComplete: function(settings, json) {
+						$('.dataTables_filter input').addClass('form-control');
+						$('.dataTables_length select').addClass('form-select');
+						
+						// Ensure parent container is responsive
+						$(this).closest('.dataTables_wrapper').addClass('w-100 dt-responsive');
+					}
+				});
+			}
+
+			// Apply themes initially and whenever DOM changes
+			applyThemeToTables();
+
+			// Monitor DOM for changes
+			const observer = new MutationObserver(function(mutations) {
+				applyThemeToTables();
+
+				// Also check for new file inputs added to the DOM
+				mutations.forEach(mutation => {
+					mutation.addedNodes.forEach(node => {
+						if (node.nodeType === 1) { // Element node
+							const fileInputs = node.querySelectorAll && node.querySelectorAll('input[type="file"]');
+							if (fileInputs && fileInputs.length > 0) {
+								fileInputs.forEach(input => {
+									// Skip if already processed
+									if (input.getAttribute('data-validator-applied')) return;
+
+									// Mark as processed
+									input.setAttribute('data-validator-applied', 'true');
+
+									// Initialize as valid
+									input.setAttribute('data-file-validated', 'true');
+
+									// Add a container for feedback if it doesn't exist
+									const parentElement = input.parentElement;
+									let feedbackDiv = parentElement.querySelector('.custom-file-feedback');
+									let previewDiv = parentElement.querySelector('.file-preview');
+
+									if (!feedbackDiv) {
+										feedbackDiv = document.createElement('div');
+										feedbackDiv.className = 'custom-file-feedback';
+										parentElement.appendChild(feedbackDiv);
+									}
+
+									if (!previewDiv) {
+										previewDiv = document.createElement('div');
+										previewDiv.className = 'file-preview';
+										parentElement.appendChild(previewDiv);
+									}
+
+									// Apply file size validation to dynamically added file inputs
+									input.addEventListener('change', function() {
+										const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+										let validFiles = true;
+										let overSizeFiles = [];
+
+										// Clear previous previews and feedback
+										previewDiv.innerHTML = '';
+										feedbackDiv.innerHTML = '';
+										feedbackDiv.className = 'custom-file-feedback';
+
+										if (this.files && this.files.length > 0) {
+											// Check each file for size
+											for (let i = 0; i < this.files.length; i++) {
+												const file = this.files[i];
+												if (file.size > maxSize) {
+													validFiles = false;
+													overSizeFiles.push(file.name);
+												} else {
+													// Valid file, create preview
+													const fileInfo = document.createElement('div');
+													fileInfo.className = 'file-info';
+
+													// Create appropriate preview based on file type
+													const fileType = file.type;
+													if (fileType.startsWith('image/')) {
+														// Create image preview for image files
+														const imgPreview = document.createElement('img');
+														imgPreview.className = 'preview-img';
+														imgPreview.style.maxWidth = '100%';
+														imgPreview.style.maxHeight = '75px'; // 75% smaller height
+														imgPreview.style.objectFit = 'contain';
+														imgPreview.style.margin = '5px auto';
+														imgPreview.style.display = 'block';
+
+														// Read the file and set the preview
+														const reader = new FileReader();
+														reader.onload = function(e) {
+															imgPreview.src = e.target.result;
+														};
+														reader.readAsDataURL(file);
+
+														fileInfo.appendChild(imgPreview);
+													} else {
+														// For non-image files, show an icon
+														const iconSpan = document.createElement('span');
+														iconSpan.className = 'me-2';
+
+														if (fileType.includes('pdf')) {
+															iconSpan.innerHTML = '<i class="fas fa-file-pdf fa-2x text-danger"></i>';
+														} else if (fileType.includes('word') || fileType.includes('doc')) {
+															iconSpan.innerHTML = '<i class="fas fa-file-word fa-2x text-primary"></i>';
+														} else if (fileType.includes('excel') || fileType.includes('sheet') || fileType.includes('csv')) {
+															iconSpan.innerHTML = '<i class="fas fa-file-excel fa-2x text-success"></i>';
+														} else {
+															iconSpan.innerHTML = '<i class="fas fa-file fa-2x text-secondary"></i>';
+														}
+
+														fileInfo.appendChild(iconSpan);
+													}
+
+													// Add file name and size
+													const nameSpan = document.createElement('span');
+													nameSpan.className = 'file-name';
+													nameSpan.textContent = file.name;
+
+													const sizeSpan = document.createElement('span');
+													sizeSpan.className = 'file-size ms-2';
+													sizeSpan.textContent = formatFileSize(file.size);
+
+													fileInfo.appendChild(nameSpan);
+													fileInfo.appendChild(sizeSpan);
+													previewDiv.appendChild(fileInfo);
+												}
+											}
+
+											if (!validFiles) {
+												// Reset the file input to completely clear the files
+												this.value = '';
+
+												// Create a clone of the input element
+												const newInput = this.cloneNode(true);
+
+												// Replace the old input with the new one
+												this.parentNode.replaceChild(newInput, this);
+
+												// Reattach the event listener to the new input
+												newInput.addEventListener('change', arguments.callee);
+
+												// Mark the new input
+												newInput.setAttribute('data-file-validated', 'false');
+												newInput.setAttribute('data-validator-applied', 'true');
+
+												// Clear the preview
+												previewDiv.innerHTML = '';
+
+												// Show error message with SweetAlert2
+												Swal.fire({
+													icon: 'error',
+													title: 'File Too Large',
+													html: `The following file(s) exceed the 5MB limit:<br><ul class="text-start"><li>${overSizeFiles.join('</li><li>')}</li></ul>Please select smaller files.`,
+													confirmButtonColor: '#F3993E',
+													confirmButtonText: 'OK'
+												});
+
+												// Show feedback
+												feedbackDiv.innerHTML = '<i class="fas fa-exclamation-circle me-1"></i> One or more files exceed the 5MB limit.';
+												feedbackDiv.className = 'custom-file-feedback invalid';
+											} else {
+												// Mark this input as valid
+												this.setAttribute('data-file-validated', 'true');
+
+												// Don't show success feedback, only show feedback for errors
+												feedbackDiv.innerHTML = '';
+												feedbackDiv.className = 'custom-file-feedback';
+											}
+										} else {
+											// No files selected, hide preview and feedback
+											previewDiv.innerHTML = '';
+											feedbackDiv.className = 'custom-file-feedback';
+											this.setAttribute('data-file-validated', 'true'); // Mark as valid (no files is valid)
+										}
+									});
+								});
+							}
+						}
+					});
+				});
+			});
+
+			observer.observe(document.body, {
+				childList: true,
+				subtree: true
+			});
+		});
+	</script>
+
+	@await RenderSectionAsync("Scripts", required: false)
+
+	<!-- ✅ Side Navigation Script -->
+	<script src="~/js/navbar.js" asp-append-version="true"></script>
+
+	<!-- ✅ Table Responsiveness Script -->
+	<script src="~/js/table-responsive.js" asp-append-version="true"></script>
+
+	<!-- ✅ TempData Alerts -->
+	@if (TempData["ErrorMessage"] != null)
+	{
+		<script>
+			Swal.fire({
+				icon: 'error',
+				title: 'Error',
+				text: '@Html.Raw(TempData["ErrorMessage"])'
+			});
+		</script>
+	}
+	@if (TempData["SuccessMessage"] != null)
+	{
+		<script>
+			Swal.fire({
+				icon: 'success',
+				title: 'Success',
+				text: '@Html.Raw(TempData["SuccessMessage"])'
+			});
+		</script>
+	}
+	@if (TempData["WarningMessage"] != null)
+	{
+		<script>
+			Swal.fire({
+				icon: 'warning',
+				title: 'Warning',
+				text: '@Html.Raw(TempData["WarningMessage"])'
+			});
+		</script>
+	}
+
+
+	<script>
+		$(document).ready(function() {
+		   console.log('Initializing SignalR connection...');
+
+		   // SignalR connection with logging
+		   const connection = new signalR.HubConnectionBuilder()
+			   .withUrl("/realtimehub")
+			   .configureLogging(signalR.LogLevel.Information)
+			   .build();
+
+		   // Set up connection event handlers for debugging
+		   connection.onclose(error => {
+			   console.log('SignalR connection closed', error);
+		   });
+
+		   connection.onreconnecting(error => {
+			   console.log('SignalR reconnecting', error);
+		   });
+
+		   connection.onreconnected(connectionId => {
+			   console.log('SignalR reconnected with ID:', connectionId);
+
+               // Rejoin groups after reconnection
+               if (window.joinInventoryGroup) {
+                   window.joinInventoryGroup();
+               }
+		   });
+           
+           // Add inventory movement handling for all pages
+           connection.on("ReceiveInventoryMovement", function(movement) {
+               console.log("Received inventory movement:", movement);
+
+               // Dispatch a custom event that specific pages can listen for
+               const event = new CustomEvent('inventoryMovement', { detail: movement });
+               document.dispatchEvent(event);
+           });
+
+           // Join inventory group for this user
+           window.joinInventoryGroup = async function() {
+               @if (User.Identity.IsAuthenticated)
+               {
+                   var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                   var userRole = User.FindFirstValue(ClaimTypes.Role);
+                   var businessId = userRole == "Staff" ? User.FindFirstValue("BOId") : userId;
+                   
+                   if (!string.IsNullOrEmpty(businessId))
+		{
+			<text>
+                       try {
+                           await connection.invoke("JoinInventoryGroup", "@businessId");
+                           console.log("Joined inventory group for business ID: @businessId");
+                       } catch (err) {
+                           console.error("Error joining inventory group:", err);
+						}
+			</text>
+		}
+               }
+           }
+           
+           // Start the connection
+           async function startConnection() {
+               try {
+                   await connection.start();
+                   console.log("SignalR Connected");
+
+                   // Join inventory group
+                   if (window.joinInventoryGroup) {
+                       await window.joinInventoryGroup();
+                   }
+               } catch (err) {
+                   console.error("SignalR Connection Error: ", err);
+                   setTimeout(startConnection, 5000);
+               }
+           }
+           
+           // Make connection available globally
+           window.signalRConnection = connection;
+						   
+           // Start the connection
+           startConnection();
+		});
+	</script>
+
+	<!-- Account Status Checker - Only loaded for authenticated users -->
+	@if (User.Identity.IsAuthenticated)
+	{
+		<script src="~/js/account-status-checker.js"></script>
+		
+		<!-- Notifications and Messages Handler -->
+		<script>
+			$(document).ready(function() {
+				// Function to load recent notifications
+				function loadRecentNotifications() {
+					console.log('Loading recent notifications...');
+					$.ajax({
+						url: '/Notifications/GetRecentNotifications',
+						type: 'GET',
+						dataType: 'json',
+						success: function(data) {
+							console.log('Notifications loaded:', data);
+							// Clear loading indicator
+							$('#notificationList').empty();
+							
+							// Update notification badge count
+							$('#notificationBadge').text(data.unreadCount);
+							if (data.unreadCount > 0) {
+								$('#notificationBadge').show();
+							} else {
+								$('#notificationBadge').hide();
+							}
+							
+							// Display notifications or no notifications message
+							if (data.notifications && data.notifications.length > 0) {
+								// Add each notification to the dropdown
+								$.each(data.notifications, function(i, notification) {
+									let notificationItem = $('<div class="dropdown-item notification-item"></div>');
+									
+									// Add unread class if notification is unread
+									if (!notification.isRead) {
+										notificationItem.addClass('unread');
+									}
+									
+									// Add appropriate icon based on notification type
+									let iconClass = 'fas fa-bell';
+									let iconBgClass = 'bg-primary';
+									
+									if (notification.type === 'Order') {
+										iconClass = 'fas fa-shopping-cart';
+										iconBgClass = 'bg-success';
+									} else if (notification.type === 'Inventory') {
+										iconClass = 'fas fa-boxes';
+										iconBgClass = 'bg-warning';
+									} else if (notification.type === 'Message') {
+										iconClass = 'fas fa-envelope';
+										iconBgClass = 'bg-info';
+									} else if (notification.type === 'Alert') {
+										iconClass = 'fas fa-exclamation-triangle';
+										iconBgClass = 'bg-danger';
+									}
+									
+									// Build notification HTML
+									let notificationHtml = `
+										<div class="notification-icon">
+											<div class="icon-circle ${iconBgClass}">
+												<i class="${iconClass}"></i>
+											</div>
+										</div>
+										<div class="notification-details">
+											<div class="notification-title">${notification.title}</div>
+											<div class="notification-text">${notification.message}</div>
+											<span class="notification-time">${notification.timeAgo}</span>
+										</div>
+									`;
+									
+									notificationItem.html(notificationHtml);
+									$('#notificationList').append(notificationItem);
+								});
+							} else {
+								// No notifications
+								$('#notificationList').html('<div class="dropdown-item text-center py-3">No notifications</div>');
+							}
+						},
+						error: function(xhr, status, error) {
+							console.error('Error loading notifications:', status, error);
+							$('#notificationList').html('<div class="dropdown-item text-center py-3">Failed to load notifications</div>');
+						}
+					});
+				}
+				
+				// Function to load unread message count
+				function loadUnreadMessageCount() {
+					console.log('Loading unread message count...');
+					$.ajax({
+						url: '/Chat/GetUnreadChatCount',
+						type: 'GET',
+						dataType: 'json',
+						success: function(data) {
+							console.log('Unread message count loaded:', data);
+							// Update message badge count
+							$('#messageBadge').text(data.unreadCount);
+							if (data.unreadCount > 0) {
+								$('#messageBadge').show();
+							} else {
+								$('#messageBadge').hide();
+							}
+						},
+						error: function(xhr, status, error) {
+							console.error('Error loading unread message count:', status, error);
+						}
+					});
+				}
+				
+				// Load notifications when dropdown is opened
+				$('#notificationDropdown').on('show.bs.dropdown', function() {
+					loadRecentNotifications();
+				});
+				
+				// Load notifications and message count on page load
+				loadRecentNotifications();
+				loadUnreadMessageCount();
+				
+				// Refresh notifications and message count every 60 seconds
+				setInterval(function() {
+					if (!$('#notificationDropdown').hasClass('show')) {
+						loadRecentNotifications();
+					}
+					loadUnreadMessageCount();
+				}, 60000);
+				
+				// Handle mark all as read
+				$(document).on('click', '.mark-all-read-btn', function(e) {
+					e.preventDefault();
+					console.log('Mark all as read clicked');
+					
+					$.ajax({
+						url: '/Notifications/MarkAllAsRead',
+						type: 'GET',
+						success: function(data) {
+							console.log('All notifications marked as read:', data);
+							loadRecentNotifications();
+						},
+						error: function(xhr, status, error) {
+							console.error('Error marking notifications as read:', status, error);
+						}
+					});
+				});
+				
+				// Listen for real-time updates to message count
+				if (window.signalRConnection) {
+					window.signalRConnection.on("UpdateChatCount", function(count) {
+						console.log('Real-time message count update:', count);
+						$('#messageBadge').text(count);
+						if (count > 0) {
+							$('#messageBadge').show();
+						} else {
+							$('#messageBadge').hide();
+						}
+					});
+					
+					// Listen for notification count updates
+					window.signalRConnection.on("UpdateNotificationCount", function(count) {
+						console.log('Real-time notification count update:', count);
+						$('#notificationBadge').text(count);
+						if (count > 0) {
+							$('#notificationBadge').show();
+						} else {
+							$('#notificationBadge').hide();
+						}
+					});
+				}
+			});
+		</script>
+	}
 </body>
 </html>

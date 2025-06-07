@@ -1,0 +1,629 @@
+@model IEnumerable<Project_Creation.Models.Entities.Notification>
+@using System.Security.Claims
+@{
+    ViewData["Title"] = "Notifications";
+    
+    // Check if the current user is a staff member
+    bool isStaff = User.IsInRole("Staff");
+    int currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+    
+    // Get business owner ID from ViewBag (set in controller)
+    int? businessOwnerId = ViewBag.BusinessOwnerId;
+}
+
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2 class="mb-3">Notifications</h2>
+            @if (isStaff && businessOwnerId.HasValue)
+            {
+                <div class="alert alert-info py-2 mb-3">
+                    <small>
+                        <i class="fas fa-info-circle me-1"></i>
+                        Notifications marked with <span class="badge bg-info"><i class="fas fa-building me-1"></i>BO</span> 
+                        are from your business owner's account.
+                    </small>
+                </div>
+            }
+        </div>
+        <div class="col-md-4 text-end">
+            <button id="markAllAsReadBtn" class="btn btn-outline-secondary me-2">
+                <i class="fas fa-check-double me-1"></i> Mark All as Read
+            </button>
+            <button id="deleteAllBtn" class="btn btn-outline-danger">
+                <i class="fas fa-trash me-1"></i> Clear All
+            </button>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            @if (Model.Any())
+            {
+                <div class="list-group list-group-flush">
+                    @foreach (var notification in Model)
+                    {
+                        bool isBusinessOwnerNotification = isStaff && businessOwnerId.HasValue && 
+                            notification.UserId == businessOwnerId.Value;
+                            
+                        <div class="list-group-item notification-item @(notification.IsRead ? "" : "unread") @(isBusinessOwnerNotification ? "business-owner-notification" : "")" data-id="@notification.Id">
+                            <div class="d-flex w-100 justify-content-between align-items-center">
+                                <div class="notification-content">
+                                    <div class="d-flex align-items-center">
+                                        @{
+                                            string iconClass = notification.Type switch
+                                            {
+                                                Project_Creation.Models.Entities.NotificationType.Chat => "fas fa-comment",
+                                                Project_Creation.Models.Entities.NotificationType.Calendar => "fas fa-calendar-alt",
+                                                Project_Creation.Models.Entities.NotificationType.Lead => "fas fa-user-tag",
+                                                Project_Creation.Models.Entities.NotificationType.Order => "fas fa-shopping-cart",
+                                                Project_Creation.Models.Entities.NotificationType.System => "fas fa-cog",
+                                                _ => "fas fa-bell"
+                                            };
+
+                                            string bgClass = notification.Type switch
+                                            {
+                                                Project_Creation.Models.Entities.NotificationType.Chat => "bg-primary",
+                                                Project_Creation.Models.Entities.NotificationType.Calendar => "bg-success",
+                                                Project_Creation.Models.Entities.NotificationType.Lead => "bg-info",
+                                                Project_Creation.Models.Entities.NotificationType.Order => "bg-warning",
+                                                Project_Creation.Models.Entities.NotificationType.System => "bg-dark",
+                                                _ => "bg-secondary"
+                                            };
+                                            
+                                            bool isRejectionNotification = notification.Title.Contains("Rejected") || notification.Message.Contains("rejected");
+                                        }
+                                        <div class="notification-icon me-3 rounded-circle text-white p-2 @bgClass">
+                                            <i class="@iconClass"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="mb-1">
+                                                @notification.Title
+                                                @if (isBusinessOwnerNotification)
+                                                {
+                                                    <span class="badge bg-info ms-2" title="Business Owner Notification">
+                                                        <i class="fas fa-building me-1"></i>BO
+                                                    </span>
+                                                }
+                                            </h5>
+                                            <p class="mb-1">
+                                                @if (isRejectionNotification)
+                                                {
+                                                    <span>@(notification.Message.Length > 100 ? notification.Message.Substring(0, 100) + "..." : notification.Message)</span>
+                                                    <a href="#" class="view-details ms-1 text-primary" 
+                                                       data-bs-toggle="modal" 
+                                                       data-bs-target="#notificationDetailModal" 
+                                                       data-title="@notification.Title"
+                                                       data-message="@notification.Message"
+                                                       data-date="@notification.CreatedAt.ToString("MMM dd, yyyy h:mm tt")"
+                                                       data-type="@notification.Type"
+                                                       data-is-bo="@isBusinessOwnerNotification.ToString().ToLower()">
+                                                        View details
+                                                    </a>
+                                                }
+                                                else
+                                                {
+                                                    @notification.Message
+                                                }
+                                            </p>
+                                            <small class="text-muted">
+                                                @notification.CreatedAt.ToString("MMM dd, yyyy h:mm tt")
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="notification-actions">
+                                    @if (!notification.IsRead)
+                                    {
+                                        <button class="btn btn-sm btn-outline-primary mark-read-btn me-1" 
+                                                data-id="@notification.Id" title="Mark as read">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                    }
+                                    @if (!string.IsNullOrEmpty(notification.Url))
+                                    {
+                                        <a href="@notification.Url" class="btn btn-sm btn-outline-info me-1" title="View details">
+                                            <i class="fas fa-external-link-alt"></i>
+                                        </a>
+                                    }
+                                    <button class="btn btn-sm btn-outline-danger delete-btn" 
+                                            data-id="@notification.Id" title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="fas fa-bell-slash fa-3x mb-3 text-muted"></i>
+                    <h4 class="text-muted">No notifications</h4>
+                    <p class="text-muted">You don't have any notifications at the moment.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Notification Detail Modal -->
+<div class="modal fade" id="notificationDetailModal" tabindex="-1" aria-labelledby="notificationDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title" id="notificationDetailModalLabel">Notification Details</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="notification-modal-icon rounded-circle text-white p-2 me-3" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                        <i class="notification-modal-icon-class"></i>
+                    </div>
+                    <h5 class="notification-modal-title mb-0"></h5>
+                    <span class="business-owner-badge ms-2 d-none">
+                        <span class="badge bg-info">
+                            <i class="fas fa-building me-1"></i>BO
+                        </span>
+                    </span>
+                </div>
+                
+                <div class="notification-modal-date text-muted mb-3">
+                    <i class="fas fa-clock me-1"></i> <span></span>
+                </div>
+                
+                <div class="card mb-3">
+                    <div class="card-header bg-light">
+                        <strong>Message</strong>
+                    </div>
+                    <div class="card-body">
+                        <p class="notification-modal-message mb-0"></p>
+                    </div>
+                </div>
+                
+                <!-- Only shown for rejection notifications -->
+                <div class="rejection-details">
+                    <div class="alert alert-warning">
+                        <h6 class="alert-heading"><i class="fas fa-exclamation-triangle me-1"></i> What does this mean?</h6>
+                        <p class="mb-0">Your request has been reviewed by an administrator and was not approved. The reason is provided above.</p>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <strong>What can I do next?</strong>
+                        </div>
+                        <div class="card-body">
+                            <ul class="mb-0">
+                                <li>Review the rejection reason carefully</li>
+                                <li>Make any necessary changes to your account or profile</li>
+                                <li>Contact support if you need assistance</li>
+                                <li>Submit a new request after addressing the issues</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a href="#" class="btn btn-primary notification-modal-url">Go to Related Page</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .notification-item {
+            transition: all 0.3s;
+            border-left: 3px solid transparent;
+            position: relative;
+        }
+        
+        .notification-item.unread {
+            border-left-color: var(--accent-color);
+            background-color: rgba(243, 153, 62, 0.05);
+        }
+        
+        /* Style for business owner notifications */
+        .notification-item.business-owner-notification {
+            border-right: 3px solid #0dcaf0;
+        }
+        
+        .notification-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+        }
+        
+        .notification-actions {
+            display: flex;
+            align-items: center;
+        }
+        
+        .notification-actions .btn {
+            margin-left: 5px;
+        }
+        
+        @@media (max-width: 768px) {
+            .notification-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .notification-actions {
+                margin-top: 10px;
+            }
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Mark a notification as read
+            $('.mark-read-btn').click(function() {
+                const btn = $(this);
+                const id = btn.data('id');
+                const item = btn.closest('.notification-item');
+                
+                $.ajax({
+                    url: '@Url.Action("MarkAsRead", "Notifications")',
+                    type: 'POST',
+                    data: { id: id },
+                    headers: {
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            // Update UI
+                            item.removeClass('unread');
+                            btn.remove();
+                            
+                            // Update notification count in navbar
+                            updateNotificationCount();
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: response.message || 'Failed to mark notification as read'
+                            });
+                        }
+                    },
+                    error: function() {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'An error occurred while processing your request'
+                        });
+                    }
+                });
+            });
+            
+            // View notification details
+            $('.view-details').click(function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const title = $(this).data('title');
+                const message = $(this).data('message');
+                const date = $(this).data('date');
+                const type = $(this).data('type');
+                const url = $(this).closest('.notification-item').find('a[title="View details"]').attr('href');
+                const isBusinessOwner = $(this).data('is-bo') === 'true';
+                
+                // Set icon class based on notification type
+                let iconClass = 'fas fa-bell';
+                let bgClass = 'bg-secondary';
+                
+                switch (parseInt(type)) {
+                    case 1: // Chat
+                        iconClass = 'fas fa-comment';
+                        bgClass = 'bg-primary';
+                        break;
+                    case 2: // Calendar
+                        iconClass = 'fas fa-calendar-alt';
+                        bgClass = 'bg-success';
+                        break;
+                    case 3: // Lead
+                        iconClass = 'fas fa-user-tag';
+                        bgClass = 'bg-info';
+                        break;
+                    case 4: // Order
+                        iconClass = 'fas fa-shopping-cart';
+                        bgClass = 'bg-warning';
+                        break;
+                    case 5: // System
+                        iconClass = 'fas fa-cog';
+                        bgClass = 'bg-dark';
+                        break;
+                }
+                
+                // Set modal content
+                $('.notification-modal-title').text(title);
+                $('.notification-modal-message').text(message);
+                $('.notification-modal-date span').text(date);
+                $('.notification-modal-icon').removeClass().addClass('notification-modal-icon rounded-circle text-white p-2 me-3 ' + bgClass);
+                $('.notification-modal-icon-class').removeClass().addClass(iconClass);
+                
+                // Show/hide business owner badge
+                if (isBusinessOwner) {
+                    $('.business-owner-badge').removeClass('d-none');
+                } else {
+                    $('.business-owner-badge').addClass('d-none');
+                }
+                
+                // Show/hide rejection details section
+                if (title.includes('Rejected') || message.includes('rejected')) {
+                    $('.rejection-details').show();
+                } else {
+                    $('.rejection-details').hide();
+                }
+                
+                // Set URL button visibility and href
+                if (url && url !== "#") {
+                    $('.notification-modal-url').show().attr('href', url);
+                } else {
+                    $('.notification-modal-url').hide();
+                }
+                
+                // Mark notification as read when details are viewed
+                const notificationId = $(this).closest('.notification-item').data('id');
+                markNotificationAsRead(notificationId);
+            });
+            
+            // Delete a notification
+            $('.delete-btn').click(function() {
+                const btn = $(this);
+                const id = btn.data('id');
+                const item = btn.closest('.notification-item');
+                
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: 'This notification will be permanently deleted.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#dc3545',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: '@Url.Action("Delete", "Notifications")',
+                            type: 'POST',
+                            data: { id: id },
+                            headers: {
+                                'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                            },
+                            success: function(response) {
+                                if (response.success) {
+                                    // Remove notification from UI
+                                    item.fadeOut(300, function() {
+                                        $(this).remove();
+                                        
+                                        // Check if no notifications left
+                                        if ($('.notification-item').length === 0) {
+                                            $('.list-group').html(`
+                                                <div class="text-center py-5">
+                                                    <i class="fas fa-bell-slash fa-3x mb-3 text-muted"></i>
+                                                    <h4 class="text-muted">No notifications</h4>
+                                                    <p class="text-muted">You don't have any notifications at the moment.</p>
+                                                </div>
+                                            `);
+                                        }
+                                    });
+                                    
+                                    // Update notification count in navbar
+                                    updateNotificationCount();
+                                } else {
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Error',
+                                        text: response.message || 'Failed to delete notification'
+                                    });
+                                }
+                            },
+                            error: function() {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: 'An error occurred while processing your request'
+                                });
+                            }
+                        });
+                    }
+                });
+            });
+            
+            // Mark all notifications as read
+            $('#markAllAsReadBtn').click(function() {
+                if ($('.notification-item.unread').length === 0) {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Information',
+                        text: 'You have no unread notifications'
+                    });
+                    return;
+                }
+                
+                Swal.fire({
+                    title: 'Mark all as read?',
+                    text: 'All unread notifications will be marked as read.',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Yes, mark all as read'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: '@Url.Action("MarkAllAsRead", "Notifications")',
+                            type: 'POST',
+                            headers: {
+                                'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                            },
+                            success: function(response) {
+                                if (response.success) {
+                                    // Update UI
+                                    $('.notification-item').removeClass('unread');
+                                    $('.mark-read-btn').remove();
+                                    
+                                    // Show success message
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Success',
+                                        text: 'All notifications marked as read',
+                                        timer: 1500
+                                    });
+                                    
+                                    // Update notification count in navbar
+                                    updateNotificationCount();
+                                } else {
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Error',
+                                        text: response.message || 'Failed to mark all notifications as read'
+                                    });
+                                }
+                            },
+                            error: function() {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: 'An error occurred while processing your request'
+                                });
+                            }
+                        });
+                    }
+                });
+            });
+            
+            // Delete all notifications
+            $('#deleteAllBtn').click(function() {
+                if ($('.notification-item').length === 0) {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Information',
+                        text: 'You have no notifications to delete'
+                    });
+                    return;
+                }
+                
+                Swal.fire({
+                    title: 'Delete all notifications?',
+                    text: 'All notifications will be permanently deleted.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#dc3545',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Yes, delete all'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: '@Url.Action("DeleteAll", "Notifications")',
+                            type: 'POST',
+                            headers: {
+                                'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                            },
+                            success: function(response) {
+                                if (response.success) {
+                                    // Update UI
+                                    $('.list-group').html(`
+                                        <div class="text-center py-5">
+                                            <i class="fas fa-bell-slash fa-3x mb-3 text-muted"></i>
+                                            <h4 class="text-muted">No notifications</h4>
+                                            <p class="text-muted">You don't have any notifications at the moment.</p>
+                                        </div>
+                                    `);
+                                    
+                                    // Show success message
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Success',
+                                        text: 'All notifications deleted',
+                                        timer: 1500
+                                    });
+                                    
+                                    // Update notification count in navbar
+                                    updateNotificationCount();
+                                } else {
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Error',
+                                        text: response.message || 'Failed to delete all notifications'
+                                    });
+                                }
+                            },
+                            error: function() {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: 'An error occurred while processing your request'
+                                });
+                            }
+                        });
+                    }
+                });
+            });
+            
+            // Helper function to update notification count in navbar
+            function updateNotificationCount() {
+                $.ajax({
+                    url: '@Url.Action("GetUnreadCount", "Notifications")',
+                    type: 'GET',
+                    success: function(response) {
+                        if (response.success) {
+                            // This will be handled by the parent notification script
+                            if (window.updateNavbarNotificationCount) {
+                                window.updateNavbarNotificationCount(response.unreadCount);
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Helper function to mark a notification as read
+            function markNotificationAsRead(id) {
+                $.ajax({
+                    url: '@Url.Action("MarkAsRead", "Notifications")',
+                    type: 'POST',
+                    data: { id: id },
+                    headers: {
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            // Update UI
+                            $(`.notification-item[data-id="${id}"]`).removeClass('unread')
+                                .find('.mark-read-btn').remove();
+                            
+                            // Update notification count in navbar
+                            updateNotificationCount();
+                        }
+                    }
+                });
+            }
+            
+            // Sort notifications by ID in descending order
+            sortNotificationsByNewest();
+        });
+        
+        // Function to sort notifications by newest (highest ID) first
+        function sortNotificationsByNewest() {
+            const notificationContainer = $('.list-group');
+            const notificationItems = notificationContainer.children('.notification-item').get();
+            
+            notificationItems.sort(function(a, b) {
+                const idA = parseInt($(a).data('id'));
+                const idB = parseInt($(b).data('id'));
+                return idB - idA;
+            });
+            
+            $.each(notificationItems, function(idx, item) {
+                notificationContainer.append(item);
+            });
+        }
+    </script>
+} 

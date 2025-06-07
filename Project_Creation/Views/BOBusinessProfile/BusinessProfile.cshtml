@@ -1,5 +1,5 @@
 @model Project_Creation.Models.ViewModels.BusinessProfileViewModel
-
+@using System.Security.Claims
 @{
     ViewData["Title"] = Model.ShopName + " - Business Profile";
     var backgroundStyle = !string.IsNullOrEmpty(Model.BusinessBackgroundImgPath)
@@ -57,7 +57,7 @@
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-md-2" style="z-index:99;">
-                    <img src="@Model.LogoPath" alt="@Model.ShopName Logo" class="business-logo img-thumbnail">
+                    <img src="@(Model.LogoPath ?? "https://ui-avatars.com/api/?name=@Model.ShopName&background=fff&color=6366f1&rounded=true&size=256")" alt="@Model.ShopName Logo" class="business-logo img-thumbnail">
                 </div>
                 <div class="col-md-8" style="z-index:99;">
                     <h1 class="business-name">@Model.ShopName</h1>
@@ -76,9 +76,80 @@
                     </div>
                 }
             </div>
+        <!-- </div> -->
+
+        <!-- Social Media Links Section -->
+        @if (Model.UserLinks != null)
+        {
+            <div class="container mt-3">
+                <h5 class="section-title mb-3">Connect with Us</h5>
+                <div class="d-flex flex-wrap gap-3 social-links">
+                    @if (!string.IsNullOrEmpty(Model.UserLinks.FacebookLinks))
+                    {
+                        <a href="@Model.UserLinks.FacebookLinks" target="_blank" class="social-link btn btn-outline-primary d-flex align-items-center" style="z-index:99">
+                            <i class="fab fa-facebook-square me-2"></i> Facebook
+                        </a>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.UserLinks.InstagramLinks))
+                    {
+                        <a href="@Model.UserLinks.InstagramLinks" target="_blank" class="social-link btn btn-outline-primary d-flex align-items-center" style="z-index:99">
+                            <i class="fab fa-instagram-square me-2"></i> Instagram
+                        </a>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.UserLinks.LinkedInLinks))
+                    {
+                        <a href="@Model.UserLinks.LinkedInLinks" target="_blank" class="social-link btn btn-outline-primary d-flex align-items-center" style="z-index:99">
+                            <i class="fab fa-linkedin me-2"></i> LinkedIn
+                        </a>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.UserLinks.TwitterLinks))
+                    {
+                        <a href="@Model.UserLinks.TwitterLinks" target="_blank" class="social-link btn btn-outline-primary d-flex align-items-center" style="z-index:99">
+                            <i class="fab fa-twitter-square me-2"></i> Twitter
+                        </a>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.UserLinks.TikTokLinks))
+                    {
+                        <a href="@Model.UserLinks.TikTokLinks" target="_blank" class="social-link btn btn-outline-primary d-flex align-items-center" style="z-index:99">
+                            <i class="fab fa-tiktok me-2"></i> TikTok
+                        </a>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.UserLinks.YouTubeLinks))
+                    {
+                        <a href="@Model.UserLinks.YouTubeLinks" target="_blank" class="social-link btn btn-outline-primary d-flex align-items-center" style="z-index:99">
+                            <i class="fab fa-youtube-square me-2"></i> YouTube
+                        </a>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.UserLinks.PinterestLinks))
+                    {
+                        <a href="@Model.UserLinks.PinterestLinks" target="_blank" class="social-link btn btn-outline-primary d-flex align-items-center" style="z-index:99">
+                            <i class="fab fa-pinterest-square me-2"></i> Pinterest
+                        </a>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.UserLinks.WhatsAppLinks))
+                    {
+                        <a href="@Model.UserLinks.WhatsAppLinks" target="_blank" class="social-link btn btn-outline-primary d-flex align-items-center" style="z-index:99">
+                            <i class="fab fa-whatsapp-square me-2"></i> WhatsApp
+                        </a>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.UserLinks.ThreadsLinks))
+                    {
+                        <a href="@Model.UserLinks.ThreadsLinks" target="_blank" class="social-link btn btn-outline-primary d-flex align-items-center" style="z-index:99">
+                            <i class="fab fa-threads me-2"></i> Threads
+                        </a>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.UserLinks.SnapchatLinks))
+                    {
+                        <a href="@Model.UserLinks.SnapchatLinks" target="_blank" class="social-link btn btn-outline-primary d-flex align-items-center" style="z-index:99">
+                            <i class="fab fa-snapchat-square me-2"></i> Snapchat
+                        </a>
+                    }
+                </div>
+            </div>
+        }
         </div>
     </div>
-
+    
     <!-- Main Content -->
     <div class="container mt-4">
         <!-- Shop Navigation -->
@@ -120,7 +191,7 @@
                             @foreach (var product in recommendedProducts)
                             {
                                 <div class="col-md-4 mb-4">
-                                    <div class="product-card" onclick="recordProductClick(@product.Id)">
+                                    <div class="product-card product-clickable" data-product-id="@product.Id">
                                         <div class="product-image-container">
                                             @if (product.Images != null && product.Images.Any())
                                             {
@@ -144,6 +215,22 @@
                                                     </div>
                                                 </div>
                                             </div>
+                                            <div class="product-actions mt-2">
+                                                @if (Model.IsCurrentUser)
+                                                {
+                                                    <a href="@Url.Action("Edit", "Inventory1", new { id = product.Id })" class="btn btn-sm btn-primary w-100">
+                                                        <i class="fas fa-edit"></i> Edit Product
+                                                    </a>
+                                                }
+                                                else
+                                                {
+                                                    <button type="button" class="btn btn-sm btn-primary w-100 send-product-request" 
+                                                            data-product-id="@product.Id" 
+                                                            data-product-name="@product.ProductName">
+                                                        <i class="fas fa-shopping-cart"></i> Request
+                                                    </button>
+                                                }
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -158,60 +245,6 @@
                     </div>
                 </div>
 
-                <!-- Top 3 Hot Sales Section -->
-                @* <div class="product-section mb-5"> *@
-                @*     <div class="d-flex justify-content-between align-items-center mb-3"> *@
-                @*         <h4 class="section-title">Top Hot Sales</h4> *@
-                @*         <a href="#" class="text-decoration-none see-more" onclick="$('#products-tab').tab('show'); return false;">See More <i class="fas fa-chevron-right"></i></a> *@
-                @*     </div> *@
-
-                @*     <div class="row"> *@
-                @*         @if (Model.HotSalesProducts != null && Model.HotSalesProducts.Any()) *@
-                @*         { *@
-                @*             @foreach (var product in Model.HotSalesProducts) *@
-                @*             { *@
-                @*                 <div class="col-md-4 mb-4"> *@
-                @*                     <div class="product-card" onclick="recordProductClick(@product.Id)"> *@
-                @*                         <div class="product-image-container"> *@
-                @*                             @if (product.Images != null && product.Images.Any()) *@
-                @*                             { *@
-                @*                                 <img src="@GetProductMainImagePath(product.Images)" class="product-image" alt="@GetProductImageAlt(product.Images, product.ProductName)"> *@
-                @*                             } *@
-                @*                             else *@
-                @*                             { *@
-                @*                                 <img src="/default/product-placeholder.jpg" class="product-image" alt="No image available"> *@
-                @*                             } *@
-                @*                             <div class="hot-badge"> *@
-                @*                                 <i class="fas fa-fire"></i> Hot *@
-                @*                             </div> *@
-                @*                         </div> *@
-                @*                         <div class="product-details"> *@
-                @*                             <h5 class="product-title">@product.ProductName</h5> *@
-                @*                             <div class="d-flex justify-content-between"> *@
-                @*                                 <div class="product-price"> *@
-                @*                                     <span class="current-price">₱@product.SellingPrice.ToString("N0")</span> *@
-                @*                                 </div> *@
-                @*                                 <div class="product-meta"> *@
-                @*                                     <div class="quantity-left"> *@
-                @*                                         <i class="fas fa-box"></i> *@
-                @*                                         <span>@product.QuantityInStock left</span> *@
-                @*                                     </div> *@
-                @*                                 </div> *@
-                @*                             </div> *@
-                @*                         </div> *@
-                @*                     </div> *@
-                @*                 </div> *@
-                @*             } *@
-                @*         } *@
-                @*         else *@
-                @*         { *@
-                @*             <div class="col-12"> *@
-                @*                 <div class="alert alert-info">No hot sales products found</div> *@
-                @*             </div> *@
-                @*         } *@
-                @*     </div> *@
-                @* </div> *@
-
                 @* change to featured products *@
                 <div class="product-section mb-5">
                     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -225,7 +258,7 @@
                             @foreach (var product in Model.FeaturedProductViewModel)
                             {
                                 <div class="col-md-4 mb-4">
-                                    <div class="product-card" onclick="recordProductClick(@product.Id)">
+                                    <div class="product-card product-clickable" data-product-id="@product.Id">
                                         <div class="product-image-container">
                                             @if (product.Images != null && product.Images.Any())
                                             {
@@ -251,6 +284,22 @@
                                                         <span>@product.QuantityInStock left</span>
                                                     </div>
                                                 </div>
+                                            </div>
+                                            <div class="product-actions mt-2">
+                                                @if (Model.IsCurrentUser)
+                                                {
+                                                    <a href="@Url.Action("Edit", "Inventory1", new { id = product.Id })" class="btn btn-sm btn-primary w-100">
+                                                        <i class="fas fa-edit"></i> Edit Product
+                                                    </a>
+                                                }
+                                                else
+                                                {
+                                                    <button type="button" class="btn btn-sm btn-primary w-100 send-product-request" 
+                                                            data-product-id="@product.Id" 
+                                                            data-product-name="@product.ProductName">
+                                                        <i class="fas fa-shopping-cart"></i> Request
+                                                    </button>
+                                                }
                                             </div>
                                         </div>
                                     </div>
@@ -283,8 +332,8 @@
                         {
                             @foreach (var product in Model.Products)
                             {
-                                <div class="col-md-4 mb-4 product-item" data-category="@product.Category" data-name="@product.ProductName.ToLower()">
-                                    <div class="product-card" onclick="recordProductClick(@product.Id)">
+                                <div class="col-md-4 mb-4 product-item" data-category="@product.Category" data-name="@product.ProductName.ToLower()" data-product-id="@product.Id">
+                                    <div class="product-card product-clickable" data-product-id="@product.Id">
                                         <div class="product-image-container">
                                             @if (product.Images != null && product.Images.Any())
                                             {
@@ -310,6 +359,22 @@
                                                         <span>@product.QuantityInStock left</span>
                                                     </div>
                                                 </div>
+                                            </div>
+                                            <div class="product-actions mt-2">
+                                                @if (Model.IsCurrentUser)
+                                                {
+                                                    <a href="@Url.Action("Edit", "Inventory1", new { id = product.Id })" class="btn btn-sm btn-primary w-100">
+                                                        <i class="fas fa-edit"></i> Edit Product
+                                                    </a>
+                                                }
+                                                else
+                                                {
+                                                    <button type="button" class="btn btn-sm btn-primary w-100 send-product-request" 
+                                                            data-product-id="@product.Id" 
+                                                            data-product-name="@product.ProductName">
+                                                        <i class="fas fa-shopping-cart"></i> Request
+                                                    </button>
+                                                }
                                             </div>
                                         </div>
                                     </div>
@@ -343,7 +408,7 @@
                                 @foreach (var product in categoryGroup.Products)
                                 {
                                     <div class="col-md-4 mb-4">
-                                        <div class="product-card" onclick="recordProductClick(@product.BOId)">
+                                        <div class="product-card product-clickable" data-product-id="@product.Id">
                                             <div class="product-image-container">
                                                 @if (product.Images != null && product.Images.Any())
                                                 {
@@ -366,6 +431,22 @@
                                                             <span>@product.QuantityInStock left</span>
                                                         </div>
                                                     </div>
+                                                </div>
+                                                <div class="product-actions mt-2">
+                                                    @if (Model.IsCurrentUser)
+                                                    {
+                                                        <a href="@Url.Action("Edit", "Inventory1", new { id = product.Id })" class="btn btn-sm btn-primary w-100">
+                                                            <i class="fas fa-edit"></i> Edit Product
+                                                        </a>
+                                                    }
+                                                    else
+                                                    {
+                                                        <button type="button" class="btn btn-sm btn-primary w-100 send-product-request" 
+                                                                data-product-id="@product.Id" 
+                                                                data-product-name="@product.ProductName">
+                                                            <i class="fas fa-shopping-cart"></i> Request
+                                                        </button>
+                                                    }
                                                 </div>
                                             </div>
                                         </div>
@@ -457,265 +538,563 @@
             </div>
         </div>
     }
+    </div>
 
-    @section Styles {
-        <style>
-            .business-profile-container {
-                min-height: 100vh;
-            }
+    <!-- Product Request Modal -->
+    <div class="modal fade" id="productRequestModal" tabindex="-1" aria-labelledby="productRequestModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="productRequestModalLabel">Request Product</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="productRequestForm">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" id="requestProductId" name="productId" />
 
-            .business-header {
-                position: relative;
-                padding: 3rem 0;
-                background-size: cover;
-                background-position: center;
-                color: white;
-                margin-bottom: 2rem;
-            }
+                        <div class="mb-3">
+                            <label class="form-label">Product:</label>
+                            <p class="form-control-static fw-bold" id="requestProductName"></p>
+                        </div>
 
-            /* Shop Navigation Styles */
-            .shop-navigation .nav-tabs {
-                border-bottom: 1px solid #dee2e6;
-            }
+                        <div class="mb-3">
+                            <label for="requestCustomerName" class="form-label">Your Name:</label>
+                            <input type="text" class="form-control" id="requestCustomerName" name="customerName" value="@User.FindFirstValue(ClaimTypes.Name)" required />
+                        </div>
 
-            .shop-navigation .nav-link {
-                color: #6c757d;
-                font-weight: 500;
-            }
+                        <div class="mb-3">
+                            <label for="requestQuantity" class="form-label">Quantity:</label>
+                            <input type="number" class="form-control" id="requestQuantity" name="quantity" min="1" required />
+                        </div>
 
-                .shop-navigation .nav-link.active {
-                    color: #ff4d4f;
-                    border-bottom: 2px solid #ff4d4f;
+                        <div class="mb-3">
+                            <label for="requestMessage" class="form-label">Message:</label>
+                            <textarea class="form-control" id="requestMessage" name="message" rows="3" placeholder="Additional details about your request..."></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="sendRequestBtn" form="productRequestForm">Send Request</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Details Modal -->
+    <div class="modal fade" id="productDetailsModal" tabindex="-1" aria-labelledby="productDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="productDetailsModalLabel">Product Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="productDetailsContent">
+                        <div class="text-center py-5">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-2">Loading product details...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Function to record product clicks - defined globally
+        function recordProductClick(productId) {
+            // Store clicked product IDs in localStorage
+            let clickedProducts = JSON.parse(localStorage.getItem('clickedProducts') || '[]');
+
+            // Add the product ID if it's not already in the list
+            if (!clickedProducts.includes(productId)) {
+                // Keep only the last 10 clicked products
+                if (clickedProducts.length >= 10) {
+                    clickedProducts.pop();
                 }
-
-            /* Product Section Styles */
-            .product-section {
-                padding: 15px 0;
+                clickedProducts.unshift(productId);
+                localStorage.setItem('clickedProducts', JSON.stringify(clickedProducts));
             }
 
-            .section-title {
-                font-size: 1.25rem;
-                font-weight: 600;
-                margin-bottom: 0;
-            }
-
-            .see-more {
-                color: #ff4d4f;
-                font-size: 0.9rem;
-            }
-
-            /* Product Card Styles */
-            .product-card {
-                border-radius: 8px;
-                overflow: hidden;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-                transition: transform 0.3s;
-                background-color: #fff;
-                height: 100%;
-                cursor: pointer;
-            }
-
-                .product-card:hover {
-                    transform: translateY(-5px);
-                    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            // Send this data to the server for analytics
+            $.ajax({
+                url: '@Url.Action("RecordProductClick", "BOBusinessProfile")',
+                type: 'POST',
+                data: { productId: productId },
+                success: function(response) {
+                    console.log('Product click recorded');
+                },
+                error: function(error) {
+                    console.log('Error recording product click');
                 }
-
-            .product-image-container {
-                position: relative;
-                height: 180px;
-                overflow: hidden;
-            }
-
-            .product-image {
-                width: 100%;
-                height: 100%;
-                object-fit: cover;
-            }
-
-            .discount-badge {
-                position: absolute;
-                top: 10px;
-                right: 10px;
-                background-color: #ff4d4f;
-                color: white;
-                padding: 2px 6px;
-                border-radius: 4px;
-                font-size: 0.8rem;
-                font-weight: bold;
-            }
-
-            .hot-badge {
-                position: absolute;
-                top: 10px;
-                left: 10px;
-                background-color: #ff8800;
-                color: white;
-                padding: 2px 6px;
-                border-radius: 4px;
-                font-size: 0.8rem;
-                font-weight: bold;
-            }
-
-            .product-details {
-                padding: 12px;
-            }
-
-            .product-title {
-                font-size: 1rem;
-                font-weight: 500;
-                margin-bottom: 8px;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                display: -webkit-box;
-                -webkit-line-clamp: 2;
-                -webkit-box-orient: vertical;
-                height: 40px;
-            }
-
-            .product-price {
-                margin-bottom: 8px;
-            }
-
-            .current-price {
-                font-weight: bold;
-                color: #ff4d4f;
-                font-size: 1.1rem;
-            }
-
-            .original-price {
-                text-decoration: line-through;
-                color: #999;
-                font-size: 0.9rem;
-                margin-left: 5px;
-            }
-
-            .product-meta {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                font-size: 0.85rem;
-                color: #6c757d;
-            }
-
-            .quantity-left {
-                display: flex;
-                align-items: center;
-                color: #28a745;
-                font-size: 14px;
-            }
-
-                .quantity-left i {
-                    margin-right: 5px;
-                }
-
-                .quantity-left span {
-                    font-weight: bold;
-                    margin-right: 3px;
-                }
-
-            .header-overlay {
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background-color: rgba(0, 0, 0, 0.6);
-            }
-
-            .business-logo {
-                width: 150px;
-                height: 150px;
-                object-fit: cover;
-                border-radius: 50%;
-                border: 3px solid white;
-                background-color: white;
-                z-index: 1;
-            }
-
-            .business-name {
-                font-weight: 700;
-                margin-bottom: 0.5rem;
-                z-index: 1;
-            }
-
-            .business-description {
-                font-size: 1.1rem;
-                margin-bottom: 1rem;
-                z-index: 1;
-            }
-
-            .business-meta {
-                z-index: 1;
-            }
-
-            .product-card {
-                transition: transform 0.3s ease;
-            }
-
-                .product-card:hover {
-                    transform: translateY(-5px);
-                }
-
-            .product-image {
-                height: 200px;
-                object-fit: cover;
-            }
-        </style>
-    }
-
-    @section Scripts {
-        <partial name="_ValidationScriptsPartial" />
-        <script>
-            $(document).ready(function() {
-                // Product search functionality
-                $('#productSearch').on('input', function() {
-                    const searchTerm = $(this).val().toLowerCase();
-                    $('.product-item').each(function() {
-                        const productName = $(this).data('name');
-                        const category = $(this).data('category')?.toString().toLowerCase() || '';
-
-                        if (productName.includes(searchTerm)) {
-                            $(this).show();
-                        } else {
-                            $(this).hide();
-                        }
-                    });
-                });
-
-                // Function to record product clicks
-                function recordProductClick(productId) {
-                    // Store clicked product IDs in localStorage
-                    let clickedProducts = JSON.parse(localStorage.getItem('clickedProducts') || '[]');
-
-                    // Add the product ID if it's not already in the list
-                    if (!clickedProducts.includes(productId)) {
-                        // Keep only the last 10 clicked products
-                        if (clickedProducts.length >= 10) {
-                            clickedProducts.pop();
-                        }
-                        clickedProducts.unshift(productId);
-                        localStorage.setItem('clickedProducts', JSON.stringify(clickedProducts));
-                    }
-
-                    // Send this data to the server for analytics
-                    $.ajax({
-                        url: '@Url.Action("RecordProductClick", "BOBusinessProfile")',
-                        type: 'POST',
-                        data: { productId: productId },
-                        success: function(response) {
-                            console.log('Product click recorded');
-                        },
-                        error: function(error) {
-                            console.log('Error recording product click');
-                        }
-                    });
-
-                    // Navigate to product details page
-                    window.location.href = '/Inventory1/Details/' + productId;
-                }
-
-                // Initialize tooltips
-                $('[data-bs-toggle="tooltip"]').tooltip();
             });
-        </script>
-    }
+
+            // Show modal with loading indicator
+            $('#productDetailsModal').modal('show');
+            
+            // Find product data in the DOM
+            var productCard = $('[data-product-id="' + productId + '"]');
+            var productName = productCard.find('.product-title').text();
+            var productImage = productCard.find('.product-image').attr('src');
+            var productCategory = productCard.find('.hot-badge').text();
+            var productPrice = productCard.find('.current-price').text();
+            var productQuantity = productCard.find('.quantity-left span').text();
+            
+            // Try to load via AJAX first
+            $.ajax({
+                url: '/Inventory1/QuickView/' + productId,
+                type: 'GET',
+                success: function(response) {
+                    $('#productDetailsContent').html(response);
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error loading product details:', error);
+                    
+                    // Create fallback content without checking IsPublished status
+                    renderFallbackContent();
+                    
+                    function renderFallbackContent() {
+                        // Use DOM-extracted data as fallback
+                        var fallbackContent = `
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="product-image-container text-center mb-3">
+                                    <img src="${productImage || '/default/product-placeholder.jpg'}" 
+                                         alt="${productName || 'Product'}" 
+                                         class="img-fluid product-modal-image">
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <h4 class="mb-3">${productName || 'Product'}</h4>
+                                
+                                <div class="mb-3">
+                                    <span class="badge bg-primary">${productCategory || 'Category'}</span>
+                                </div>
+                                
+                                <h5 class="text-primary mb-3">${productPrice || 'Price'}</h5>
+                                
+                                <div class="mb-3">
+                                    <div class="badge bg-success p-2">
+                                        <i class="fas fa-box me-1"></i> ${productQuantity || '0'} in stock
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex flex-column gap-2 w-100">
+                                    ${@Json.Serialize(Model.IsCurrentUser) ? 
+                                    `<a href="/Inventory1/Edit/${productId}" class="btn btn-primary">
+                                        <i class="fas fa-edit me-2"></i>Edit Product
+                                     </a>` : 
+                                    `<button type="button" class="btn btn-primary send-product-request" 
+                                            data-product-id="${productId}" 
+                                            data-product-name="${productName}">
+                                        <i class="fas fa-shopping-cart me-2"></i>Request Product
+                                    </button>`}
+                                </div>
+                            </div>
+                        </div>`;
+                        
+                        $('#productDetailsContent').html(fallbackContent);
+                    }
+                }
+            });
+        }
+
+        $(document).ready(function() {
+            // Product search functionality
+            $('#productSearch').on('input', function() {
+                const searchTerm = $(this).val().toLowerCase();
+                $('.product-item').each(function() {
+                    const productName = $(this).data('name');
+                    const category = $(this).data('category')?.toString().toLowerCase() || '';
+
+                    if (productName.includes(searchTerm)) {
+                        $(this).show();
+                    } else {
+                        $(this).hide();
+                    }
+                });
+            });
+
+            // Initialize tooltips
+            $('[data-bs-toggle="tooltip"]').tooltip();
+            
+            // Handle product card clicks
+            $(document).on('click', '.product-clickable', function(e) {
+                if ($(e.target).closest('button, a').length === 0) {
+                    const productId = $(this).data('product-id');
+                    recordProductClick(productId);
+                }
+            });
+            
+            // Special handling for request buttons with higher priority
+            $(document).on('click', '.send-product-request', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const productId = $(this).data('product-id');
+                const productName = $(this).data('product-name');
+                
+                console.log('Request button clicked:', productId, productName);
+                
+                // Close product details modal if open
+                $('#productDetailsModal').modal('hide');
+                
+                // Show the product request modal
+                $('#productRequestModal').modal('show');
+                $('#requestProductId').val(productId);
+                $('#requestProductName').text(productName);
+                
+                return false;
+            });
+        });
+    </script>
+
+    <script>
+        $(document).ready(function() {
+            // Initialize product carousel only if it exists
+            var carouselElement = document.getElementById('productCarousel');
+            if (carouselElement) {
+                var carousel = new bootstrap.Carousel(carouselElement, {
+                    interval: 5000
+                });
+            }
+
+            // Handle quantity input validation
+            $('#requestQuantity').on('input', function() {
+                var max = parseInt($(this).attr('max'));
+                var value = parseInt($(this).val());
+
+                if (value > max) {
+                    $(this).val(max);
+                }
+                if (value < 1) {
+                    $(this).val(1);
+                }
+            });
+        });
+
+        // Product Request functionality
+        $(document).ready(function() {
+            // Handle product request form submission
+            $('#productRequestForm').submit(function(e) {
+                e.preventDefault();
+
+                const productId = $('#requestProductId').val();
+                const quantity = $('#requestQuantity').val();
+                const customerName = $('#requestCustomerName').val();
+                const message = $('#requestMessage').val();
+
+                // Validate form
+                if (!quantity || quantity < 1) {
+                    alert('Please enter a valid quantity');
+                    return;
+                }
+
+                if (!customerName) {
+                    alert('Please enter your name');
+                    return;
+                }
+
+                const submitBtn = $('#sendRequestBtn');
+                submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Sending...');
+
+                const token = $('input[name="__RequestVerificationToken"]').val();
+
+                // Send as POST request with JSON data
+                $.ajax({
+                    url: '/Inventory1/SendProductRequest',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    headers: {
+                        'RequestVerificationToken': token
+                    },
+                    data: JSON.stringify({
+                        productId: parseInt(productId),
+                        quantity: parseInt(quantity),
+                        customerName: customerName,
+                        message: message
+                    }),
+                    success: function(response) {
+                        if (response.success) {
+                            $('#productRequestModal').modal('hide');
+
+                            // Show success toast
+                            const toast = `
+                            <div class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                                <div class="d-flex">
+                                    <div class="toast-body">
+                                        <i class="fas fa-check-circle me-2"></i> ${response.message}
+                                    </div>
+                                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                                </div>
+                            </div>`;
+
+                            $('.toast-container').append(toast);
+                            $('.toast').toast('show');
+                            $('#productRequestForm')[0].reset();
+                        } else {
+                            alert('Failed to send request: ' + (response.message || 'Unknown error'));
+                        }
+                    },
+                    error: function(xhr) {
+                        alert('An error occurred: ' +
+                            (xhr.responseJSON?.message || 'Please try again later'));
+                    },
+                    complete: function() {
+                        submitBtn.prop('disabled', false).html('Send Request');
+                    }
+                });
+            });
+        });
+    </script>
+}
+
+@section Styles {
+    <style>
+        .business-profile-container {
+            min-height: 100vh;
+        }
+
+        .business-header {
+            position: relative;
+            padding: 3rem 0;
+            background-size: cover;
+            background-position: center;
+            color: white;
+            margin-bottom: 2rem;
+        }
+
+        /* Shop Navigation Styles */
+        .shop-navigation .nav-tabs {
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .shop-navigation .nav-link {
+            color: #6c757d;
+            font-weight: 500;
+        }
+
+            .shop-navigation .nav-link.active {
+                color: #ff4d4f;
+                border-bottom: 2px solid #ff4d4f;
+            }
+
+        /* Product Section Styles */
+        .product-section {
+            padding: 15px 0;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0;
+        }
+
+        .see-more {
+            color: #ff4d4f;
+            font-size: 0.9rem;
+        }
+
+        /* Product Card Styles */
+        .product-card {
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+            background-color: #fff;
+            height: 100%;
+            cursor: pointer;
+        }
+
+            .product-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            }
+
+        .product-image-container {
+            position: relative;
+            height: 180px;
+            overflow: hidden;
+        }
+
+        .product-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .discount-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #ff4d4f;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .hot-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: #ff8800;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .product-details {
+            padding: 12px;
+        }
+
+        .product-title {
+            font-size: 1rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            height: 40px;
+        }
+
+        .product-price {
+            margin-bottom: 8px;
+        }
+
+        .current-price {
+            font-weight: bold;
+            color: #ff4d4f;
+            font-size: 1.1rem;
+        }
+
+        .original-price {
+            text-decoration: line-through;
+            color: #999;
+            font-size: 0.9rem;
+            margin-left: 5px;
+        }
+
+        .product-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+
+        .quantity-left {
+            display: flex;
+            align-items: center;
+            color: #28a745;
+            font-size: 14px;
+        }
+
+            .quantity-left i {
+                margin-right: 5px;
+            }
+
+            .quantity-left span {
+                font-weight: bold;
+                margin-right: 3px;
+            }
+
+        .header-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.6);
+        }
+
+        .business-logo {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 3px solid white;
+            background-color: white;
+            z-index: 1;
+        }
+
+        .business-name {
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            z-index: 1;
+        }
+
+        .business-description {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            z-index: 1;
+        }
+
+        .business-meta {
+            z-index: 1;
+        }
+
+        .product-card {
+            transition: transform 0.3s ease;
+        }
+
+            .product-card:hover {
+                transform: translateY(-5px);
+            }
+
+        .product-image {
+            height: 200px;
+            object-fit: cover;
+        }
+        
+        .product-actions {
+            margin-top: 10px;
+        }
+
+        .product-actions .btn {
+            transition: all 0.3s ease;
+        }
+
+        .product-actions .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .toast-container {
+            z-index: 1080;
+        }
+        
+        .product-modal-image {
+            max-height: 300px;
+            object-fit: contain;
+            margin: 0 auto;
+        }
+        
+        #productDetailsModal .modal-body {
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        
+        #productModalActions .btn {
+            transition: all 0.3s ease;
+        }
+        
+        #productModalActions .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+    </style>
+}

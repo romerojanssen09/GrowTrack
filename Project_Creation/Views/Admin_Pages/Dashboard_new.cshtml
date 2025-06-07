@@ -1,0 +1,377 @@
+@using Project_Creation.DTO
+@model AdminDashboardViewModel
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<div class="container-fluid">
+    <!-- Header Row -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">Admin Dashboard</h1>
+            <p class="mb-0">Welcome back, @User.Identity.Name!</p>
+        </div>
+        <div class="btn-group">
+            <a asp-controller="Admin" asp-action="BOApproval" class="btn btn-primary">
+                <i class="fas fa-user-check me-2"></i>Account Approvals
+            </a>
+            <a asp-controller="Admin" asp-action="MarketplaceApproval" class="btn btn-success">
+                <i class="fas fa-store me-2"></i>Marketplace Approvals
+            </a>
+        </div>
+    </div>
+
+    <!-- Key Metrics Row -->
+    <div class="row mb-4">
+        <!-- Business Summary Card -->
+        <div class="col-lg-12 mb-3">
+            <div class="card shadow-sm border-left-primary">
+                <div class="card-body py-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="font-weight-bold text-primary mb-0">Platform Overview</h6>
+                        <span class="badge bg-primary rounded-pill">Today</span>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-lg-3 col-md-6">
+                            <div class="d-flex align-items-center border-start border-4 border-primary px-3 py-2 rounded shadow-sm">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-users fa-2x text-primary me-3"></i>
+                                </div>
+                                <div>
+                                    <div class="text-xs text-muted">TOTAL BUSINESS OWNERS</div>
+                                    <div class="h5 mb-0 font-weight-bold">@Model.AllUsers.Count</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-3 col-md-6">
+                            <div class="d-flex align-items-center border-start border-4 border-warning px-3 py-2 rounded shadow-sm">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-user-plus fa-2x text-warning me-3"></i>
+                                </div>
+                                <div>
+                                    <div class="text-xs text-muted">PENDING APPROVALS</div>
+                                    <div class="h5 mb-0 font-weight-bold">@Model.Step1_Applicants.Count</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-3 col-md-6">
+                            <div class="d-flex align-items-center border-start border-4 border-success px-3 py-2 rounded shadow-sm">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-store fa-2x text-success me-3"></i>
+                                </div>
+                                <div>
+                                    <div class="text-xs text-muted">MARKETPLACE REQUESTS</div>
+                                    <div class="h5 mb-0 font-weight-bold">@Model.Step2_Applicants.Count</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-3 col-md-6">
+                            <div class="d-flex align-items-center border-start border-4 border-info px-3 py-2 rounded shadow-sm">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-check-circle fa-2x text-info me-3"></i>
+                                </div>
+                                <div>
+                                    <div class="text-xs text-muted">ACTIVE BUSINESSES</div>
+                                    <div class="h5 mb-0 font-weight-bold">@Model.AllUsers.Count(u => u.IsVerified && u.MarkerPlaceStatus == Project_Creation.Models.Entities.Users.MarketplaceStatus.Authorized)</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions & Main Content Row -->
+    <div class="row">
+        <!-- Quick Actions Column -->
+        <div class="col-lg-3 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-primary text-white">
+                    <h6 class="m-0 font-weight-bold">Quick Actions</h6>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        <a href="/Admin/BOApproval" class="list-group-item list-group-item-action py-3 px-3">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0 me-3">
+                                    <i class="fas fa-user-check text-primary"></i>
+                                </div>
+                                <div>
+                                    <div class="font-weight-bold">Account Approvals</div>
+                                    <small class="text-muted">Verify new business accounts</small>
+                                </div>
+                            </div>
+                        </a>
+                        <a href="/Admin/MarketplaceApproval" class="list-group-item list-group-item-action py-3 px-3">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0 me-3">
+                                    <i class="fas fa-store text-success"></i>
+                                </div>
+                                <div>
+                                    <div class="font-weight-bold">Marketplace Approvals</div>
+                                    <small class="text-muted">Review marketplace requests</small>
+                                </div>
+                            </div>
+                        </a>
+                        <a href="/Admin/BusinessOwners" class="list-group-item list-group-item-action py-3 px-3">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0 me-3">
+                                    <i class="fas fa-users text-info"></i>
+                                </div>
+                                <div>
+                                    <div class="font-weight-bold">Business Owners</div>
+                                    <small class="text-muted">Manage all business accounts</small>
+                                </div>
+                            </div>
+                        </a>
+                        <a href="/Admin/StaffLimits" class="list-group-item list-group-item-action py-3 px-3">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0 me-3">
+                                    <i class="fas fa-user-cog text-warning"></i>
+                                </div>
+                                <div>
+                                    <div class="font-weight-bold">Staff Limits</div>
+                                    <small class="text-muted">Manage staff account limits</small>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Dashboard Content -->
+        <div class="col-lg-9">
+            <div class="row">
+                <!-- Business Category Distribution -->
+                <div class="col-lg-6 mb-4">
+                    <div class="card shadow h-100">
+                        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                            <h6 class="m-0 font-weight-bold text-primary">Business Categories</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-pie pt-4 pb-2">
+                                <canvas id="businessCategoriesChart"></canvas>
+                            </div>
+                            <div class="mt-4 text-center small">
+                                @if (Model.BusinessCategories != null && Model.BusinessCategories.Any())
+                                {
+                                    @foreach (var category in Model.BusinessCategories.Take(5))
+                                    {
+                                        <span class="me-2">
+                                            <i class="fas fa-circle" style="color: #@(Math.Abs(category.GetHashCode()).ToString("X6").Substring(0, 6))"></i> @category
+                                        </span>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="text-muted">No categories available</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Marketplace Status Chart -->
+                <div class="col-lg-6 mb-4">
+                    <div class="card shadow h-100">
+                        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                            <h6 class="m-0 font-weight-bold text-primary">Marketplace Status</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-pie pt-4 pb-2">
+                                <canvas id="marketplaceStatusChart"></canvas>
+                            </div>
+                            <div class="mt-4 text-center small">
+                                <span class="me-2">
+                                    <i class="fas fa-circle text-success"></i> Authorized
+                                </span>
+                                <span class="me-2">
+                                    <i class="fas fa-circle text-warning"></i> Awaiting Approval
+                                </span>
+                                <span class="me-2">
+                                    <i class="fas fa-circle text-secondary"></i> Pending
+                                </span>
+                                <span class="me-2">
+                                    <i class="fas fa-circle text-danger"></i> Rejected
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Business Owners -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">Recent Business Owners</h6>
+                    <a href="/Admin/BusinessOwners" class="btn btn-sm btn-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Business Name</th>
+                                    <th>Owner</th>
+                                    <th>Category</th>
+                                    <th>Status</th>
+                                    <th>Registered</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.AllUsers != null && Model.AllUsers.Any())
+                                {
+                                    @foreach (var user in Model.AllUsers.OrderByDescending(u => u.RegistrationDate).Take(5))
+                                    {
+                                        <tr>
+                                            <td>@user.BusinessName</td>
+                                            <td>@user.FirstName @user.LastName</td>
+                                            <td>@user.CategoryOfBusiness</td>
+                                            <td>
+                                                @if (user.IsVerified)
+                                                {
+                                                    <span class="badge bg-success">Authorized</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-warning">Awaiting Approval</span>
+                                                }
+                                            </td>
+                                            <td>@user.RegistrationDate.ToString("MMM dd, yyyy")</td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="5" class="text-center py-4 text-muted">No business owners found</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Business Categories Chart
+            var ctxBusinessCategories = document.getElementById("businessCategoriesChart");
+            var businessCategoriesData = {
+                labels: [
+        @if (Model.BusinessCategories != null && Model.BusinessCategories.Any())
+        {
+            @foreach (var category in Model.BusinessCategories)
+            {
+                @Html.Raw($"\"{category}\",")
+            }
+        }
+                ],
+                datasets: [{
+                    data: [
+        @if (Model.BusinessCategories != null && Model.BusinessCategories.Any())
+        {
+            @foreach (var category in Model.BusinessCategories)
+            {
+                @Html.Raw($"{Model.AllUsers.Count(u => u.CategoryOfBusiness == category)},")
+            }
+        }
+                    ],
+                    backgroundColor: [
+        @if (Model.BusinessCategories != null && Model.BusinessCategories.Any())
+        {
+            @foreach (var category in Model.BusinessCategories)
+            {
+                @Html.Raw($"\"#{Math.Abs(category.GetHashCode()).ToString("X6").Substring(0, 6)}\",")
+            }
+        }
+                    ],
+                    hoverBackgroundColor: [
+        @if (Model.BusinessCategories != null && Model.BusinessCategories.Any())
+        {
+            @foreach (var category in Model.BusinessCategories)
+            {
+                @Html.Raw($"\"#{Math.Abs(category.GetHashCode()).ToString("X6").Substring(0, 6)}\",")
+            }
+        }
+                    ],
+                    hoverBorderColor: "rgba(234, 236, 244, 1)",
+                }],
+            };
+
+            if (ctxBusinessCategories) {
+                var businessCategoriesChart = new Chart(ctxBusinessCategories, {
+                    type: 'doughnut',
+                    data: businessCategoriesData,
+                    options: {
+                        maintainAspectRatio: false,
+                        tooltips: {
+                            backgroundColor: "rgb(255,255,255)",
+                            bodyFontColor: "#858796",
+                            borderColor: '#dddfeb',
+                            borderWidth: 1,
+                            xPadding: 15,
+                            yPadding: 15,
+                            displayColors: false,
+                            caretPadding: 10,
+                        },
+                        legend: {
+                            display: false
+                        },
+                        cutoutPercentage: 70,
+                    },
+                });
+            }
+
+            // Marketplace Status Chart
+            var ctxMarketplaceStatus = document.getElementById("marketplaceStatusChart");
+            var approvedCount = @Model.AllUsers.Count(u => u.MarkerPlaceStatus == Project_Creation.Models.Entities.Users.MarketplaceStatus.Authorized);
+            var requestingCount = @Model.AllUsers.Count(u => u.MarkerPlaceStatus == Project_Creation.Models.Entities.Users.MarketplaceStatus.AwaitingApproval);
+            var pendingCount = @Model.AllUsers.Count(u => u.MarkerPlaceStatus == Project_Creation.Models.Entities.Users.MarketplaceStatus.NotApplied);
+            var rejectedCount = @Model.AllUsers.Count(u => u.MarkerPlaceStatus == Project_Creation.Models.Entities.Users.MarketplaceStatus.Rejected);
+
+            var marketplaceStatusData = {
+                labels: ["Authorized", "Awaiting Approval", "Pending", "Rejected"],
+                datasets: [{
+                    data: [approvedCount, requestingCount, pendingCount, rejectedCount],
+                    backgroundColor: ['#1cc88a', '#f6c23e', '#858796', '#e74a3b'],
+                    hoverBackgroundColor: ['#17a673', '#dda20a', '#60616f', '#be2617'],
+                    hoverBorderColor: "rgba(234, 236, 244, 1)",
+                }],
+            };
+
+            if (ctxMarketplaceStatus) {
+                var marketplaceStatusChart = new Chart(ctxMarketplaceStatus, {
+                    type: 'doughnut',
+                    data: marketplaceStatusData,
+                    options: {
+                        maintainAspectRatio: false,
+                        tooltips: {
+                            backgroundColor: "rgb(255,255,255)",
+                            bodyFontColor: "#858796",
+                            borderColor: '#dddfeb',
+                            borderWidth: 1,
+                            xPadding: 15,
+                            yPadding: 15,
+                            displayColors: false,
+                            caretPadding: 10,
+                        },
+                        legend: {
+                            display: false
+                        },
+                        cutoutPercentage: 70,
+                    },
+                });
+            }
+        });
+    </script>
+}

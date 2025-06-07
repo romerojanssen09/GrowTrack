@@ -1,38 +1,41 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Project_Creation.Data;
 using Project_Creation.DTO;
 using Project_Creation.Models.Entities;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
-using System.IO;
-using System.Threading.Tasks;
-using System.Linq;
-using System;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using static Project_Creation.Models.Entities.Users;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 namespace Project_Creation.Controllers
 {
+    public class VerificationCodeRequest
+    {
+        public string Email { get; set; }
+        public string Name { get; set; }
+        public string Code { get; set; }
+    }
+
     public class RegisterController : Controller
     {
         private readonly AuthDbContext _context;
         private readonly IWebHostEnvironment _environment;
         private readonly ILogger<RegisterController> _logger;
         private readonly IEmailService _emailService;
+        private readonly IConfiguration _configuration;
 
         public RegisterController(
             AuthDbContext context,
             IWebHostEnvironment environment,
             ILogger<RegisterController> logger,
-            IEmailService emailService)
+            IEmailService emailService,
+            IConfiguration configuration)
         {
             _context = context;
             _environment = environment;
             _logger = logger;
             _emailService = emailService;
+            _configuration = configuration;
         }
 
         [HttpGet]
@@ -109,7 +112,8 @@ namespace Project_Creation.Controllers
                     IsAllowEditBusinessPermitPath = false,
                     LogoPath = null,
                     IsVerified = false,
-                    MarkerPlaceStatus = MarketplaceStatus.Pending
+                    MarkerPlaceStatus = MarketplaceStatus.NotApplied,
+                    AllowEmailNotifications = true
                 };
 
                 // First save to get ID
@@ -263,6 +267,15 @@ namespace Project_Creation.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SecondRegistration([FromForm] PasswordDto model)
         {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme); // Signs out of cookie authentication
+            HttpContext.Session.Clear(); // Clears the session state
+
+            // Deletes cookies present in the request
+            foreach (var cookie in Request.Cookies.Keys)
+            {
+                Response.Cookies.Delete(cookie);
+            }
+
             if (!ModelState.IsValid)
             {
                 _logger.LogError("Model state is invalid");
@@ -302,6 +315,163 @@ namespace Project_Creation.Controllers
                 _logger.LogError(ex, "Error during second registration step");
                 ModelState.AddModelError("", "An error occurred while processing your registration. Please try again.");
                 return View("SecondRegistration", model);
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> StaffRegistration(string userId)
+        {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme); // Signs out of cookie authentication
+            HttpContext.Session.Clear(); // Clears the session state
+
+            // Deletes cookies present in the request
+            foreach (var cookie in Request.Cookies.Keys)
+            {
+                Response.Cookies.Delete(cookie);
+            }
+
+            if (!int.TryParse(userId, out int parsedUserId))
+            {
+                TempData["ErrorMessage"] = "Invalid user ID.";
+                return RedirectToAction("Login", "Login");
+            }
+
+            var existingUser = await _context.Staff.FindAsync(parsedUserId);
+            if (existingUser == null)
+            {
+                _logger.LogError("User not found");
+                TempData["ErrorMessage"] = "User Not Found!";
+                return RedirectToAction("Login", "Login");
+            }
+
+            if (existingUser.IsSetPassword)
+            {
+                _logger.LogError("You already set the password!");
+                TempData["ErrorMessage"] = "You already set the password!";
+                return RedirectToAction("Login", "Login");
+            }
+
+            // Initialize with empty values for required properties
+            var model = new PasswordDto
+            {
+                UserId = int.Parse(userId),
+                Password = string.Empty,
+                ConfirmPassword = string.Empty
+            };
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> StaffRegistration([FromForm] PasswordDto model)
+        {
+            if (!ModelState.IsValid)
+            {
+                _logger.LogError("Model state is invalid");
+                foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    _logger.LogError($"Validation error: {error.ErrorMessage}");
+                }
+                return View("StaffRegistration", model);
+            }
+
+            if (model.Password != model.ConfirmPassword)
+            {
+                _logger.LogError("Password not match");
+                ModelState.AddModelError("", "Passwords do not match.");
+                return View("StaffRegistration", model);
+            }
+
+            try
+            {
+                var existingUser = await _context.Staff.FindAsync(model.UserId);
+                if (existingUser == null)
+                {
+                    _logger.LogError("User not found");
+                    TempData["ErrorMessage"] = "User Not Found!";
+                    return RedirectToAction("Login", "Login");
+                }
+                existingUser.Password = BCrypt.Net.BCrypt.HashPassword(model.Password);
+                existingUser.IsSetPassword = true;
+                existingUser.IsActive = AccountStatus.Active;
+                _context.Staff.Update(existingUser);
+                await _context.SaveChangesAsync(); // This was missing!
+
+                TempData["SuccessMessage"] = "Account completed successfully!";
+                return RedirectToAction("Login", "Login");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error during second registration step");
+                ModelState.AddModelError("", "An error occurred while processing your registration. Please try again.");
+                return View("StaffRegistration", model);
+            }
+        }
+
+        [HttpPost]
+        [IgnoreAntiforgeryToken] // Allow this endpoint to be called without CSRF token
+        [Route("Register/SendVerificationCode")]
+        public async Task<IActionResult> SendVerificationCode([FromBody] VerificationCodeRequest request)
+        {
+            // Log the raw request for debugging
+            _logger.LogInformation("SendVerificationCode received request: {@Request}", request);
+            
+            if (request == null)
+            {
+                _logger.LogWarning("SendVerificationCode called with null request");
+                return BadRequest(new { success = false, message = "Invalid request format" });
+            }
+
+            if (string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Code))
+            {
+                _logger.LogWarning("SendVerificationCode called with missing email or code: {@Request}", request);
+                return BadRequest(new { success = false, message = "Email and code are required" });
+            }
+
+            try
+            {
+                _logger.LogInformation("Sending verification code to {Email}", request.Email);
+
+                // Get admin email from database
+                var admin = await _context.Admin.FirstOrDefaultAsync();
+                string adminEmail = admin?.Email ?? _configuration["AdminSettings:Email"] ?? "likedjans98@gmail.com";
+
+                string subject = "Verification Code for GrowTrack";
+                string body = $@"<h2>Hi {request.Name},</h2>
+
+                <p>Welcome to the GrowSphere family! We're thrilled to have you with us.</p>
+
+                <p>Your account has been successfully verified your email, and you're now ready to explore all the powerful features our CRM offers.</p>
+
+                <p>Your verification code:<br>
+                <b style='font-size: 24px;'>{request.Code}</b></p>
+
+                <p>If you have any questions or need a hand getting started, don't hesitate to reach out to our support team at {adminEmail}. We're always here to help!</p>
+
+                <p>Warm regards,<br>
+                The GrowSphere Team<br>
+                <small>Sent by Admin via GrowTrack CRM</small></p>";
+
+                // Use the email service to send the email
+                await _emailService.SendEmail(request.Email, subject, body, true);
+                
+                _logger.LogInformation("Successfully sent verification code to {Email}", request.Email);
+                return Ok(new { success = true });
+            }
+            catch (ConfigurationException ex)
+            {
+                _logger.LogError(ex, "Configuration error when sending verification email to {Email}: {Message}", request.Email, ex.Message);
+                return StatusCode(500, new { success = false, message = "Email service configuration error" });
+            }
+            catch (EmailException ex)
+            {
+                _logger.LogError(ex, "Email service error when sending verification email to {Email}: {Message}", request.Email, ex.Message);
+                return StatusCode(500, new { success = false, message = "Failed to send email: " + ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error when sending verification email to {Email}: {Message}", request.Email, ex.Message);
+                return StatusCode(500, new { success = false, message = "An unexpected error occurred" });
             }
         }
     }

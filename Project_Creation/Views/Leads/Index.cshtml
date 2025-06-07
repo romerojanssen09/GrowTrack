@@ -1,666 +1,247 @@
 ﻿@model IEnumerable<Project_Creation.Models.Entities.Leads>
 @using Project_Creation.Models.Entities
-@using Project_Creation.Data
-@inject AuthDbContext _context
 @using System.Security.Claims
-@using Microsoft.AspNetCore.Mvc.Rendering
-
 @{
     ViewData["Title"] = "Leads Management";
-    var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-    var currentUserId = int.TryParse(userIdClaim, out int parsedUserId) ? parsedUserId : 0;
-    var products = _context.Products2.Where(p => p.BOId == currentUserId).ToList();
+    var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
 }
 
-<div class="container-fluid">
-    <div class="row mb-4">
-        <div class="col-md-12 d-flex justify-content-between align-items-center">
-            <h1 class="display-4">Leads Management</h1>
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createLeadModal">
-                <i class="fas fa-plus"></i> Create New Lead
-            </button>
-        </div>
+<div class="card shadow-sm mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h4 class="mb-0 text-accent">Leads Management</h4>
+        <a asp-action="Create" class="btn btn-accent">
+            <i class="fas fa-plus-circle me-1"></i> Add New Lead
+        </a>
     </div>
 
-    <div class="card text-white bg-primary mb-3" style="max-width: 18rem;">
-        <div class="card-header">Total Leads</div>
-        <div class="card-body">
-            <h5 class="card-title">@ViewBag.TotalLeads</h5>
-            <p class="card-text">Number of leads assigned to you.</p>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card shadow">
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table id="leadsTable" class="table table-striped table-hover">
-                            <thead class="thead-dark">
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Email</th>
-                                    <th>Phone</th>
-                                    <th>Interested In</th>
-                                    <th>Created</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var item in Model)
-                                {
-                                    var interestedProducts = !string.IsNullOrEmpty(item.InterestedIn)
-                                    ? GetProductNames(item.InterestedIn)
-                                    : new List<string>();
-
-                                    <tr>
-                                        <td>@item.LeadName</td>
-                                        <td>@item.LeadEmail</td>
-                                        <td>@item.LeadPhone</td>
-                                        <td>@string.Join(", ", interestedProducts)</td>
-                                        <td>@item.CreatedAt?.ToString("MM/dd/yyyy")</td>
-                                        <td>
-                                            <button class="btn btn-sm btn-info btn-view" data-id="@item.Id">
-                                                <i class="fas fa-eye"></i>
-                                            </button>
-                                            <button class="btn btn-sm btn-warning btn-edit" data-id="@item.Id">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button class="btn btn-sm btn-danger btn-delete" data-id="@item.Id">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+    <div class="card-body">
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                @TempData["ErrorMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
-        </div>
-    </div>
-</div>
+        }
 
-<!-- Create Lead Modal -->
-<div class="modal fade" id="createLeadModal" tabindex="-1" aria-labelledby="createLeadModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header text-white" style="background-color: #4E6C79;">
-                <h5 class="modal-title" id="createLeadModalLabel">Create New Lead</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle me-2"></i>
+                @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
-            <form id="createLeadForm" method="post">
-                @Html.AntiForgeryToken()
-                <div class="modal-body" style="background-color: #FBE3D2;">
-                    <div class="form-group mb-3">
-                        <label for="LeadName" class="form-label">Name</label>
-                        <input type="text" class="form-control" id="LeadName" name="LeadName" required>
-                        <span class="text-danger field-validation-valid" data-valmsg-for="LeadName" data-valmsg-replace="true"></span>
-                    </div>
+        }
 
-                    <div class="form-group mb-3">
-                        <label for="LeadEmail" class="form-label">Email</label>
-                        <input type="email" class="form-control" id="LeadEmail" name="LeadEmail" required>
-                        <span class="text-danger field-validation-valid" data-valmsg-for="LeadEmail" data-valmsg-replace="true"></span>
-                    </div>
+        @if (ViewBag.ErrorMessage != null)
+        {
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                @ViewBag.ErrorMessage
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
 
-                    <div class="form-group mb-3">
-                        <label for="LeadPhone" class="form-label">Phone</label>
-                        <input type="text" class="form-control" id="LeadPhone" name="LeadPhone" required>
-                        <span class="text-danger field-validation-valid" data-valmsg-for="LeadPhone" data-valmsg-replace="true"></span>
+        <!-- Filter Section -->
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <form method="get" id="filterForm" class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Search</label>
+                        <input type="text" name="searchString" class="form-control" placeholder="Name, Email or Phone" value="@ViewBag.CurrentSearch">
                     </div>
-
-                    <div class="form-group mb-3">
-                        <label class="form-label">Interested In (Products)</label>
-                        <div class="input-group mb-2">
-                            <input type="text" class="form-control product-search" placeholder="Search products...">
-                        </div>
-                        <div class="border p-2 product-checkbox-container" style="max-height: 200px; overflow-y: auto; background-color: #FFFFFF;">
-                            @if (products.Any())
+                    <div class="col-md-3">
+                        <label class="form-label">Status</label>
+                        <select name="status" class="form-select">
+                            <option value="">All Statuses</option>
+                            @foreach (var status in Enum.GetValues(typeof(Project_Creation.Models.Entities.Leads.LeadStatus)))
                             {
-                                @foreach (var product in products)
+                                if (ViewBag.CurrentStatus != null && ViewBag.CurrentStatus.ToString() == status.ToString())
                                 {
-                                    <div class="form-check product-item">
-                                        <input class="form-check-input"
-                                               type="checkbox"
-                                               name="SelectedProductIds"
-                                               value="@product.Id">
-                                        <label class="form-check-label">@product.ProductName</label>
+                                    <option value="@status" selected>@status</option>
+                                }
+                                else
+                                {
+                                    <option value="@status">@status</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Company</label>
+                        <select name="companyId" class="form-select">
+                            <option value="">All Companies</option>
+                            @if (ViewBag.Companies != null)
+                            {
+                                foreach (var company in (IEnumerable<dynamic>)ViewBag.Companies)
+                                {
+                                    if (ViewBag.CurrentCompany != null && ViewBag.CurrentCompany.ToString() == company.Id.ToString())
+                                    {
+                                        <option value="@company.Id" selected="selected">@company.BusinessName</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@company.Id">@company.BusinessName</option>
+                                    }
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary me-2">Filter</button>
+                        <a href="@Url.Action("Index")" class="btn btn-outline-secondary">Reset</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover table-striped">
+                <thead>
+                    <tr>
+                        <th>
+                            Name
+                        </th>
+                        <th>
+                            Company
+                        </th>
+                        <th>
+                            Email / Phone
+                        </th>
+                        <th>
+                            Points / Status
+                        </th>
+                        <th>
+                            Interested In / Last Purchase
+                        </th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model) {
+                        <tr>
+                            <td>
+                                <strong>@Html.DisplayFor(modelItem => item.LeadName)</strong>
+                            </td>
+                            <td>
+                                @(item.CreatedBy?.BusinessName ?? "-")
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.LeadEmail)
+                                <br/>
+                                @Html.DisplayFor(modelItem => item.LeadPhone)
+                                <td>
+                                    @{
+                                        string statusClass = "";
+                                        string status = "";
+
+                                        // Calculate additional points from transaction value (1 point per ₱1,000)
+                                        decimal totalSpend = 0;
+                                        int spendPoints = 0;
+                                        DateTime past30Days = DateTime.Now.AddDays(-30);
+                                        
+                                        if (item.PurchaseHistory != null && item.PurchaseHistory.Any())
+                                        {
+                                            var recentPurchases = item.PurchaseHistory.Where(p => p.Sale?.SaleDate >= past30Days);
+                                            
+                                            if (recentPurchases.Any())
+                                            {
+                                                totalSpend = recentPurchases.Sum(p => p.TotalPrice);
+                                                spendPoints = (int)(totalSpend / 1000);
+                                            }
+                                        }
+                                        
+                                        // Base stored points (product variety only)
+                                        int basePoints = item.LeadPoints ?? 0;
+                                        
+                                        // Total display points (base + spend points)
+                                        int displayPoints = basePoints + spendPoints;
+
+                                        // Check if the lead has purchase history but hasn't purchased in the last 30 days
+                                        bool hasOldPurchases = item.LastPurchaseDate.HasValue && 
+                                                              item.LastPurchaseDate.Value < DateTime.Now.AddDays(-30) &&
+                                                              item.PurchaseHistory != null && 
+                                                              item.PurchaseHistory.Any();
+
+                                        if(displayPoints >= 30){
+                                            statusClass = "bg-danger text-white";
+                                            status = "Hot";
+                                        } else if(displayPoints >= 15){
+                                            statusClass = "bg-warning text-dark";
+                                            status = "Warm";
+                                        } else if(displayPoints >= 5){
+                                            statusClass = "bg-info text-white";
+                                            status = "Cold";
+                                        } else if(hasOldPurchases){
+                                            statusClass = "bg-secondary text-white";
+                                            status = "Lost";
+                                        } else {
+                                            statusClass = "bg-light text-dark border border-secondary";
+                                            status = "New";
+                                        }
+                                    }
+                                    <div>
+                                        <span class="badge bg-dark me-2 px-2 py-1">@displayPoints pts total</span>
+                                        <span class="badge @statusClass">@status</span>
                                     </div>
-                                }
-                            }
-                            else
-                            {
-                                <p class="text-muted">No products available</p>
-                            }
-                        </div>
-                    </div>
+                                </td>
+                                <td>
+                                    @if (item.InterestedProductNames != null && item.InterestedProductNames.Any())
+                                    {
+                                        <div class="product-tags mb-1">
+                                            <small class="text-muted">Interested in:</small><br/>
+                                            @foreach (var product in item.InterestedProductNames.Take(2))
+                                            {
+                                                <span class="badge bg-light text-dark me-1">@product</span>
+                                            }
+                                            @if (item.InterestedProductNames.Count > 2)
+                                            {
+                                                <span class="badge bg-light text-dark">+@(item.InterestedProductNames.Count - 2) more</span>
+                                            }
+                                        </div>
+                                    }
 
-                    <div class="form-group mb-3">
-                        <label for="Notes" class="form-label">Notes</label>
-                        <textarea class="form-control" id="Notes" name="Notes" rows="3"></textarea>
-                        <span class="text-danger field-validation-valid" data-valmsg-for="Notes" data-valmsg-replace="true"></span>
-                    </div>
-
-                    <input type="hidden" name="BOId" value="@currentUserId">
-                </div>
-                <div class="modal-footer" style="background-color: #7B8C93;">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Save Lead</button>
-                </div>
-            </form>
+                                    @if (item.LastPurchasedName != null)
+                                    {
+                                        <div class="mt-1">
+                                            <small class="text-muted">Last purchase:</small><br/>
+                                            <span class="badge bg-success text-white">@item.LastPurchasedName</span>
+                                            @if (item.LastPurchaseDate.HasValue)
+                                            {
+                                                <small class="text-muted ms-2">(@item.LastPurchaseDate.Value.ToString("MMM dd, yyyy"))</small>
+                                            }
+                                        </div>
+                                    }
+                                    else if (!item.InterestedProductNames.Any())
+                                    {
+                                        <span class="text-muted">No product history</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    @if (item.CreatedById == currentUserId)
+                                    {
+                                    <div class="btn-group" role="group">
+                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                    }
+                                    else{
+                                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
-
-<!-- View Lead Modal -->
-<div class="modal fade" id="viewLeadModal" tabindex="-1" aria-labelledby="viewLeadModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header text-white" style="background-color: #4E6C79;">
-                <h5 class="modal-title" id="viewLeadModalLabel">Lead Details</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body" id="viewLeadContent" style="background-color: #FBE3D2;">
-                <!-- Content will be loaded via AJAX -->
-            </div>
-            <div class="modal-footer" style="background-color: #7B8C93;">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Edit Lead Modal -->
-<div class="modal fade" id="editLeadModal" tabindex="-1" aria-labelledby="editLeadModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header text-white" style="background-color: #4E6C79;">
-                <h5 class="modal-title" id="editLeadModalLabel">Edit Lead</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form id="editLeadForm">
-                @Html.AntiForgeryToken()
-                <div class="modal-body" id="editLeadContent" style="background-color: #FBE3D2;">
-                    <!-- Content will be loaded via AJAX -->
-                </div>
-                <div class="modal-footer" style="background-color: #7B8C93;">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-warning">Update Lead</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-@functions {
-    public List<string> GetProductNames(string interestedIn)
-    {
-        var productIds = interestedIn.Split(',').Select(int.Parse).ToList();
-        var products = _context.Products2.Where(p => productIds.Contains(p.Id)).ToList();
-        return products.Select(p => p.ProductName).ToList();
-    }
-}
-
-@section Styles {
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" />
-    <style>
-        .card {
-            border-radius: 10px;
-            background-color: #FFFFFF;
-            border-color: #7B8C93;
-        }
-
-        .table th {
-            font-weight: 600;
-            background-color: #4E6C79;
-            color: white;
-        }
-
-        .btn-sm {
-            padding: 0.25rem 0.5rem;
-            font-size: 0.875rem;
-            line-height: 1.5;
-            border-radius: 0.2rem;
-        }
-
-        .form-check {
-            margin-bottom: 0.5rem;
-        }
-
-        .product-item {
-            transition: all 0.3s ease;
-        }
-
-        .d-none {
-            display: none !important;
-        }
-
-        .modal-header {
-            border-bottom: 1px solid #7B8C93;
-        }
-
-        .modal-footer {
-            border-top: 1px solid #7B8C93;
-        }
-
-        .btn-primary {
-            background-color: #4E6C79;
-            border-color: #4E6C79;
-        }
-
-        .btn-warning {
-            background-color: #FBE3D2;
-            border-color: #FBE3D2;
-            color: #4E6C79;
-        }
-
-        .btn-secondary {
-            background-color: #7B8C93;
-            border-color: #7B8C93;
-        }
-    </style>
-}
-
-@section Scripts {
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
-
-    <script>
-        // Function to get anti-forgery token
-        function getToken() {
-            return $('input[name="__RequestVerificationToken"]').val();
-        }
-
-        // Product search functionality
-        function setupProductSearch() {
-            $('.product-search').on('input', function() {
-                const searchTerm = $(this).val().toLowerCase();
-                $('.product-item').each(function() {
-                    const productName = $(this).find('.form-check-label').text().toLowerCase();
-                    if (productName.includes(searchTerm)) {
-                        $(this).removeClass('d-none');
-                    } else {
-                        $(this).addClass('d-none');
-                    }
-                });
-            });
-        }
-
-        // Function to populate edit form
-        function populateEditForm(data) {
-            const formHtml = `
-                <div class="form-group mb-3">
-                    <label for="EditLeadName" class="form-label">Name</label>
-                    <input type="text" class="form-control" id="EditLeadName" name="LeadName" value="${data.leadName}" required>
-                    <span class="text-danger field-validation-valid" data-valmsg-for="LeadName" data-valmsg-replace="true"></span>
-                </div>
-
-                <div class="form-group mb-3">
-                    <label for="EditLeadEmail" class="form-label">Email</label>
-                    <input type="email" class="form-control" id="EditLeadEmail" name="LeadEmail" value="${data.leadEmail}" required>
-                    <span class="text-danger field-validation-valid" data-valmsg-for="LeadEmail" data-valmsg-replace="true"></span>
-                </div>
-
-                <div class="form-group mb-3">
-                    <label for="EditLeadPhone" class="form-label">Phone</label>
-                    <input type="text" class="form-control" id="EditLeadPhone" name="LeadPhone" value="${data.leadPhone}" required>
-                    <span class="text-danger field-validation-valid" data-valmsg-for="LeadPhone" data-valmsg-replace="true"></span>
-                </div>
-
-                <div class="form-group mb-3">
-                    <label class="form-label">Interested In (Products)</label>
-                    <div class="input-group mb-2">
-                        <input type="text" class="form-control product-search" placeholder="Search products...">
-                    </div>
-                    <div class="border p-2 product-checkbox-container" style="max-height: 200px; overflow-y: auto; background-color: #FFFFFF;">
-                        ${data.products.map(product => `
-                            <div class="form-check product-item">
-                                <input class="form-check-input"
-                                       type="checkbox"
-                                       name="SelectedProductIds"
-                                       value="${product.id}"
-                                       ${data.selectedProductIds.includes(product.id.toString()) ? 'checked' : ''}>
-                                <label class="form-check-label">${product.name}</label>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-
-                <div class="form-group mb-3">
-                    <label for="EditNotes" class="form-label">Notes</label>
-                    <textarea class="form-control" id="EditNotes" name="Notes" rows="3">${data.notes || ''}</textarea>
-                    <span class="text-danger field-validation-valid" data-valmsg-for="Notes" data-valmsg-replace="true"></span>
-                </div>
-
-                <input type="hidden" name="Id" value="${data.id}">
-                <input type="hidden" name="BOId" value="${data.boId}">
-            `;
-
-            return formHtml;
-        }
-
-        // Function to populate view details
-        function populateViewDetails(data) {
-            const updateAt = data.updatedAt != null
-                ? `
-                    <label class="fw-bold">Updated At:</label>
-                    <p>${new Date(data.updatedAt).toLocaleString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        second: '2-digit'
-                    })}</p>
-                    `
-                :``;
-            const detailsHtml = `
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label class="fw-bold">Name:</label>
-                            <p>${data.leadName}</p>
-                        </div>
-                        <div class="mb-3">
-                            <label class="fw-bold">Email:</label>
-                            <p>${data.leadEmail}</p>
-                        </div>
-                        <div class="mb-3">
-                            <label class="fw-bold">Phone:</label>
-                            <p>${data.leadPhone}</p>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label class="fw-bold">Interested In:</label>
-                            <p>${data.interestedProducts.join(', ')}</p>
-                        </div>
-                        <div class="mb-3 d-flex justify-content-between align-items-center">
-                            <div>
-                                <label class="fw-bold">Created At:</label>
-                                   <p>${new Date(data.createdAt).toLocaleString('en-US', {
-                                        year: 'numeric',
-                                        month: 'long',
-                                        day: 'numeric',
-                                        hour: '2-digit',
-                                        minute: '2-digit',
-                                        second: '2-digit'
-                                    })}</p>
-                            </div>
-                            <div>
-                                ${updateAt}
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="fw-bold">Notes:</label>
-                            <p>${data.notes || 'N/A'}</p>
-                        </div>
-                    </div>
-                </div>
-            `;
-
-            return detailsHtml;
-        }
-
-        $(document).ready(function () {
-            // Initialize DataTable
-            $('#leadsTable').DataTable({
-                responsive: true,
-                order: [[4, 'desc']]
-            });
-
-            // Setup product search
-            setupProductSearch();
-
-            // Create Lead Form Submission
-            $('#createLeadForm').submit(function(e) {
-                e.preventDefault();
-
-                var formData = new FormData(this);
-                // Add selected products to form data
-                var selectedProducts = $('input[name="SelectedProductIds"]:checked').map(function() {
-                    return this.value;
-                }).get();
-
-                // Clear any existing SelectedProductIds
-                formData.delete("SelectedProductIds");
-
-                // Add each selected product ID individually
-                selectedProducts.forEach(function(id) {
-                    formData.append("SelectedProductIds", id);
-                });
-
-                $.ajax({
-                    url: '@Url.Action("Create", "Leads")',
-                    type: 'POST',
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'RequestVerificationToken': getToken()
-                    },
-                    success: function(response) {
-                        if (response.success) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Success!',
-                                text: 'Lead created successfully!',
-                                timer: 1500,
-                                showConfirmButton: false
-                            }).then(() => {
-                                var createModal = bootstrap.Modal.getInstance(document.getElementById('createLeadModal'));
-                                createModal.hide();
-                                location.reload();
-                            });
-                        } else {
-                            var errorMessage = response.message || 'Failed to create lead';
-                            if (response.errors) {
-                                errorMessage += '\n' + response.errors.join('\n');
-                            }
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error!',
-                                text: errorMessage
-                            });
-                        }
-                    },
-                    error: function(xhr) {
-                        var errorMessage = 'An error occurred while creating the lead';
-                        try {
-                            var jsonResponse = JSON.parse(xhr.responseText);
-                            if (jsonResponse.message) {
-                                errorMessage = jsonResponse.message;
-                            }
-                            if (jsonResponse.errors) {
-                                errorMessage += '\n' + jsonResponse.errors.join('\n');
-                            }
-                        } catch (e) {
-                            console.error('Error parsing response:', e);
-                        }
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error!',
-                            text: errorMessage
-                        });
-                    }
-                });
-            });
-
-            // View Lead Button Click
-            $(document).on('click', '.btn-view', function() {
-                var leadId = $(this).data('id');
-
-                $.get('@Url.Action("DetailsJson", "Leads")/' + leadId, function(data) {
-                    $('#viewLeadContent').html(populateViewDetails(data));
-                    var viewModal = new bootstrap.Modal(document.getElementById('viewLeadModal'));
-                    viewModal.show();
-                }).fail(function(xhr) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error!',
-                        text: xhr.responseJSON?.message || 'Failed to load lead details'
-                    });
-                });
-            });
-
-            // Edit Lead Button Click
-            $(document).on('click', '.btn-edit', function() {
-                var leadId = $(this).data('id');
-
-                $.get('@Url.Action("EditJson", "Leads")/' + leadId, function(data) {
-                    $('#editLeadContent').html(populateEditForm(data));
-                    var editModal = new bootstrap.Modal(document.getElementById('editLeadModal'));
-                    editModal.show();
-
-                    // Setup product search for edit modal
-                    setupProductSearch();
-                }).fail(function(xhr) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error!',
-                        text: xhr.responseJSON?.message || 'Failed to load lead for editing'
-                    });
-                });
-            });
-
-            // Edit Lead Form Submission
-            $(document).on('submit', '#editLeadForm', function(e) {
-                e.preventDefault();
-
-                var formData = new FormData(this);
-                var selectedProducts = $('#editLeadContent').find('input[name="SelectedProductIds"]:checked').map(function() {
-                    return this.value;
-                }).get();
-
-                // Clear and re-add SelectedProductIds
-                formData.delete("SelectedProductIds");
-                selectedProducts.forEach(function(id) {
-                    formData.append("SelectedProductIds", id);
-                });
-
-                // Add the lead ID to the form data
-                formData.append("Id", $('#editLeadContent').find('input[name="Id"]').val());
-
-                $.ajax({
-                    url: '@Url.Action("Edit", "Leads")',
-                    type: 'POST',
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'RequestVerificationToken': getToken()
-                    },
-                    success: function(response) {
-                        if (response.success) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Success!',
-                                text: 'Lead updated successfully!',
-                                timer: 1500,
-                                showConfirmButton: false
-                            }).then(() => {
-                                var editModal = bootstrap.Modal.getInstance(document.getElementById('editLeadModal'));
-                                editModal.hide();
-                                location.reload();
-                            });
-                        } else {
-                            var errorMessage = response.message || 'Failed to update lead';
-                            if (response.errors) {
-                                errorMessage += '\n' + response.errors.join('\n');
-                            }
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error!',
-                                text: errorMessage
-                            });
-                        }
-                    },
-                    error: function(xhr) {
-                        var errorMessage = 'An error occurred while updating the lead';
-                        try {
-                            var jsonResponse = JSON.parse(xhr.responseText);
-                            if (jsonResponse.message) {
-                                errorMessage = jsonResponse.message;
-                            }
-                            if (jsonResponse.errors) {
-                                errorMessage += '\n' + jsonResponse.errors.join('\n');
-                            }
-                        } catch (e) {
-                            console.error('Error parsing response:', e);
-                        }
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error!',
-                            text: errorMessage
-                        });
-                    }
-                });
-            });
-
-            // Delete Lead Button Click
-            $(document).on('click', '.btn-delete', function() {
-                var leadId = $(this).data('id');
-
-                Swal.fire({
-                    title: 'Are you sure?',
-                    text: "You won't be able to revert this!",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#3085d6',
-                    confirmButtonText: 'Yes, delete it!'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        $.ajax({
-                            url: '@Url.Action("Delete", "Leads")',
-                            type: 'POST',
-                            data: { id: leadId },
-                            headers: {
-                                'RequestVerificationToken': getToken()
-                            },
-                            success: function(response) {
-                                if (response.success) {
-                                    Swal.fire({
-                                        icon: 'success',
-                                        title: 'Deleted!',
-                                        text: 'Lead has been deleted.',
-                                        timer: 1500,
-                                        showConfirmButton: false
-                                    }).then(() => {
-                                        location.reload();
-                                    });
-                                } else {
-                                    Swal.fire({
-                                        icon: 'error',
-                                        title: 'Error!',
-                                        text: response.message || 'Failed to delete lead'
-                                    });
-                                }
-                            },
-                            error: function(xhr) {
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Error!',
-                                    text: xhr.responseJSON?.message || 'An error occurred while deleting the lead'
-                                });
-                            }
-                        });
-                    }
-                });
-            });
-
-            // Reset form when modal is closed
-            $('.modal').on('hidden.bs.modal', function() {
-                $(this).find('form').trigger('reset');
-                // Reset product search
-                $('.product-search').val('');
-                $('.product-item').removeClass('d-none');
-            });
-        });
-    </script>
-}

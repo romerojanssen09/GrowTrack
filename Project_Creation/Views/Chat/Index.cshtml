@@ -1,175 +1,431 @@
-﻿@using System.Security.Claims
+@using System.Security.Claims
 @model IEnumerable<Project_Creation.Models.ViewModels.ChatmateViewModel>
-
+@using Project_Creation.Models.Entities
 @{
-	ViewData["Title"] = "Chat";
-	Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Chat";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="">
-	<div class="row border rounded shadow-sm" style="height: calc(100vh - 150px); overflow: hidden;" overflow: hidden;">
-		<!-- Sidebar -->
-		<div class="col-md-4 border-end d-flex flex-column p-0">
-			<div class="bg-light p-3 border-bottom">
-				<h5 class="mb-3">Messages</h5>
-				<div class="input-group">
-					<span class="input-group-text bg-white"><i class="fas fa-search text-muted"></i></span>
-					<input type="text" class="form-control" placeholder="Search conversations...">
-				</div>
-			</div>
-			<div class="overflow-auto flex-grow-1">
-				@foreach (var chatmate in Model)
-				{
-					<div class="chatmate-item d-flex p-3 border-bottom chatmate-item align-items-center" data-userid="@chatmate.Id" data-action="load-messages">
-						<div class="position-relative me-3">
-							<img src="/default/default-profile.png" alt="@chatmate.FirstName" class="rounded-circle" width="50" height="50">
-							@if (chatmate.UnreadCount > 0)
-							{
-								<span class="badge bg-primary rounded-circle position-absolute top-0 start-100 translate-middle">@chatmate.UnreadCount</span>
-							}
-						</div>
-						<div class="flex-grow-1">
-							<div class="d-flex justify-content-between fw-semibold">
-								<span>@chatmate.FirstName @chatmate.LastName</span>
-								<small class="text-muted">@chatmate.LastMessageTime.ToString("h:mm tt")</small>
-							</div>
-							<div class="text-muted small text-truncate">
-								@if (chatmate.IsCurrentUserSender)
-								{
-									<span>You: </span>
-								}
-								@(chatmate.LastMessage?.Length > 30 ? chatmate.LastMessage.Substring(0, 30) + "..." : chatmate.LastMessage)
-							</div>
-						</div>
-					</div>
-				}
-			</div>
-		</div>
-
-		<!-- Chat Main -->
-		<div class="col-md-8 d-flex flex-column p-0">
-			<div class="bg-light p-3 border-bottom d-flex align-items-center">
-				<img id="currentChatmateImage" src="/default/user.png" class="rounded-circle me-2" width="40" height="40" alt="User">
-				<strong id="currentChatmateName">Select a conversation</strong>
-			</div>
-
-            <div class="flex-grow-1 overflow-auto p-3 bg-light" id="messagesContainer">
-				<div class="d-flex flex-column align-items-center justify-content-center text-muted h-100">
-					<i class="fas fa-comments fa-3x mb-3"></i>
-					<p>Select a conversation to start chatting</p>
-				</div>
-			</div>
-
-			<div class="border-top p-3 bg-light message-input">
-				<form id="messageForm">
-					@Html.AntiForgeryToken()
-					<input type="hidden" id="currentUserId" value="@User.FindFirst(ClaimTypes.NameIdentifier)?.Value" />
-					<input type="hidden" id="receiverId">
-					<div class="input-group">
-						<input type="text" id="messageInput" class="form-control" placeholder="Type a message...">
-						<button class="btn btn-primary" type="submit">
-							<i class="fas fa-paper-plane"></i>
-						</button>
-					</div>
-				</form>
-			</div>
-		</div>
-	</div>
+<!-- Reject Reason Modal -->
+<div class="modal fade" id="rejectReasonModal" tabindex="-1" aria-labelledby="rejectReasonModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="rejectReasonModalLabel">Provide Rejection Reason</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="rejectForm">
+                    <input type="text" id="rejectMessageId">
+                    <input type="text" id="rejectProductId">
+                    <input type="text" id="rejectQuantity">
+                    <div class="mb-3">
+                        <label for="rejectReason" class="form-label">Reason for rejection</label>
+                        <textarea class="form-control" id="rejectReason" rows="3" required></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmReject">Submit Rejection</button>
+            </div>
+        </div>
+    </div>
 </div>
 
-@section Styles{
-    <style>
-        .message-bubble {
-            border-radius: 18px;
-            padding: 10px 15px;
-            position: relative;
-            margin: 0 10px;
-        }
+<!-- Reject Reason Modal -->
+<div class="modal fade" id="rejectReasonModalLeads" tabindex="-1" aria-labelledby="rejectReasonModalLabelLeads" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="rejectReasonModalLabelLeads">Provide Rejection Reason</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="rejectForm">
+                    <input type="text" id="rejectMsgId">
+                    <input type="text" id="rejectLeadId">
+                    <input type="text" id="rejectBOId">
+                    <div class="mb-3">
+                        <label for="rejectReasonLead" class="form-label">Reason for rejection</label>
+                        <textarea class="form-control" id="rejectReasonLead" rows="3" required></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmRejectLead">Submit Rejection</button>
+            </div>
+        </div>
+    </div>
+</div>
 
-        .sent-message {
-            background-color: #007bff;
-            color: white;
-        }
+<!-- Edit Message Modal -->
+<div class="modal fade" id="editMessageModal" tabindex="-1" aria-labelledby="editMessageModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editMessageModalLabel">Edit Message</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editMessageForm">
+                    <input type="hidden" id="editMessageId">
+                    <div class="mb-3">
+                        <label for="editMessageText" class="form-label">Message</label>
+                        <textarea class="form-control" id="editMessageText" rows="3" required></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmEdit">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
 
-        .received-message {
-            background-color: #e9ecef;
-            color: black;
-        }
+<div class="chat-container">
+    <div class="chat-wrapper shadow-sm">
+        <!-- Sidebar -->
+        <div class="chat-sidebar">
+            <div class="chat-sidebar-header">
+                <h5 class="mb-0">Messages</h5>
+            </div>
+            <div class="chat-sidebar-search">
+                <div class="input-group">
+                    <span class="input-group-text bg-white"><i class="fas fa-search text-muted"></i></span>
+                    <input type="text" class="form-control" placeholder="Search conversations...">
+                </div>
+            </div>
+            <div class="chat-sidebar-contacts">
+                @if (Model.Any())
+                {
+                    @foreach (var chatmate in Model)
+                    {
+                        var name = $"{chatmate.FirstName} {chatmate.LastName}";
+                        <div class="chatmate-item" data-userid="@chatmate.Id" data-action="load-messages" data-chatmte="@chatmate.Id">
+                            <div class="chatmate-avatar">
+                                <img src="https://ui-avatars.com/api/?name=@name&background=fff&color=6366f1&rounded=true&size=256" alt="@chatmate.FirstName">
+                                @if (chatmate.UnreadCount > 0)
+                                {
+                                    <span class="chatmate-badge">@chatmate.UnreadCount</span>
+                                }
+                            </div>
+                            <div class="chatmate-info">
+                                <div class="chatmate-name-time">
+                                    <span class="chatmate-name">@chatmate.FirstName @chatmate.LastName</span>
+                                    <span class="chatmate-time">@chatmate.LastMessageTime.ToString("h:mm tt")</span>
+                                </div>
+                                <div class="chatmate-preview" id="chatmateLastMessage@(chatmate.Id)">
+                                    @if (chatmate.IsCurrentUserSender)
+                                    {
+                                        <span>You: </span>
+                                    }
+                                    @(chatmate.LastMessage?.Length > 30 ? chatmate.LastMessage.Substring(0, 30) + "..." : chatmate.LastMessage)
+                                </div>
+							</div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="no-contacts-message">
+                        <i class="fas fa-user-friends"></i>
+                        <p>No conversations yet</p>
+                    </div>
+                }
+            </div>
+        </div>
 
-        .message-content {
-            word-wrap: break-word;
-        }
+        <!-- Chat Main -->
+        <div class="chat-main">
+            <div class="chat-header">
+                <div class="chat-header-user">
+                    <img id="currentChatmateImage" src="https://ui-avatars.com/api/?name=name&background=fff&color=6366f1&rounded=true&size=256" alt="User">
+                    <strong id="currentChatmateName">Select a conversation</strong>
+                </div>
+                <div class="chat-header-actions d-md-none">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" id="toggleSidebar">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
 
-        .message-time {
-            font-size: 0.75rem;
-            color: #6c757d;
-            text-align: right;
-            margin-top: 4px;
-        }
+            <div class="chat-messages" id="messagesContainer">
+                <div class="chat-empty-state">
+                    <i class="fas fa-comments fa-3x mb-3"></i>
+                    <p>Select a conversation to start chatting</p>
+                </div>
+            </div>
 
-        /* For received messages, align time to left */
-        .received-message .message-time {
-            text-align: left;
-        }
+            <div class="chat-input">
+                <form id="messageForm">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" id="currentUserId" value="@User.FindFirst(ClaimTypes.NameIdentifier)?.Value" />
+                    <input type="hidden" id="receiverId">
+                    <div class="input-group">
+                        <input type="text" id="messageInput" class="form-control" placeholder="Type a message...">
+                        <button class="btn btn-primary" type="submit">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 
-        #messagesContainer {
-            min-height: 200px;
-            max-height: 361px;
-        }
-
-        .message-input {
-            position: relative;
-        }
-
-        .loading-spinner {
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            display: none; /* Hidden by default */
-        }
-
-        .input-group {
-            margin-bottom: 10px; /* Add some space below the input */
-        }
-
-        .form-control {
-            border-radius: 20px; /* Rounded corners */
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-        }
-
-        .btn-primary {
-            border-radius: 20px; /* Rounded corners */
-        }
-
-        /* Additional styles for better visual feedback */
-        .chatmate-item:hover {
-            background-color: #f1f1f1; /* Highlight on hover */
-        }
-
-        .chatmate-item.active {
-            background-color: #e9f5ff;
-            border-left: 3px solid #007bff;
-        }
-    </style>
+@section Styles {
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 }
 
 @section Scripts {
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
-	<script>
-                $(document).ready(function() {
+    <script>
+        let toggleOption = false;
+        function toggleOptions(id){
+            const div = document.getElementById(`options${id}`);
+            toggleOption = !toggleOption;
+            if(toggleOption){
+                div.style.display = "block";
+            } else {
+                div.style.display = "none";
+            }
+        }
+
+        function latestMessage(currentChatmateId, senderId, currentUserId, message){
+            const latestChat = $(`#chatmateLastMessage${currentChatmateId}`);
+            const ifsender = senderId == currentUserId ? "You:" : "";
+            let shortMessage = message.length > 30 ? message.substring(0, 30) + "..." : message;
+            const msgg = `${ifsender} ${shortMessage}`;
+            latestChat.text("");
+            latestChat.text(msgg);
+        }
+
+        $(document).ready(function() {
+            // Mobile sidebar toggle
+            $('#toggleSidebar').on('click', function() {
+                $('.chat-sidebar').toggleClass('show');
+            });
+            
+            // Close sidebar when clicking outside on mobile
+            $(document).on('click touchstart', function(e) {
+                if ($(window).width() < 768) {
+                    if (!$(e.target).closest('.chat-sidebar').length && 
+                        !$(e.target).closest('#toggleSidebar').length && 
+                        $('.chat-sidebar').hasClass('show')) {
+                        $('.chat-sidebar').removeClass('show');
+                    }
+                }
+            });
+            
+            // Function to display a message
+            function displayMessage(msg, status) {
+                const currentUserId = $('#currentUserId').val();
+                
+                // Helper function to get property value regardless of case
+                function getProp(obj, key) {
+                    if (!obj) return undefined;
+                    
+                    // Try direct access first
+                    if (obj[key] !== undefined) return obj[key];
+                    
+                    // Try case-insensitive match
+                    const lowerKey = key.toLowerCase();
+                    for (const k in obj) {
+                        if (k.toLowerCase() === lowerKey) {
+                            console.log(`Found property ${k} for key ${key}`);
+                            return obj[k];
+                        }
+                    }
+                    console.log(`Property ${key} not found in object`, obj);
+                    return undefined;
+                }
+                
+                const isSent = getProp(msg, 'SenderId') == currentUserId;
+                const phTime = convertToPHTime(new Date(getProp(msg, 'CreatedAt') || getProp(msg, 'createdAt')));
+                const timeString = formatTime(phTime);
+                const messageClass = isSent ? 'sent-message' : 'received-message';
+                const alignClass = isSent ? 'justify-content-end' : 'justify-content-start';
+                const jsonString = getProp(msg, 'JSONString') || getProp(msg, 'jsonString');
+                const isSender = getProp(msg, 'SenderId') == currentUserId;
+                const isRead = getProp(msg, 'IsRead') ? 'seen' : 'sent';
+                const message = getProp(msg, 'Message') || getProp(msg, 'message') || '';
+                const messageLength = message.length;
+                const widthPercentage = Math.min(70, Math.max(30, (messageLength * 1.5)));
+                const messageId = getProp(msg, 'Id') || getProp(msg, 'id');
+                const isEdited = msg.isEdited || msg.IsEdited;
+                console.log('Message display isEdited status:', isEdited);
+                
+                let messageHtml = '';
+                
+                if(status === "Accepted") {
+                    let jsonData = {};
+                    try {
+                        jsonData = typeof jsonString === 'string' ? JSON.parse(jsonString) : jsonString;
+                    } catch(e) {
+                        console.error("Error parsing JSON string:", e);
+                    }
+                    
+                    messageHtml = `
+                        <div class="d-flex ${alignClass} mb-3" data-messageid="${messageId}">
+                            <div class="p-3 rounded" style="background-color: #f1f6fb; max-width: ${widthPercentage}%; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
+                                <div class="fw-bold mb-2">
+                                    🛒 Product Order Accepted
+                                </div>
+                                <div><strong>Product:</strong> ${jsonData.productName || ''}</div>
+                                <div><strong>Quantity:</strong> ${jsonData.quantity || ''}</div>
+                                <div><strong>Message:</strong> ${jsonData.message || ''}</div>
+                                <div class="mt-2">
+                                    <a href="/ProductOrders" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-eye"></i> View Orders
+                                    </a>
+                                </div>
+                                <small class="text-muted">${timeString} ${isRead}</small>
+                            </div>
+                        </div>
+                    `;
+                } else if(status === "Request") {
+                    let jsonData = {};
+                    try {
+                        jsonData = typeof jsonString === 'string' ? JSON.parse(jsonString) : jsonString;
+                    } catch(e) {
+                        console.error("Error parsing JSON string:", e);
+                    }
+                    
+                    messageHtml = `
+                        <div class="d-flex ${alignClass} mb-3" data-messageid="${messageId}">
+                            <div class="p-3 rounded" style="background-color: #f1f6fb; max-width: ${widthPercentage}%; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
+                                <div class="fw-bold mb-2">
+                                    🛒 Product Request
+                                </div>
+                                <div><strong>Product:</strong> ${jsonData.productName || ''}</div>
+                                <div><strong>Quantity:</strong> ${jsonData.quantity || ''}</div>
+                                <div><strong>Message:</strong> ${jsonData.message || ''}</div>
+                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                `;
+
+                    messageHtml += !isSender ? `
+                        <button class="btn btn-outline-danger btn-sm reject-request"
+                            data-quantity="${jsonData.quantity || ''}"
+                            data-productid="${jsonData.productId || ''}"
+                            data-messageid="${messageId}">
+                            <i class="fa-solid fa-xmark"></i>
+                            Reject
+                        </button>
+                        <button class="btn btn-dark btn-sm accept-request"
+                            data-quantity="${jsonData.quantity || ''}"
+                            data-productid="${jsonData.productId || ''}"
+                            data-messageid="${messageId}">
+                            <i class="fa-solid fa-check"></i>
+                            Accept
+                        </button>` : `
+                        <div></div>
+                        <button class="btn btn-dark btn-sm cancel-request"
+                            data-quantity="${jsonData.quantity || ''}"
+                            data-productid="${jsonData.productId || ''}"
+                            data-messageid="${messageId}">
+                            <i class="fa-solid fa-xmark"></i>
+                            Cancel
+                        </button>
+                        `;
+
+                    messageHtml += `</div>
+                                <small class="text-muted">${timeString} ${isRead}</small>
+                            </div>
+                        </div>
+                    `;
+                } else if(status === "Rejected") {
+                    let jsonData = {};
+                    try {
+                        jsonData = typeof jsonString === 'string' ? JSON.parse(jsonString) : jsonString;
+                    } catch(e) {
+                        console.error("Error parsing JSON string:", e);
+                    }
+                    
+                    messageHtml = `
+                        <div class="d-flex ${alignClass} mb-3" data-messageid="${messageId}">
+                            <div class="p-3 rounded" style="background-color: #f1f6fb; max-width: ${widthPercentage}%; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
+                                <div class="fw-bold mb-2">
+                                    🛒 Product Request Rejected
+                                </div>
+                                <div><strong>Product:</strong> ${jsonData.productName || ''}</div>
+                                <div><strong>Quantity:</strong> ${jsonData.quantity || ''}</div>
+                                <div><strong>Message:</strong> ${jsonData.message || ''}</div>
+                                <div><strong>Reason:</strong> ${message}</div>
+                                <small class="text-muted">${timeString} ${isRead}</small>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    // Regular message
+                    const options = isSender ? `
+                        <div class="">
+                            <i class="bi bi-three-dots-vertical" onclick="toggleOptions(${messageId})"></i>
+                            <div style="display:none;" id="options${messageId}">
+                                <button class="btn btn-sm edit-message" data-messageid="${messageId}" data-message="${message}"><i class="fas fa-edit"></i> Edit</button><br/>
+                                <button class="btn btn-sm delete-message" data-messageid="${messageId}"><i class="fas fa-trash"></i> Delete</button>
+                            </div>
+                        </div>
+                    ` : "";
+                    
+                    messageHtml = `
+                        <div class="d-flex ${alignClass} align-items-center gap-3 mb-3" data-messageid="${messageId}" id="remove${messageId}">
+                            ${options}
+                            <div class="message-bubble ${messageClass}" style="max-width: ${widthPercentage}%">
+                                <div class="message-content">${message}</div>
+                                <div class="message-time">
+                                    ${timeString} ${isRead}
+                                    ${isEdited ? '<span class="text-muted small">(edited)</span>' : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                $('#messagesContainer').append(messageHtml);
+            }
+            
+            // Function to mark messages as read
+            function markMessagesAsRead() {
+                const currentChatmateId = $('#receiverId').val();
+                if (!currentChatmateId) return;
+                
+                $.ajax({
+                    url: '/Chat/MarkAsRead',
+                    type: 'POST',
+                    data: {
+                        otherUserId: currentChatmateId,
+                        __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function() {
+                        // Update UI to show messages as read
+                        $(`.chatmate-item[data-userid="${currentChatmateId}"] .chatmate-badge`).remove();
+                        $('.message-time:contains("sent")').text(function(i, text) {
+                            return text.replace('sent', 'seen');
+                        });
+                    }
+                });
+            }
+            
             // SignalR connection
             const connection = new signalR.HubConnectionBuilder()
-                .withUrl("/realtimehub")
+                .withUrl("/realTimeHub")
+                .withAutomaticReconnect()
                 .build();
 
-            connection.start().then(function () {
-                console.log('SignalR Connected');
-            }).catch(function (err) {
-                return console.error(err.toString());
-            });
+            const chatStatus = {
+                Null: 0,
+                Request: 1,
+                Accepted: 2,
+                Rejected: 3,
+                LeadRequest: 4,
+                LeadAccepted: 5,
+                LeadRejected: 6
+            }
 
-            // Function to scroll to bottom of messages
+            connection.start().catch(err => console.error(err));
+
             function scrollToBottom() {
                 const container = document.getElementById('messagesContainer');
                 if (container) {
@@ -191,14 +447,12 @@
                 loadMessages(firstChatmateId);
             }
 
-            // Function to convert UTC to PH time (UTC+8)
             function convertToPHTime(utcDate) {
                 const date = new Date(utcDate);
-                date.setHours(date.getHours() + 8); // Add 8 hours for PH time
+                date.setHours(date.getHours() + 8);
                 return date;
             }
 
-            // Function to format time as "h:mm AM/PM"
             function formatTime(date) {
                 return date.toLocaleTimeString('en-US', {
                     hour: 'numeric',
@@ -207,68 +461,402 @@
                 });
             }
 
-            connection.on("ReceiveChatMessage", function (senderId, receiverId, message, createdAt) {
-                const currentChatmateId = $('#receiverId').val();
-                const currentUserId = $('#currentUserId').val();
+            // Helper function to safely check if a message is edited
+            function checkIsEdited(msg) {
+                // Try to access isEdited property in a case-insensitive way
+                if (msg.isEdited === true || msg.IsEdited === true) {
+                    console.log('Message is explicitly marked as edited');
+                    return true;
+                }
+                
+                // If isEdited flag is not present, check if updatedAt and createdAt timestamps differ significantly
+                const updatedAt = msg.updatedAt || msg.UpdatedAt;
+                const createdAt = msg.createdAt || msg.CreatedAt;
+                
+                if (updatedAt && createdAt) {
+                    try {
+                        const updateTime = new Date(updatedAt).getTime();
+                        const createTime = new Date(createdAt).getTime();
+                        // Only consider it edited if the difference is more than 10 seconds
+                        // This prevents false positives when timestamps are very close together
+                        if (Math.abs(updateTime - createTime) > 10000) {
+                            console.log('Message is edited based on timestamp difference');
+                            console.log('Created:', new Date(createdAt).toISOString());
+                            console.log('Updated:', new Date(updatedAt).toISOString());
+                            console.log('Difference (ms):', Math.abs(updateTime - createTime));
+                            return true;
+                        }
+                    } catch (e) {
+                        console.error('Error comparing timestamps:', e);
+                    }
+                }
+                
+                // Default to not edited if no conditions are met
+                return false;
+            }
 
-                if ((receiverId == currentUserId && senderId == currentChatmateId) ||
-                    (senderId == currentUserId && receiverId == currentChatmateId)) {
+            // Function to check if a message is currently displayed as edited
+            function isMessageDisplayedAsEdited(messageId) {
+                const messageElement = $(`[data-messageid="${messageId}"]`);
+                if (messageElement.length) {
+                    return messageElement.find('.message-time .text-muted').length > 0;
+                }
+                return false;
+            }
 
-                    // ✅ Remove empty state if it exists
-                    $('#messagesContainer .empty-state').remove();
+            connection.on("EditMessage", function (senderId, receiverId, messageId, status, messageJson, oldMessageId) {
+                try {
+                    const currentChatmateId = $('#receiverId').val();
+                    const currentUserId = $('#currentUserId').val();
 
-                    const isSent = senderId == currentUserId;
-                    const phTime = convertToPHTime(new Date(createdAt));
-                    const timeString = formatTime(phTime);
+                    // Debug logging
+                    console.log('EditMessage event received:');
+                    console.log('senderId:', senderId);
+                    console.log('receiverId:', receiverId);
+                    console.log('currentUserId:', currentUserId);
+                    console.log('messageJson:', messageJson);
+                    console.log('messageId:', messageId);
+                    console.log('oldMessageId:', oldMessageId);
+                    
+                    // Parse the message JSON
+                    const msg = typeof messageJson === 'string' ? JSON.parse(messageJson) : messageJson;
+                    console.log('Parsed message:', msg);
+                    
+                    // Helper function to get property value regardless of case
+                    function getProp(obj, key) {
+                        if (!obj) return undefined;
+                        
+                        // Try direct access first
+                        if (obj[key] !== undefined) return obj[key];
+                        
+                        // Try case-insensitive match
+                        const lowerKey = key.toLowerCase();
+                        for (const k in obj) {
+                            if (k.toLowerCase() === lowerKey) {
+                                console.log(`Found property ${k} for key ${key}`);
+                                return obj[k];
+                            }
+                        }
+                        console.log(`Property ${key} not found in object`, obj);
+                        return undefined;
+                    }
 
-                    const messageClass = isSent ? 'sent-message' : 'received-message';
-                    const alignClass = isSent ? 'justify-content-end' : 'justify-content-start';
-                    const messageLength = message.length;
-                    const widthPercentage = Math.min(70, Math.max(30, (messageLength * 1.5)));
+                    // Check if this message is part of the current conversation
+                    if ((receiverId == currentUserId && senderId == currentChatmateId) ||
+                        (senderId == currentUserId && receiverId == currentChatmateId)) {
 
-                    const messageHtml = `
-                        <div class="d-flex ${alignClass} mb-3">
-                            <div class="message-bubble ${messageClass}" style="max-width: ${widthPercentage}%">
-                                <div class="message-content">${message}</div>
-                                <div class="message-time">${timeString}</div>
-                            </div>
-                        </div>
-                    `;
-
-                    $('#messagesContainer').append(messageHtml);
-                    scrollToBottom();
+                        const message = getProp(msg, 'Message') || getProp(msg, 'message') || "";
+                        
+                        // Find the old message element
+                        const oldMessageElement = $(`[data-messageid="${oldMessageId}"]`);
+                        
+                        if (oldMessageElement.length) {
+                            console.log('Found old message, updating content');
+                            
+                            // Update the message content
+                            oldMessageElement.find('.message-content').text(message);
+                            
+                            // Always add edited indicator for edited messages
+                            const timeElement = oldMessageElement.find('.message-time');
+                            if (!timeElement.find('.text-muted').length) {
+                                console.log('Adding edited indicator to message');
+                                timeElement.html(timeElement.html().replace(/(sent|seen)/, '$1 <span class="text-muted small">(edited)</span>'));
+                            }
+                            
+                            // Update data-messageid attribute
+                            oldMessageElement.attr('data-messageid', messageId);
+                            
+                            // Update edit button message attribute if present
+                            oldMessageElement.find('.edit-message').attr('data-message', message).attr('data-messageid', messageId);
+                            oldMessageElement.find('.delete-message').attr('data-messageid', messageId);
+                            
+                            // Update the options div id if present
+                            if (oldMessageElement.find(`#options${oldMessageId}`).length) {
+                                oldMessageElement.find(`#options${oldMessageId}`).attr('id', `options${messageId}`);
+                            }
+                            
+                            // Update the toggle options onclick attribute if present
+                            oldMessageElement.find('.bi-three-dots-vertical').attr('onclick', `toggleOptions(${messageId})`);
+                        } else {
+                            console.log('Could not find old message, cannot update content');
+                        }
+                        
+                        // Update the preview in the chatmate list
+                        const isSent = getProp(msg, 'SenderId') == currentUserId;
+                        const chatmateId = isSent ? receiverId : senderId;
+                        const latestChat = $(`#chatmateLastMessage${chatmateId}`);
+                        if (latestChat.length) {
+                            const ifsender = isSent ? "You:" : "";
+                            let shortMessage = message.length > 30 ? message.substring(0, 30) + "..." : message;
+                            const msgg = `${ifsender} ${shortMessage}`;
+                            latestChat.text(msgg);
+                        }
+                    }
+                } catch (e) {
+                    console.error("Error processing edited message:", e);
+                    // Optionally reload messages if parsing fails
+                    const currentChatmateId = $('#receiverId').val();
+                    if (currentChatmateId) {
+                        loadMessages(currentChatmateId);
+                    }
                 }
             });
 
-            // In your $(document).ready function:
-            function loadMessages(userId) {
-                // Remove active class from all chatmates
-                $('.chatmate-item').removeClass('active');
+            connection.on("SendAndRemoveMessage", function (senderId, receiverId, removeMsgId, status, newMessage) {
+                try {
+                    const currentChatmateId = $('#receiverId').val();
+                    const currentUserId = $('#currentUserId').val();
 
-                // Add active class to the selected chatmate (if exists in DOM)
+                    if ((receiverId == currentUserId && senderId == currentChatmateId) ||
+                        (senderId == currentUserId && receiverId == currentChatmateId)) {
+
+                        // Parse the new message JSON
+                        var newMsg = JSON.parse(newMessage);
+                        
+                        // Helper function to get property value regardless of case
+                        function getProp(obj, key) {
+                            if (!obj) return undefined;
+                            
+                            // Try direct access first
+                            if (obj[key] !== undefined) return obj[key];
+                            
+                            // Try case-insensitive match
+                            const lowerKey = key.toLowerCase();
+                            for (const k in obj) {
+                                if (k.toLowerCase() === lowerKey) {
+                                    console.log(`Found property ${k} for key ${key}`);
+                                    return obj[k];
+                                }
+                            }
+                            console.log(`Property ${key} not found in object`, obj);
+                            return undefined;
+                        }
+                        
+                        // If this is an Accepted message with an order ID stored in session, add it to the message
+                        if (status === "Accepted" && sessionStorage.getItem('order_' + removeMsgId)) {
+                            newMsg.orderId = sessionStorage.getItem('order_' + removeMsgId);
+                        }
+                        
+                        // Remove the old message
+                        $(`[data-messageid="${removeMsgId}"]`).remove();
+
+                        // Add the new message
+                        displayMessage(newMsg, status);
+                        
+                        // Scroll to bottom
+                        scrollToBottom();
+                        
+                        // If you're the receiver, mark as read
+                        if (getProp(newMsg, 'ReceiverId') === currentUserId) {
+                            markMessagesAsRead();
+                        }
+                    }
+                } catch (e) {
+                    console.error("Error processing message:", e);
+                    // Optionally reload messages if parsing fails
+                    const currentChatmateId = $('#receiverId').val();
+                    if (currentChatmateId) {
+                        loadMessages(currentChatmateId);
+                    }
+                }
+            });
+
+            connection.on("SendProductRequest2", function (senderId, receiverId, status, messageJson, messageId) {
+                try {
+                    const currentChatmateId = $('#receiverId').val();
+                    const currentUserId = $('#currentUserId').val();
+
+                    if ((receiverId == currentUserId && senderId == currentChatmateId) ||
+                        (senderId == currentUserId && receiverId == currentChatmateId)) {
+
+                        const msg = JSON.parse(messageJson);
+                        console.log('messageJson ', messageJson);
+                        console.log('msg ', msg);
+                        
+                        // Use the displayMessage function to render the message consistently
+                        displayMessage(msg, status);
+                        
+                        // Update the latest message in the chatmate list
+                        latestMessage(currentChatmateId, senderId, currentUserId, "Product Request");
+                        scrollToBottom();
+                    }
+                } catch (e) {
+                    console.error("Error processing message:", e);
+                    // Optionally reload messages if parsing fails
+                    const currentChatmateId = $('#receiverId').val();
+                    if (currentChatmateId) {
+                        loadMessages(currentChatmateId);
+                    }
+                }
+            });
+
+            connection.on("RemoveChat", function (senderId, receiverId, messageId) {
+                try {
+                    const currentChatmateId = $('#receiverId').val();
+                    const currentUserId = $('#currentUserId').val();
+
+                    if ((receiverId == currentUserId && senderId == currentChatmateId) ||
+                        (senderId == currentUserId && receiverId == currentChatmateId)) {
+
+                        $(`[data-messageid="${messageId}"]`).remove();
+                    }
+                } catch (e) {
+                    console.error("Error removing chat:", e);
+                }
+            });
+
+            connection.on("RemoveChatmate", function (senderId, receiverId) {
+                try {
+                    const currentChatmateId = $('#receiverId').val();
+                    const currentUserId = $('#currentUserId').val();
+
+                    if ((receiverId == currentUserId && senderId == currentChatmateId) ||
+                        (senderId == currentUserId && receiverId == currentChatmateId)) {
+
+                        $(`[data-chatmte="${receiverId}"]`).remove();
+                    }
+                } catch (e) {
+                    console.error("Error removing chat:", e);
+                }
+            });
+
+            connection.on("ReceiveChatMessage", function (senderId, receiverId, message, createdAt, messageId) {
+                try {
+                    const currentChatmateId = $('#receiverId').val();
+                    const currentUserId = $('#currentUserId').val();
+                    console.log(`ReceiveChatMessage event received:`);
+                    console.log(`senderId: ${senderId}`);
+                    console.log(`receiverId: ${receiverId}`);
+                    console.log(`message: ${message}`);
+                    console.log(`createdAt: ${createdAt}`);
+                    console.log(`messageId: ${messageId}`);
+                    console.log(`currentChatmateId: ${currentChatmateId}`);
+                    console.log(`currentUserId: ${currentUserId}`);
+
+                    // Check if this message belongs to the current chat conversation
+                    if ((receiverId == currentUserId && senderId == currentChatmateId) ||
+                        (senderId == currentUserId && receiverId == currentChatmateId)) {
+
+                        // Remove empty state message if present
+                        $('#messagesContainer .chat-empty-state, #messagesContainer .empty-state').remove();
+
+                        const isSent = senderId == currentUserId;
+                        const phTime = convertToPHTime(new Date(createdAt));
+                        const timeString = formatTime(phTime);
+                        const messageClass = isSent ? 'sent-message' : 'received-message';
+                        const alignClass = isSent ? 'justify-content-end' : 'justify-content-start';
+                        const messageLength = message.length;
+                        const widthPercentage = Math.min(70, Math.max(30, (messageLength * 1.5)));
+                        const isSender = currentUserId == senderId;
+                        const isRead = 'sent';
+
+                        const options = isSender ? `
+                            <div class="">
+                                <i class="bi bi-three-dots-vertical" onclick="toggleOptions(${messageId})"></i>
+                                <div style="display:none;" id="options${messageId}">
+                                    <button class="btn btn-sm edit-message" data-messageid="${messageId}" data-message="${message}"><i class="fas fa-edit"></i> Edit</button><br/>
+                                    <button class="btn btn-sm delete-message" data-messageid="${messageId}"><i class="fas fa-trash"></i> Delete</button>
+                                </div>
+                            </div>
+                        ` : "";
+
+                        const messageHtml = `
+                        <div class="d-flex ${alignClass} align-items-center gap-3 mb-3" data-messageid="${messageId}" id="remove${messageId}">
+                            ${options}
+                            <div class="message-bubble ${messageClass}" style="max-width: ${widthPercentage}%">
+                                <div class="message-content">${message}</div>
+                                <div class="message-time">
+                                    ${timeString} ${isRead}
+                                </div>
+                            </div>
+                        </div>
+                        `;
+
+                        $('#messagesContainer').append(messageHtml);
+                        latestMessage(currentChatmateId, senderId, currentUserId, message);
+                        scrollToBottom();
+                        
+                        // Mark as read if you're the receiver
+                        if (receiverId == currentUserId) {
+                            markMessagesAsRead();
+                        }
+                    } else if (receiverId == currentUserId) {
+                        // If this is a message for the current user but not in the current chat
+                        // Update the chatmate list to show new message indicator
+                        const chatmateItem = $(`.chatmate-item[data-userid="${senderId}"]`);
+                        
+                        if (chatmateItem.length) {
+                            // Update existing chatmate
+                            const badgeElement = chatmateItem.find('.chatmate-badge');
+                            if (badgeElement.length) {
+                                const currentCount = parseInt(badgeElement.text()) || 0;
+                                badgeElement.text(currentCount + 1);
+                            } else {
+                                chatmateItem.find('.chatmate-avatar').append('<span class="chatmate-badge">1</span>');
+                            }
+                            
+                            // Update preview text
+                            const previewElement = chatmateItem.find('.chatmate-preview');
+                            previewElement.text(message.length > 30 ? message.substring(0, 30) + "..." : message);
+                            
+                            // Move chatmate to top of list
+                            chatmateItem.prependTo('.chat-sidebar-contacts');
+                        } else {
+                            // This is a new conversation, fetch sender info and add to chatmate list
+                            $.get('/Chat/GetUserInfo', { userId: senderId }, function(user) {
+                                if (user && user.success) {
+                                    const name = `${user.firstName} ${user.lastName}`;
+                                    const newChatmateHtml = `
+                                        <div class="chatmate-item" data-userid="${senderId}" data-action="load-messages" data-chatmte="${senderId}">
+                                            <div class="chatmate-avatar">
+                                                <img src="https://ui-avatars.com/api/?name=${name}&background=fff&color=6366f1&rounded=true&size=256" alt="${user.firstName}">
+                                                <span class="chatmate-badge">1</span>
+                                            </div>
+                                            <div class="chatmate-info">
+                                                <div class="chatmate-name-time">
+                                                    <span class="chatmate-name">${name}</span>
+                                                    <span class="chatmate-time">${formatTime(new Date())}</span>
+                                                </div>
+                                                <div class="chatmate-preview" id="chatmateLastMessage${senderId}">
+                                                    ${message.length > 30 ? message.substring(0, 30) + "..." : message}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `;
+                                    
+                                    // Add to the beginning of the chatmate list
+                                    if ($('.no-contacts-message').length) {
+                                        $('.chat-sidebar-contacts').html(newChatmateHtml);
+                                    } else {
+                                        $('.chat-sidebar-contacts').prepend(newChatmateHtml);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                } catch (e) {
+                    console.error("Error processing received message:", e);
+                }
+            });
+
+            function loadMessages(userId) {
+                $('.chatmate-item').removeClass('active');
                 const chatmateElement = $(`.chatmate-item[data-userid="${userId}"]`);
                 if (chatmateElement.length) {
                     chatmateElement.addClass('active');
-
-                    // ✅ Update name and image even if chatmate is in sidebar
                     const name = chatmateElement.find('span').first().text();
                     $('#currentChatmateName').text(name);
-
                     const imgSrc = chatmateElement.find('img').attr('src');
                     $('#currentChatmateImage').attr('src', imgSrc);
                 } else {
-                    // Fallback if not in sidebar
                     $.get('/Chat/GetUserInfo', { userId: userId }, function(user) {
                         $('#currentChatmateName').text(user.firstName + ' ' + user.lastName);
                         $('#currentChatmateImage').attr('src', user.imageUrl);
                     });
                 }
 
-
-                // Show loading state
                 $('#messagesContainer').html('<div class="text-center py-4"><i class="fas fa-spinner fa-spin"></i> Loading messages...</div>');
 
-                // Load messages via AJAX
                 $.get('/Chat/GetMessages', { otherUserId: userId }, function(messages) {
                     if (messages.length === 0) {
                         $('#messagesContainer').html('<div class="empty-state"><i class="fas fa-comment-slash"></i><p>No messages yet</p></div>');
@@ -277,38 +865,587 @@
                         const currentUserId = $('#currentUserId').val();
 
                         messages.forEach(msg => {
+                            console.log('Message from DB:', msg); // Debug log to see message structure
+                            
+                            // Debug the isEdited property specifically
+                            console.log('isEdited property:', {
+                                'msg.isEdited': msg.isEdited,
+                                'msg.IsEdited': msg.IsEdited,
+                                'typeof msg.isEdited': typeof msg.isEdited,
+                                'isEdited === true': msg.isEdited === true,
+                                'Boolean(isEdited)': Boolean(msg.isEdited)
+                            });
+                            
                             const isSent = msg.senderId == currentUserId;
                             const phTime = convertToPHTime(new Date(msg.createdAt));
+                            const updatedAt = convertToPHTime(new Date(msg.createdAt));
+                            const messageStatus = msg.status;
                             const timeString = formatTime(phTime);
                             const messageClass = isSent ? 'sent-message' : 'received-message';
                             const alignClass = isSent ? 'justify-content-end' : 'justify-content-start';
-
-                            // Calculate width based on message length
-                            const messageLength = msg.message.length;
+                            const jsonString = JSON.parse(msg.jsonString || '{}');
+                            const isSender = msg.senderId == currentUserId;
+                            const isRead = msg.isRead ? 'seen' : 'sent';
+                            const messageLength = msg.message ? msg.message.length : 0;
                             const widthPercentage = Math.min(70, Math.max(30, (messageLength * 1.5)));
+                            
+                            // Use the checkIsEdited helper to determine if message is edited
+                            const isEdited = msg.isEdited;
+                            console.log('Message is edited:', isEdited); // Debug log for edit status
+                            
+                            if (msg.status == 2 || msg.status == 5) { // Accepted or LeadAccepted status
+                                const messageLength = msg.message ? msg.message.length : 40;
+                                const widthPercentage = Math.min(70, Math.max(40, (messageLength * 1.5)));
+                                
+                                html += `
+                                    <div class="d-flex ${alignClass} mb-3" data-messageid="${msg.id}">
+                                        <div class="p-3 rounded" style="background-color: #f1f6fb; max-width: ${widthPercentage}%; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
+                                            <div class="fw-bold mb-2">
+                                                🛒 Product Order Accepted
+                                            </div>
+                                            <div><strong>Product:</strong> ${jsonString.productName}</div>
+                                            <div><strong>Quantity:</strong> ${jsonString.quantity}</div>
+                                            <div><strong>Message:</strong> ${jsonString.message}</div>
+                                            <div class="mt-2">
+                                                <a href="/ProductOrders" class="btn btn-sm btn-primary">
+                                                    <i class="fas fa-eye"></i> View Orders
+                                                </a>
+                                            </div>
+                                            <small class="text-muted">${timeString} ${isRead}</small>
+                                        </div>
+                                    </div>
+                                `;
+                            } else if(msg.status == 1) { // Product Request status
+                                const messageLength = msg.message ? msg.message.length : 40;
+                                const widthPercentage = Math.min(70, Math.max(40, (messageLength * 1.5)));
+                                
+                                html += `
+                                    <div class="d-flex ${alignClass} mb-3" data-messageid="${msg.id}">
+                                        <div class="p-3 rounded" style="background-color: #f1f6fb; max-width: ${widthPercentage}%; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
+                                            <div class="fw-bold mb-2">
+                                                🛒 Product Request
+                                            </div>
+                                            <div><strong>Product:</strong> ${jsonString.productName}</div>
+                                            <div><strong>Quantity:</strong> ${jsonString.quantity}</div>
+                                            <div><strong>Message:</strong> ${jsonString.message}</div>
+                                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                            `;
 
-                            html += `
-                                <div class="d-flex ${alignClass} mb-3">
+                                html += !isSender ? `
+                                    <button class="btn btn-outline-danger btn-sm reject-request"
+                                        data-quantity="${jsonString.quantity}"
+                                        data-productid="${jsonString.productId}"
+                                        data-messageid="${msg.id}">
+                                        <i class="fa-solid fa-xmark"></i>
+                                        Reject
+                                    </button>
+                                    <button class="btn btn-dark btn-sm accept-request"
+                                        data-quantity="${jsonString.quantity}"
+                                        data-productid="${jsonString.productId}"
+                                        data-messageid="${msg.id}">
+                                        <i class="fa-solid fa-check"></i>
+                                        Accept
+                                    </button>` : `
+                                    <div></div>
+                                    <button class="btn btn-dark btn-sm cancel-request"
+                                        data-quantity="${jsonString.quantity}"
+                                        data-productid="${jsonString.productId}"
+                                        data-messageid="${msg.id}">
+                                        <i class="fa-solid fa-xmark"></i>
+                                        Cancel
+                                    </button>
+                                    `;
+
+                                html += `</div>
+                                            <small class="text-muted">${timeString} ${isRead}</small>
+                                        </div>
+                                    </div>
+                                `;
+                            } else if(msg.status == 3 || msg.status == 6) { // Rejected or LeadRejected status
+                                const messageLength = msg.message ? msg.message.length : 40;
+                                const widthPercentage = Math.min(70, Math.max(40, (messageLength * 1.5)));
+                                
+                                html += `
+                                    <div class="d-flex ${alignClass} mb-3" data-messageid="${msg.id}">
+                                        <div class="p-3 rounded" style="background-color: #f1f6fb; max-width: ${widthPercentage}%; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
+                                            <div class="fw-bold mb-2">
+                                                �� Product Request Rejected
+                                            </div>
+                                            <div><strong>Product:</strong> ${jsonString.productName}</div>
+                                            <div><strong>Quantity:</strong> ${jsonString.quantity}</div>
+                                            <div><strong>Message:</strong> ${jsonString.message}</div>
+                                            <div><strong>Reason:</strong> ${msg.message}</div>
+                                            <small class="text-muted">${timeString} ${isRead}</small>
+                                        </div>
+                                    </div>
+                                `;
+                            } else if(msg.status == 4 || msg.status == 7) { // LeadRequest or LeadAccepted status
+                                const messageLength = msg.message ? msg.message.length : 40;
+                                const widthPercentage = Math.min(70, Math.max(40, (messageLength * 1.5)));
+                                
+                                html += `
+                                    <div class="d-flex ${alignClass} mb-3" data-messageid="${msg.id}">
+                                        <div class="p-3 rounded" style="background-color: #f1f6fb; max-width: ${widthPercentage}%; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
+                                            <div class="fw-bold mb-2">
+                                                👥 Lead Request
+                                            </div>
+                                            <div><strong>Lead:</strong> ${jsonString.LeadName}</div>
+                                            <div><strong>Message:</strong> ${jsonString.Message}</div>
+                                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                            `;
+
+                                html += !isSender ? `
+                                    <button class="btn btn-outline-danger btn-sm reject-lead"
+                                        data-leadid="${jsonString.LeadId}"
+                                        data-boid="${jsonString.BOId}"
+                                        data-messageid="${msg.id}">
+                                        <i class="fa-solid fa-xmark"></i>
+                                        Reject
+                                    </button>
+                                    <button class="btn btn-dark btn-sm accept-lead"
+                                        data-leadid="${jsonString.LeadId}"
+                                        data-boid="${jsonString.BOId}"
+                                        data-messageid="${msg.id}">
+                                        <i class="fa-solid fa-check"></i>
+                                        Accept
+                                    </button>` : `
+                                    <div></div>
+                                    <button class="btn btn-dark btn-sm cancel-lead"
+                                        data-messageid="${msg.id}">
+                                        <i class="fa-solid fa-xmark"></i>
+                                        Cancel
+                                    </button>
+                                    `;
+
+                                html += `</div>
+                                            <small class="text-muted">${timeString} ${isRead}</small>
+                                        </div>
+                                    </div>
+                                `;
+                            } else {
+                                html += `
+                                <div class="d-flex ${alignClass} align-items-center gap-3 mb-3" data-messageid="${msg.id}" id="remove${msg.id}">
+                                ${isSender ? `
+                                    <div class="">
+                                        <i class="bi bi-three-dots-vertical" onclick="toggleOptions(${msg.id})"></i>
+                                        <div style="display:none;" id="options${msg.id}">
+                                            <button class="btn btn-sm edit-message" data-messageid="${msg.id}" data-message="${msg.message}"><i class="fas fa-edit"></i> Edit</button><br/>
+                                            <button class="btn btn-sm delete-message" data-messageid="${msg.id}"><i class="fas fa-trash"></i> Delete</button>
+                                        </div>
+                                    </div>
+                                ` : ''}
                                     <div class="message-bubble ${messageClass}" style="max-width: ${widthPercentage}%">
                                         <div class="message-content">${msg.message}</div>
-                                        <div class="message-time">${timeString}</div>
+                                        <div class="message-time">
+                                            ${timeString} ${isRead}
+                                            ${isEdited ? '<span class="text-muted small">(edited)</span>' : ''}
+                                        </div>
                                     </div>
                                 </div>
-                            `;
+                                `;
+                            }
                         });
 
                         $('#messagesContainer').html(html);
                         scrollToBottom();
                     }
 
-                    // Show message input
                     $('.message-input').show();
                     $('#receiverId').val(userId);
                     $('#messageInput').focus();
+                    
+                    // Mark messages as read after loading
+                    markMessagesAsRead();
                 }).fail(function() {
                     $('#messagesContainer').html('<div class="text-center py-4 text-danger"><i class="fas fa-exclamation-circle"></i> Failed to load messages</div>');
                 });
             }
+
+            // Reject button handler
+            $(document).on('click', '.reject-lead', function() {
+                const leadId = $(this).data('leadid');
+                const boid = $(this).data('boid');
+                const messageId = $(this).data('messageid');
+
+                $('#rejectBOId').val(boid);
+                $('#rejectLeadId').val(leadId);
+                $('#rejectMsgId').val(messageId);
+
+                $('#rejectReasonModalLeads').modal('show');
+            });
+
+            // Confirm reject button in modal
+            $('#confirmRejectLead').click(function() {
+                const reason = $('#rejectReasonLead').val().trim();
+                if (!reason) {
+                    alert('Please provide a reason for rejection');
+                    return;
+                }
+
+                const messageId = $('#rejectMsgId').val();
+                const leadId = $('#rejectLeadId').val();
+                const boid = $('#rejectBOId').val();
+                const currentUserId = $('#currentUserId').val();
+                const receiverId = $('#receiverId').val();
+                const token = $('input[name="__RequestVerificationToken"]').val();
+
+                $.ajax({
+                    url: '/Chat/RejectRequestLead',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        MessageId: messageId,
+                        LeadId: leadId,
+                        BOId: boid,
+                        Reason: reason,
+                        ReceiverId: receiverId
+                    }),
+                    headers: {
+                        'RequestVerificationToken': token,
+                        'Content-Type': 'application/json'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            $('#rejectReasonModalLeads').modal('hide');
+                            $('#rejectReasonLead').val('');
+                        } else {
+                            alert(response.error || 'Failed to reject request');
+                        }
+                    },
+                    error: function(xhr) {
+                        console.error('Error:', xhr.responseJSON?.message || 'Unknown error');
+                        alert(xhr.responseJSON?.message || 'Failed to reject request. Please try again.');
+                    }
+                });
+            });
+
+            // Reject button handler
+            $(document).on('click', '.reject-request', function() {
+                const messageId = $(this).data('messageid');
+                const productId = $(this).data('productid');
+                const quantity = $(this).data('quantity');
+
+                $('#rejectMessageId').val(messageId);
+                $('#rejectProductId').val(productId);
+                $('#rejectQuantity').val(quantity);
+
+                $('#rejectReasonModal').modal('show');
+            });
+
+            // Confirm reject button in modal
+            $('#confirmReject').click(function() {
+                const reason = $('#rejectReason').val().trim();
+                if (!reason) {
+                    alert('Please provide a reason for rejection');
+                    return;
+                }
+
+                const messageId = $('#rejectMessageId').val();
+                const productId = $('#rejectProductId').val();
+                const quantity = $('#rejectQuantity').val();
+                const currentUserId = $('#currentUserId').val();
+                const receiverId = $('#receiverId').val();
+                const token = $('input[name="__RequestVerificationToken"]').val();
+
+                $.ajax({
+                    url: '/Chat/RejectRequest',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        MessageId: messageId,
+                        ProductId: productId,
+                        Quantity: quantity,
+                        Reason: reason,
+                        ReceiverId: receiverId
+                    }),
+                    headers: {
+                        'RequestVerificationToken': token,
+                        'Content-Type': 'application/json'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            $('#rejectReasonModal').modal('hide');
+                            $('#rejectReason').val('');
+                        } else {
+                            alert(response.error || 'Failed to reject request');
+                        }
+                    },
+                    error: function(xhr) {
+                        console.error('Error:', xhr.responseJSON?.message || 'Unknown error');
+                        alert(xhr.responseJSON?.message || 'Failed to reject request. Please try again.');
+                    }
+                });
+            });
+
+            // Accept button handler
+            $(document).on('click', '.accept-request', function() {
+                const messageId = $(this).data('messageid');
+                const productId = $(this).data('productid');
+                const quantity = $(this).data('quantity');
+                const currentUserId = $('#currentUserId').val();
+                const receiverId = $('#receiverId').val();
+                const token = $('input[name="__RequestVerificationToken"]').val();
+
+                if (confirm('Are you sure you want to accept this request?')) {
+                    $.ajax({
+                        url: '/Chat/ApprovedRequest2',
+                        type: 'GET',
+                        contentType: 'application/json',
+                        data: {
+                            __RequestVerificationToken: token,
+                            MessageId: messageId,
+                            ProductId: productId,
+                            Quantity: quantity,
+                            ReceiverId: receiverId
+                        },
+                        headers: {
+                            'RequestVerificationToken': token,
+                            'Content-Type': 'application/json'
+                        },
+                        success: function(response) {
+                            if (!response.success) {
+                                alert(response.error || 'Failed to accept request');
+                            }
+                        },
+                        error: function(xhr) {
+                            console.error('Error:', xhr.responseJSON?.message || 'Unknown error');
+                            alert(xhr.responseJSON?.message || 'Failed to accept request. Please try again.');
+                        }
+                    });
+                }
+            });
+
+            // Accept button handler
+            $(document).on('click', '.accept-lead', function() {
+                const leadId = $(this).data('leadid');
+                const boid = $(this).data('boid');
+                const messageId = $(this).data('messageid');
+                const currentUserId = $('#currentUserId').val();
+                const receiverId = $('#receiverId').val();
+                const token = $('input[name="__RequestVerificationToken"]').val();
+
+                if (confirm('Are you sure you want to accept this request?')) {
+                    $.ajax({
+                        url: '/Chat/ApprovedLeadRequest',
+                        type: 'GET',
+                        contentType: 'application/json',
+                        data: {
+                            __RequestVerificationToken: token,
+                            MessageId: messageId,
+                            BOId: boid,
+                            LeadId: leadId,
+                            ReceiverId: receiverId
+                        },
+                        headers: {
+                            'RequestVerificationToken': token,
+                            'Content-Type': 'application/json'
+                        },
+                        success: function(response) {
+                            if (!response.success) {
+                                alert(response.error || 'Failed to accept request');
+                            }
+                        },
+                        error: function(xhr) {
+                            console.error('Error:', xhr.responseJSON?.message || 'Unknown error');
+                            alert(xhr.responseJSON?.message || 'Failed to accept request. Please try again.');
+                        }
+                    });
+                }
+            });
+
+            // Cancel button handler
+            $(document).on('click', '.cancel-request', function() {
+                const messageId = $(this).data('messageid');
+                const receiverId = $('#receiverId').val();
+                const token = $('input[name="__RequestVerificationToken"]').val();
+
+                if (confirm('Are you sure you want to cancel this request?')) {
+                    $.ajax({
+                        url: '/Chat/CancelRequest',
+                        type: 'POST',
+                        data: {
+                            __RequestVerificationToken: token,
+                            MessageId: messageId,
+                            ReceiverId: receiverId
+                        },
+                        success: function(response) {
+                            if (!response.success) {
+                                alert(response.error || 'Failed to cancel request');
+                            }
+                        },
+                        error: function(xhr) {
+                            console.error('Error:', xhr.responseJSON?.message || 'Unknown error');
+                            alert(xhr.responseJSON?.message || 'Failed to cancel request. Please try again.');
+                        }
+                    });
+                }
+            });
+            
+            // Cancel button handler
+            $(document).on('click', '.cancel-lead', function() {
+                const messageId = $(this).data('messageid');
+                const receiverId = $('#receiverId').val();
+                const token = $('input[name="__RequestVerificationToken"]').val();
+
+                if (confirm('Are you sure you want to cancel this request?')) {
+                    $.ajax({
+                        url: '/Chat/CancelLeadRequest',
+                        type: 'POST',
+                        data: {
+                            __RequestVerificationToken: token,
+                            MessageId: messageId,
+                            ReceiverId: receiverId
+                        },
+                        success: function(response) {
+                            if (!response.success) {
+                                alert(response.error || 'Failed to cancel request');
+                            }
+                        },
+                        error: function(xhr) {
+                            console.error('Error:', xhr.responseJSON?.message || 'Unknown error');
+                            alert(xhr.responseJSON?.message || 'Failed to cancel request. Please try again.');
+                        }
+                    });
+                }
+            });
+
+            // Cancel button handler
+            $(document).on('click', '.delete-message', function() {
+                const messageId = $(this).data('messageid');
+                const receiverId = $('#receiverId').val();
+                const token = $('input[name="__RequestVerificationToken"]').val();
+
+                if (confirm('Are you sure you want to delete this message?')) {
+                    $.ajax({
+                        url: '/Chat/DeleteMessage',
+                        type: 'POST',
+                        data: {
+                            __RequestVerificationToken: token,
+                            MessageId: messageId,
+                            ReceiverId: receiverId
+                        },
+                        success: function(response) {
+                            if (!response.success) {
+                                alert(response.error || 'Failed to cancel request');
+                            }
+                        },
+                        error: function(xhr) {
+                            console.error('Error:', xhr.responseJSON?.message || 'Unknown error');
+                            alert(xhr.responseJSON?.message || 'Failed to cancel request. Please try again.');
+                        }
+                    });
+                }
+            });
+
+            // Cancel button handler
+            $(document).on('click', '.delete-chatmate', function() {
+                const chatmateId = $(this).data('userid');
+                const receiverId = $('#receiverId').val();
+                const token = $('input[name="__RequestVerificationToken"]').val();
+
+                if (confirm('Are you sure you want to delete this conversation?')) {
+                    $.ajax({
+                        url: '/Chat/DeleteChatMate',
+                        type: 'POST',
+                        data: {
+                            __RequestVerificationToken: token,
+                            ChatmateId: chatmateId,
+                            ReceiverId: receiverId
+                        },
+                        success: function(response) {
+                            if (!response.success) {
+                                alert(response.error || 'Failed to cancel request');
+                            }
+                        },
+                        error: function(xhr) {
+                            console.error('Error:', xhr.responseJSON?.message || 'Unknown error');
+                            alert(xhr.responseJSON?.message || 'Failed to cancel request. Please try again.');
+                        }
+                    });
+                }
+            });
+
+
+            // Edit message handler
+            $(document).on('click', '.edit-message', function() {
+                const messageId = $(this).data('messageid');
+                const messageText = $(this).data('message');
+
+                $('#editMessageId').val(messageId);
+                $('#editMessageText').val(messageText);
+                $('#editMessageModal').modal('show');
+
+                // Hide the options dropdown
+                const msgId = $(this).data('messageid');
+                $(`#options${msgId}`).hide();
+                toggleOption = false;
+            });
+
+            // In your edit handler:
+            $('#confirmEdit').click(function() {
+                const messageId = $('#editMessageId').val();
+                const newMessage = $('#editMessageText').val().trim();
+                const receiverId = $('#receiverId').val();
+                const token = $('input[name="__RequestVerificationToken"]').val();
+
+                console.log('Editing message:', {messageId, newMessage, receiverId}); // Debug log
+
+                if (!newMessage) {
+                    alert('Message cannot be empty');
+                    return;
+                }
+
+                // Show loading indicator
+                const $confirmBtn = $(this);
+                const originalText = $confirmBtn.html();
+                $confirmBtn.html('<i class="fas fa-spinner fa-spin"></i> Saving...').prop('disabled', true);
+
+                $.ajax({
+                    url: '/Chat/EditMessage',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        MessageId: parseInt(messageId), // Ensure numeric ID
+                        Message: newMessage,
+                        RecipientId: parseInt(receiverId) // Ensure numeric ID
+                    }),
+                    headers: {
+                        'RequestVerificationToken': token,
+                        'Content-Type': 'application/json'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            $('#editMessageModal').modal('hide');
+                            $('#editMessageText').val('');
+                            console.log('Edit successful:', response);
+                            
+                            // If we don't receive a real-time update, update the message locally
+                            // This ensures the edit indicator shows up immediately
+                            const messageElement = $(`[data-messageid="${messageId}"]`);
+                            if (messageElement.length) {
+                                // Update message content
+                                messageElement.find('.message-content').text(newMessage);
+                                
+                                // Add edited indicator if not already present
+                                const timeElement = messageElement.find('.message-time');
+                                if (!timeElement.find('.text-muted').length) {
+                                    timeElement.html(timeElement.html().replace(/(sent|seen)/, '$1 <span class="text-muted small">(edited)</span>'));
+                                }
+                            }
+                        } else {
+                            alert(response.error || 'Failed to edit message');
+                        }
+                    },
+                    error: function(xhr) {
+                        console.error('Edit error:', xhr);
+                        alert(xhr.responseJSON?.message || 'Failed to edit message. Please try again.');
+                    },
+                    complete: function() {
+                        // Restore button state
+                        $confirmBtn.html(originalText).prop('disabled', false);
+                    }
+                });
+            });
 
             // Click handler for chatmate items
             $(document).on('click', '.chatmate-item', function() {
@@ -326,20 +1463,23 @@
             $('#messageForm').submit(function(e) {
                 e.preventDefault();
                 const message = $('#messageInput').val().trim();
-                const receiverId = $('#receiverId').val();
+                const receiverId = parseInt($('#receiverId').val());
 
                 if (message && receiverId) {
                     const token = $('input[name="__RequestVerificationToken"]').val();
-                    const $spinner = $('<i class="fas fa-spinner fa-spin loading-spinner"></i>'); // Create spinner element
-                    $('.message-input').append($spinner); // Append spinner to the input area
-                    $spinner.show(); // Show spinner
+                    const $spinner = $('<i class="fas fa-spinner fa-spin loading-spinner"></i>');
+                    $('.message-input').append($spinner);
+                    $spinner.show();
+
+                    console.log('receiverId: ', receiverId);
+                    console.log('message: ', message);
 
                     $.ajax({
                         url: '/Chat/SendMessage',
                         type: 'POST',
                         contentType: 'application/json',
                         data: JSON.stringify({
-                            ReceiverId: receiverId,
+                            RecipientId: receiverId,
                             Message: message
                         }),
                         headers: {
@@ -347,29 +1487,38 @@
                             'Content-Type': 'application/json'
                         },
                         success: function(response) {
-                            $spinner.hide(); // Hide spinner on success
+                            console.log('response: ', response);
+                            $spinner.hide();
                             if (response.success) {
                                 $('#messageInput').val('');
-                                // Optimistic UI update
                                 const phTime = convertToPHTime(new Date());
                                 const timeString = formatTime(phTime);
                                 const widthPercentage = Math.min(70, Math.max(30, (message.length * 1.5)));
 
                                 const messageHtml = `
-                                    <div class="d-flex justify-content-end mb-3">
+                                    <div class="d-flex justify-content-end align-items-center gap-3 mb-3" data-messageid="${response.chatId}" id="remove${response.chatId}">
+                                        <div class="">
+                                            <i class="bi bi-three-dots-vertical" onclick="toggleOptions(${response.chatId})"></i>
+                                            <div style="display:none;" id="options${response.chatId}">
+                                                <button class="btn btn-sm edit-message" data-messageid="${response.chatId}" data-message="${message}"><i class="fas fa-edit"></i> Edit</button><br/>
+                                                <button class="btn btn-sm delete-message" data-messageid="${response.chatId}"><i class="fas fa-trash"></i> Delete</button>
+                                            </div>
+                                        </div>
                                         <div class="message-bubble sent-message" style="max-width: ${widthPercentage}%">
                                             <div class="message-content">${message}</div>
-                                            <div class="message-time">${timeString}</div>
+                                            <div class="message-time">${timeString} sent</div>
                                         </div>
                                     </div>
                                 `;
+                                $('#messagesContainer').append(messageHtml);
+                                latestMessage($('#receiverId').val(), $('#currentUserId').val(), $('#currentUserId').val(), message);
                                 scrollToBottom();
                             } else {
                                 alert('Failed to send message!');
                             }
                         },
                         error: function(xhr) {
-                            $spinner.hide(); // Hide spinner on error
+                            $spinner.hide();
                             console.error('Error:', xhr.responseJSON?.message || 'Unknown error');
                             alert('Failed to send message. Please try again.');
                         }
@@ -385,6 +1534,41 @@
                 childList: true,
                 subtree: true
             });
+
+            connection.on("UpdateChatCount", function(count) {
+                // Update chat icon in navbar if it exists
+                const chatCountBadge = $('#chatCountBadge');
+                if (chatCountBadge.length) {
+                    if (count > 0) {
+                        chatCountBadge.text(count).show();
+                    } else {
+                        chatCountBadge.text('').hide();
+                    }
+                }
+            });
+            
+            // Function to refresh unread chat count
+            function refreshUnreadChatCount() {
+                $.get('/Chat/GetUnreadChatCount', function(response) {
+                    if (response.success) {
+                        // Update chat icon in navbar
+                        const chatCountBadge = $('#chatCountBadge');
+                        if (chatCountBadge.length) {
+                            if (response.unreadCount > 0) {
+                                chatCountBadge.text(response.unreadCount).show();
+                            } else {
+                                chatCountBadge.text('').hide();
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Refresh unread count on page load
+            refreshUnreadChatCount();
+            
+            // Refresh unread count periodically
+            setInterval(refreshUnreadChatCount, 30000); // every 30 seconds
         });
 
         // Store user ID in a hidden field for SignalR if not exists
@@ -392,5 +1576,38 @@
             const currentUserId = '@(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value)';
             $('<input>').attr({type: 'hidden', id: 'currentUserId', value: currentUserId}).appendTo('body');
         }
-	</script>
+
+        function ApprovedRequest2(MessageId, ProductId, Quantity, ReceiverId) {
+            if (confirm('Are you sure you want to approve this request?')) {
+                $.ajax({
+                    url: '/Chat/ApprovedRequest2',
+                    type: 'GET',
+                    data: {
+                        MessageId: MessageId,
+                        ProductId: ProductId,
+                        Quantity: Quantity,
+                        ReceiverId: ReceiverId
+                    },
+                    headers: {
+                        RequestVerificationToken: $('input:hidden[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            // Store the order ID in the sessionStorage for this message
+                            if (response.orderId) {
+                                sessionStorage.setItem('order_' + MessageId, response.orderId);
+                            }
+                            toastr.success('Request approved successfully!');
+                        } else {
+                            toastr.error('Failed to approve request: ' + response.message);
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        var errorMessage = xhr.responseJSON ? xhr.responseJSON.message : error;
+                        toastr.error('Error: ' + errorMessage);
+                    }
+                });
+            }
+        }
+    </script>
 }

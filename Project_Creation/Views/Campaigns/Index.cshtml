@@ -5,6 +5,7 @@
     @using System.Security.Claims
     @using Project_Creation.Models.Entities
     @using Microsoft.AspNetCore.Mvc.Rendering
+    // var campaign = Model.OrderByDescending
 }
 
 @if (TempData["SuccessMessage"] != null)
@@ -27,9 +28,9 @@
     <div class="row mb-4">
         <div class="col-md-12 d-flex justify-content-between align-items-center">
             <h1>Campaign Management</h1>
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createCampaignModal">
+            <a class="btn btn-primary" asp-action="Create">
                 <i class="fas fa-plus"></i> Create Campaign
-            </button>
+            </a>
         </div>
     </div>
 
@@ -43,7 +44,7 @@
                                 <tr>
                                     <th>Campaign Name</th>
                                     <th>Message</th>
-                                    <th>Target Products</th>
+                                    <th>Target</th>
                                     <th>Created</th>
                                     <th>Status</th>
                                     <th>Actions</th>
@@ -56,25 +57,72 @@
                                         <td>@item.CampaignName</td>
                                         <td>@item.Message</td>
                                         <td>
-                                            @if (item.SendToAll)
-                                            {
-                                                <span>All Leads</span>
-                                            }
-                                            else if (item.TargetProducts != null && item.TargetProducts.Any())
-                                            {
-                                                @foreach (var product in ViewBag.Products as List<Product2>)
-                                                {
-                                                    var isSelected = item.TargetProducts?.Split(',').Contains(product.Id.ToString()) ?? false;
-                                                    if (!isSelected) continue;
-                                                    <div class="form-check product-item">
-                                                        <label class="form-check-label">@product.ProductName</label>
-                                                    </div>
-                                                }
-                                            }
-                                            else
-                                            {
-                                                <span>Mango!</span>
-                                            }
+                                            <div class="target-container">
+                                                <div class="target-list">
+                                                    @{
+                                                        var products = ViewBag.Products as List<Product>;
+                                                        var leads = ViewBag.Leads as List<Leads>;
+                                                            
+                                                        // Handle Products
+                                                        if (!string.IsNullOrEmpty(item.TargetProducts))
+                                                        {
+                                                            <div class="mb-2">
+                                                                <strong>Products:</strong>
+                                                                @{
+                                                                    var productIds = item.TargetProducts.Split(',');
+                                                                    var targetProducts = products?.Where(p => productIds.Contains(p.Id.ToString())).ToList() ?? new List<Product>();
+                                                                    var displayCount = Math.Min(3, targetProducts.Count);
+                                                                }
+                                                                    
+                                                                <div class="target-list" id="scroll">
+                                                                    @for (int i = 0; i < targetProducts.Count; i++)
+                                                                    {
+                                                                        <div class="target-item" style="display: @(i >= 3 ? "none" : "flex")">
+                                                                            <i class="fas fa-box"></i> @targetProducts[i].ProductName
+                                                                        </div>
+                                                                    }
+                                                                </div>
+
+                                                                @if (targetProducts.Count > 3)
+                                                                {
+                                                                    <span class="expand-target" onclick="toggleTargetList(this, 'products')">
+                                                                        Show @(targetProducts.Count - 3) more products...
+                                                                    </span>
+                                                                }
+                                                            </div>
+                                                        }
+
+                                                        // Handle Leads
+                                                        if (!string.IsNullOrEmpty(item.TargetLeads))
+                                                        {
+                                                            <div class="mb-2">
+                                                                <strong>Leads:</strong>
+                                                                @{
+                                                                    var leadIds = item.TargetLeads.Split(',');
+                                                                    var targetLeads = leads?.Where(l => leadIds.Contains(l.Id.ToString())).ToList() ?? new List<Leads>();
+                                                                    var displayCount = Math.Min(3, targetLeads.Count);
+                                                                }
+
+                                                                <div class="target-list" id="scroll">
+                                                                    @for (int i = 0; i < targetLeads.Count; i++)
+                                                                    {
+                                                                        <div class="target-item" style="display: @(i >= 3 ? "none" : "flex")">
+                                                                            <i class="fas fa-user"></i> @targetLeads[i].LeadName
+                                                                        </div>
+                                                                    }
+                                                                </div>
+
+                                                                @if (targetLeads.Count > 3)
+                                                                {
+                                                                    <span class="expand-target" onclick="toggleTargetList(this, 'leads')">
+                                                                        Show @(targetLeads.Count - 3) more leads...
+                                                                    </span>
+                                                                }
+                                                            </div>
+                                                        }
+                                                    }
+                                                </div>
+                                            </div>
                                         </td>
                                         <td>@item.CampaignAt.ToString("MM/dd/yyyy HH:mm")</td>
                                         <td>@(item.IsSent ? "Sent" : "Draft")</td>
@@ -82,9 +130,9 @@
                                             <button class="btn btn-sm btn-info btn-view" data-id="@item.Id">
                                                 <i class="fas fa-eye"></i>
                                             </button>
-                                            <button class="btn btn-sm btn-warning btn-edit" data-id="@item.Id">
+                                            <a class="btn btn-sm btn-warning btn-edit" asp-route-id="@item.Id" asp-action="Edit">
                                                 <i class="fas fa-edit"></i>
-                                            </button>
+                                            </a>
                                             <button class="btn btn-sm btn-danger btn-delete" data-id="@item.Id">
                                                 <i class="fas fa-trash"></i>
                                             </button>
@@ -96,65 +144,6 @@
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-</div>
-
-<!-- Create Campaign Modal -->
-<div class="modal fade" id="createCampaignModal" tabindex="-1" aria-labelledby="createCampaignModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title" id="createCampaignModalLabel">Create New Campaign</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form id="createCampaignForm">
-                @Html.AntiForgeryToken()
-                <div class="modal-body">
-                    <div class="form-group mb-3">
-                        <label class="form-label">Sender Information</label>
-                        <div class="card p-3 mb-3">
-                            <div><strong>Name:</strong> <span id="senderName">@User.FindFirst("FirstName")?.Value @User.FindFirst("LastName")?.Value</span></div>
-                            <div><strong>Company:</strong> <span id="senderCompany">@User.FindFirst("CompanyName")?.Value</span></div>
-                            <div><strong>Email:</strong> <span id="senderEmail">@User.FindFirst(ClaimTypes.Email)?.Value</span></div>
-                        </div>
-                    </div>
-                    <div class="form-group mb-3">
-                        <label for="CampaignName" class="form-label">Campaign Name</label>
-                        <input type="text" class="form-control" id="CampaignName" name="CampaignName" required>
-                    </div>
-
-                    <div class="form-group mb-3">
-                        <label for="Message" class="form-label">Message</label>
-                        <textarea class="form-control" id="Message" name="Message" rows="5" required></textarea>
-                    </div>
-
-                    <div class="form-group mb-3">
-                        <div id="targetProductsContainer2">
-                            <label class="form-label">Target leads interested in</label>
-                            <div class="input-group mb-2">
-                                <input type="text" class="form-control product-search" placeholder="Search products...">
-                            </div>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="SendToAll" name="SendToAll">
-                            <label class="form-check-label" for="SendToAll">Send to all leads</label>
-                        </div>
-                        <div class="border p-2 product-checkbox-container" id="targetProductsContainer" style="max-height: 200px; overflow-y: auto;">
-                            <!-- Products will be loaded via AJAX -->
-                            <div class="text-center py-3">
-                                <div class="spinner-border text-primary" role="status">
-                                    <span class="visually-hidden">Loading...</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Create Campaign</button>
-                </div>
-            </form>
         </div>
     </div>
 </div>
@@ -214,6 +203,48 @@
         .product-checkbox-container {
             background-color: #f8f9fa;
         }
+
+        .target-item {
+            margin-bottom: 4px;
+            padding: 4px 8px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .target-item i {
+            color: #6c757d;
+        }
+
+        #scroll{
+            max-height: 120px;
+            overflow-y: auto;
+        }
+
+        .target-list {
+            max-height: 400px;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .target-list.expanded {
+            max-height: none;
+        }
+
+        .expand-target {
+            color: #0d6efd;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-top: 4px;
+            display: block;
+        }
+
+        .expand-target:hover {
+            text-decoration: underline;
+        }
     </style>
 }
 
@@ -223,6 +254,32 @@
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 
     <script>
+        // Global function for toggling target list
+        function toggleTargetList(element, type) {
+            const targetList = element.previousElementSibling;
+            const isExpanded = targetList.classList.contains('expanded');
+            const targetItems = targetList.querySelectorAll('.target-item');
+            const totalItems = targetItems.length;
+            
+            if (isExpanded) {
+                targetList.classList.remove('expanded');
+                // Hide items after the first 3
+                targetItems.forEach((item, index) => {
+                    if (index >= 3) {
+                        item.style.display = 'none';
+                    }
+                });
+                element.textContent = `Show ${totalItems - 3} more ${type}...`;
+            } else {
+                targetList.classList.add('expanded');
+                // Show all items
+                targetItems.forEach(item => {
+                    item.style.display = 'flex';
+                });
+                element.textContent = 'Show less';
+            }
+        }
+
         $(document).ready(function() {
             // Initialize DataTable
             $('#campaignsTable').DataTable();
@@ -271,11 +328,6 @@
                         });
                     }
                 });
-            });
-
-            // Load products when modal is shown
-            $('#createCampaignModal').on('shown.bs.modal', function() {
-                loadProducts();
             });
 
             // Toggle target products visibility
@@ -370,90 +422,6 @@
                     }
                 });
             }
-
-            // Edit Button Click
-            $(document).on('click', '.btn-edit', function() {
-                var campaignId = $(this).data('id');
-                $.get('/Campaigns/EditPartial/' + campaignId)
-                    .done(function(data) {
-                        $('#editModalBody').html(data);
-                        $('#editModal').modal('show');
-
-                        // Initialize product search
-                        $('.product-search').on('input', function() {
-                            const searchTerm = $(this).val().toLowerCase();
-                            $(this).closest('.modal').find('.product-item').each(function() {
-                                const productName = $(this).find('.form-check-label').text().toLowerCase();
-                                $(this).toggle(productName.includes(searchTerm));
-                            });
-                        });
-
-                        // Toggle target products container
-                        $('#Edit_SendToAll').change(function() {
-                            $('#editTargetProductsContainer').toggle(!this.checked);
-                        }).trigger('change');
-                    })
-                    .fail(function(xhr) {
-                        console.error('Error loading edit form:', xhr.responseText);
-                        Swal.fire('Error', 'Could not load campaign for editing', 'error');
-                    });
-            });
-
-            // Edit Form Submission
-            $(document).on('submit', '#editForm', function(e) {
-                e.preventDefault();
-
-                // Collect form data
-                const formData = {
-                    Id: $('#Edit_Id').val(),
-                    CampaignName: $('#Edit_CampaignName').val(),
-                    Message: $('#Edit_Message').val(),
-                    SendToAll: $('#Edit_SendToAll').is(':checked'),
-                    SelectedProductIds: $('#Edit_SendToAll').is(':checked') ? [] :
-                        $('input[name="SelectedProductIds"]:checked').map(function() {
-                            return this.value;
-                        }).get(),
-                    Notes: $('#Edit_Notes').val(),
-                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
-                };
-
-                // Convert SelectedProductIds array to comma-separated string
-                formData.TargetProducts = formData.SelectedProductIds.join(',');
-                delete formData.SelectedProductIds;
-
-                $.ajax({
-                    url: '/Campaigns/Edit/' + formData.Id,
-                    type: 'POST',
-                    contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
-                    data: formData,
-                    success: function(response) {
-                        if (response.success) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Success!',
-                                text: 'Campaign updated successfully',
-                                timer: 1500,
-                                showConfirmButton: false
-                            }).then(() => {
-                                window.location.reload();
-                            });
-                        } else {
-                            let errorMessage = 'Failed to update campaign';
-                            if (response.errors && response.errors.length > 0) {
-                                errorMessage = response.errors.join('\n');
-                            }
-                            Swal.fire('Error', errorMessage, 'error');
-                        }
-                    },
-                    error: function(xhr) {
-                        let errorMessage = 'An error occurred while updating the campaign';
-                        if (xhr.responseJSON && xhr.responseJSON.errors) {
-                            errorMessage = xhr.responseJSON.errors.join('\n');
-                        }
-                        Swal.fire('Error', errorMessage, 'error');
-                    }
-                });
-            });
         });
     </script>
 }

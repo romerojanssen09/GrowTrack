@@ -4,17 +4,21 @@
     ViewData["Title"] = "Sales Report";
 }
 
-<div class="container mt-4">
-    <h2>Sales Report</h2>
-
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-2 mt-4 mt-md-0">
+        <h2 class="text-accent">Sales Report</h2>
+        <a href="@Url.Action("Index", "Reports")" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left me-1"></i> Back to reports
+        </a>
+    </div>
     <!-- Filter Form -->
     <div class="card mb-4">
         <div class="card-body">
             <form method="get" asp-action="Sales" asp-controller="Reports" class="row g-3">
                 <input type="hidden" name="viewType" value="@ViewBag.ViewType" />
-                
+
                 <!-- Time Period Selector -->
-                <div class="col-md-3">
+                <div class="col-md-3 col-sm-6">
                     <label for="timePeriod" class="form-label">Time Period</label>
                     <select class="form-select" id="timePeriod" name="timePeriod" onchange="handleTimePeriodChange()">
                         @{
@@ -29,7 +33,7 @@
                                 new { Value = "thisYear", Text = "This Year" },
                                 new { Value = "lastYear", Text = "Last Year" }
                             };
-                            
+
                             foreach (var period in periods)
                             {
                                 var isSelected = ViewBag.TimePeriod == period.Value;
@@ -38,16 +42,16 @@
                         }
                     </select>
                 </div>
-                
-                <div class="col-md-3" id="startDateContainer">
+
+                <div class="col-md-3 col-sm-6" id="startDateContainer">
                     <label for="startDate" class="form-label">Start Date</label>
                     <input type="date" class="form-control" id="startDate" name="startDate" value="@ViewBag.StartDate">
                 </div>
-                <div class="col-md-3" id="endDateContainer">
+                <div class="col-md-3 col-sm-6" id="endDateContainer">
                     <label for="endDate" class="form-label">End Date</label>
                     <input type="date" class="form-control" id="endDate" name="endDate" value="@ViewBag.EndDate">
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-3 col-sm-6">
                     <label for="customerName" class="form-label">Customer</label>
                     <select class="form-select" id="customerName" name="customerName">
                         <option value="">All Customers</option>
@@ -61,19 +65,19 @@
                         }
                     </select>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-3 col-sm-6">
                     <label for="productName" class="form-label">Product Name</label>
                     <input type="text" class="form-control" id="productName" name="productName"
-                           value="@ViewBag.ProductName" placeholder="Search by product name...">
+                    value="@ViewBag.ProductName" placeholder="Search by product name...">
                 </div>
-                <div class="col-md-3 d-flex align-items-end">
+                <div class="col-md-3 col-sm-6 d-flex align-items-end">
                     <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
                 </div>
             </form>
 
             <!-- View Type Toggle -->
-           <div class="d-flex justify-content-between align-items-center">
-                <div class="btn-group mt-3" role="group">
+            <div class="sales-btn-group d-flex flex-wrap justify-content-between align-items-center mt-3">
+                <div class="btn-group mb-2 mb-md-0" role="group">
                     @{
                         string cardsUrl = Url.Action("Sales", new { 
                             startDate = ViewBag.StartDate, 
@@ -83,7 +87,7 @@
                             timePeriod = ViewBag.TimePeriod, 
                             viewType = "cards" 
                         });
-                        
+
                         string tableUrl = Url.Action("Sales", new { 
                             startDate = ViewBag.StartDate, 
                             endDate = ViewBag.EndDate, 
@@ -92,11 +96,11 @@
                             timePeriod = ViewBag.TimePeriod, 
                             viewType = "table" 
                         });
-                        
+
                         bool isCardsView = ViewBag.ViewType == "cards";
                         bool isTableView = ViewBag.ViewType == "table";
                     }
-                    
+
                     <a href="@cardsUrl" class="btn @(isCardsView ? "btn-primary" : "btn-outline-primary")">
                         <i class="fas fa-th"></i> Cards @(isCardsView ? "✓" : "")
                     </a>
@@ -105,17 +109,20 @@
                     </a>
                 </div>
                 <!-- Export Options -->
-                <div class="d-flex align-items-end gap-2 mt-3">
+                <div class="d-flex flex-wrap gap-2">
                     <a href="@Url.Action("ExportSales", new { format = "csv", startDate = ViewBag.StartDate, endDate = ViewBag.EndDate, productName = ViewBag.ProductName, customerName = ViewBag.CustomerName, timePeriod = ViewBag.TimePeriod })" 
-                        class="btn btn-outline-success">
+                    class="btn btn-outline-success btn-sm">
                         <i class="fas fa-file-csv me-1"></i> Export CSV
                     </a>
                     <a href="@Url.Action("ExportSales", new { format = "excel", startDate = ViewBag.StartDate, endDate = ViewBag.EndDate, productName = ViewBag.ProductName, customerName = ViewBag.CustomerName, timePeriod = ViewBag.TimePeriod })" 
-                        class="btn btn-outline-success">
+                    class="btn btn-outline-success btn-sm">
                         <i class="fas fa-file-excel me-1"></i> Export Excel
                     </a>
+                    <a href="@Url.Action("CompareSales", "Reports")" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-balance-scale me-1"></i> Compare
+                    </a>
                 </div>
-           </div>
+            </div>
         </div>
     </div>
 
@@ -130,22 +137,22 @@
         <!-- Summary Section -->
         <div class="card mb-4">
             <div class="card-body">
-                <div class="row">
-                    <div class="col-md-3 text-center">
-                        <h5>Total Sales</h5>
-                        <h3>@Model.Count</h3>
+                <div class="sales-summary row">
+                    <div class="col-md-3 col-6 text-center mb-3 mb-md-0">
+                        <h5 class="fs-6 fs-md-5">Total Sales</h5>
+                        <h3 class="fs-4 fs-md-3">@Model.Count</h3>
                     </div>
-                    <div class="col-md-3 text-center">
-                        <h5>Total Revenue</h5>
-                        <h3>@Model.Sum(s => s.TotalAmount).ToString("C")</h3>
+                    <div class="col-md-3 col-6 text-center mb-3 mb-md-0">
+                        <h5 class="fs-6 fs-md-5">Total Revenue</h5>
+                        <h3 class="fs-4 fs-md-3">@Model.Sum(s => s.TotalAmount).ToString("C")</h3>
                     </div>
-                    <div class="col-md-3 text-center">
-                        <h5>Total Products Sold</h5>
-                        <h3>@Model.SelectMany(s => s.SaleItems).Sum(i => i.Quantity)</h3>
+                    <div class="col-md-3 col-6 text-center">
+                        <h5 class="fs-6 fs-md-5">Total Products Sold</h5>
+                        <h3 class="fs-4 fs-md-3">@Model.SelectMany(s => s.SaleItems).Sum(i => i.Quantity)</h3>
                     </div>
-                    <div class="col-md-3 text-center">
-                        <h5>Avg. Sale Value</h5>
-                        <h3>@(Model.Any() ? (Model.Sum(s => s.TotalAmount) / Model.Count).ToString("C") : "$0.00")</h3>
+                    <div class="col-md-3 col-6 text-center">
+                        <h5 class="fs-6 fs-md-5">Avg. Sale Value</h5>
+                        <h3 class="fs-4 fs-md-3">@(Model.Any() ? (Model.Sum(s => s.TotalAmount) / Model.Count).ToString("C") : "$0.00")</h3>
                     </div>
                 </div>
             </div>
@@ -153,6 +160,7 @@
 
         @if (ViewBag.ViewType == "cards")
         {
+            int saleNumber = Model.Count;
             <!-- Cards View -->
             <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
                 @foreach (var sale in Model)
@@ -166,18 +174,18 @@
                         <div class="card h-100 shadow-sm @cardBorderClass">
                             <div class="card-header @cardHeaderClass">
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <h5 class="card-title mb-0">
+                                    <h5 class="card-title mb-0 fs-6">
                                         @if (sale.IsQuickSale)
                                         {
                                             <i class="fas fa-bolt me-2"></i>
                                         }
-                                        Sale #@sale.Id
+                                        Sale #@(saleNumber--)
                                     </h5>
-                                    <small>@sale.SaleDate.ToString("MMM dd, yyyy HH:mm")</small>
+                                    <small class="fs-7">@sale.SaleDate.ToString("MMM dd, yyyy HH:mm")</small>
                                 </div>
                             </div>
                             <div class="card-body">
-                                <h6 class="card-subtitle mb-2 @cardSubtitleClass">
+                                <h6 class="card-subtitle mb-2 @cardSubtitleClass fs-7">
                                     @if (sale.IsQuickSale)
                                     {
                                         <span class="badge bg-success me-1">QuickSale</span>
@@ -185,7 +193,7 @@
                                     Customer: @sale.CustomerName
                                 </h6>
                                 <div class="table-responsive">
-                                    <table class="table table-sm">
+                                    <table class="table table-sm table-fit">
                                         <thead>
                                             <tr>
                                                 <th>Product</th>
@@ -199,7 +207,7 @@
                                             {
                                                 <tr class="border-bottom border-light">
                                                     <td class="text-primary">@item.ProductName</td>
-                                                    <td>@item.Quantity</td>
+                                                    <td class="text-center">@item.Quantity</td>
                                                     <td class="text-secondary">@item.UnitPrice.ToString("C")</td>
                                                     <td class="text-success">@item.TotalPrice.ToString("C")</td>
                                                 </tr>
@@ -223,9 +231,9 @@
         {
             <!-- Table View -->
             <div class="card">
-                <div class="card-body">
+                <div class="card-body px-1 px-md-3">
                     <div class="table-responsive">
-                        <table class="table table-hover shadow-sm">
+                        <table class="table table-hover shadow-sm table-fit">
                             <thead class="table-dark">
                                 <tr>
                                     <th>ID</th>
@@ -241,10 +249,10 @@
                                 {
                                     string rowClass = sale.IsQuickSale ? "table-success" : "bg-light border-bottom";
                                     <tr class="@rowClass">
-                                        <td class="py-3">@sale.Id</td>
-                                        <td class="py-3">@sale.SaleDate.ToString("MM/dd/yyyy HH:mm")</td>
-                                        <td class="py-3 text-primary">@sale.CustomerName</td>
-                                        <td class="py-3">
+                                        <td class="py-2 py-md-3">@sale.Id</td>
+                                        <td class="py-2 py-md-3">@sale.SaleDate.ToString("MM/dd/yyyy HH:mm")</td>
+                                        <td class="py-2 py-md-3 text-primary">@sale.CustomerName</td>
+                                        <td class="py-2 py-md-3">
                                             <button class="btn btn-sm btn-info text-white" type="button"
                                                     data-bs-toggle="collapse"
                                                     data-bs-target="#products-@sale.Id"
@@ -253,7 +261,7 @@
                                             </button>
                                             <div class="collapse mt-2" id="products-@sale.Id">
                                                 <div class="card card-body py-1 px-2">
-                                                    <ul class="list-unstyled mb-0">
+                                                    <ul class="list-unstyled mb-0 small">
                                                         @foreach (var item in sale.SaleItems)
                                                         {
                                                             <li>
@@ -266,8 +274,8 @@
                                                 </div>
                                             </div>
                                         </td>
-                                        <td class="py-3 text-success fw-bold">@sale.TotalAmount.ToString("C")</td>
-                                        <td class="py-3">
+                                        <td class="py-2 py-md-3 text-success fw-bold">@sale.TotalAmount.ToString("C")</td>
+                                        <td class="py-2 py-md-3">
                                             @if (sale.IsQuickSale)
                                             {
                                                 <span class="badge bg-success">QuickSale</span>
@@ -287,6 +295,191 @@
         }
     }
 </div>
+
+@section Styles {
+    <style>
+        /* Sales summary styles */
+        .sales-summary {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -10px;
+        }
+        
+        .sales-summary > div {
+            padding: 10px;
+        }
+        
+        .sales-summary h5 {
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .sales-summary h3 {
+            margin-bottom: 0;
+            font-weight: 600;
+        }
+        
+        /* Custom font size for smaller text */
+        .fs-7 {
+            font-size: 0.85rem !important;
+        }
+        
+        /* Card styles for better mobile display */
+        .card {
+            overflow: hidden;
+        }
+        
+        .table tbody{
+            width: 100% !important;
+        }
+        
+        /* Table fitting styles */
+        .table-fit {
+            width: 100% !important;
+            table-layout: fixed;
+            margin-bottom: 0;
+        }
+        
+        .table-fit th, .table-fit td {
+            padding: 0.4rem;
+            vertical-align: middle;
+            word-break: break-word;
+        }
+        
+        .table-fit th:nth-child(1),
+        .table-fit td:nth-child(1) {
+            width: 40%;
+        }
+        
+        .table-fit th:nth-child(2),
+        .table-fit td:nth-child(2) {
+            width: 15%;
+        }
+        
+        .table-fit th:nth-child(3),
+        .table-fit td:nth-child(3),
+        .table-fit th:nth-child(4),
+        .table-fit td:nth-child(4) {
+            width: 22.5%;
+        }
+        
+        /* Button group responsiveness */
+        .sales-btn-group .btn {
+            margin-bottom: 0.25rem;
+        }
+        
+        @@media (max-width: 767.98px) {
+            .sales-btn-group {
+                flex-direction: column;
+                gap: 6px;
+            }
+            
+            /* Custom font size utility classes for mobile */
+            .fs-md-3 {
+                font-size: 1rem !important;
+            }
+            
+            .fs-md-5 {
+                font-size: 0.85rem !important;
+            }
+            
+            /* Improve spacing on mobile */
+            .sales-summary {
+                margin: 0 -5px;
+            }
+            
+            .sales-summary > div {
+                padding: 5px;
+            }
+            
+            .sales-summary h5 {
+                margin-bottom: 4px;
+            }
+            
+            /* Make buttons more touch-friendly */
+            .btn-sm {
+                padding: 0.375rem 0.5rem;
+            }
+            
+            /* Adjust card spacing */
+            .card-body {
+                padding: 0.75rem;
+            }
+            
+            /* Fix wrapper padding on mobile */
+            #wrapper {
+                padding-top: 45px !important;
+            }
+            
+            /* Better date inputs on mobile */
+            input[type="date"] {
+                font-size: 0.9rem;
+            }
+            
+            /* Adjust form controls for better touch */
+            .form-control, .form-select {
+                min-height: 38px;
+            }
+            
+            /* Smaller font for tables on mobile */
+            .table-fit {
+                font-size: 0.85rem;
+            }
+            
+            .table-fit th {
+                font-size: 0.8rem;
+            }
+        }
+        
+        @@media (min-width: 768px) {
+            /* Custom font size utility classes for desktop */
+            .fs-md-3 {
+                font-size: 1.75rem !important;
+            }
+            
+            .fs-md-5 {
+                font-size: 1.25rem !important;
+            }
+        }
+
+        .container {
+            padding: 0 !important;
+            margin: 0 0 0 20px !important;
+            max-width: 95.5% !important;
+        }
+
+        /* Main table column widths */
+        .table-fit.table-hover th:nth-child(1),
+        .table-fit.table-hover td:nth-child(1) {
+            width: 40%;
+        }
+
+        .table-fit.table-hover th:nth-child(2),
+        .table-fit.table-hover td:nth-child(2) {
+            width: 18%;
+        }
+
+        .table-fit.table-hover th:nth-child(3),
+        .table-fit.table-hover td:nth-child(3) {
+            width: 20%;
+        }
+
+        .table-fit.table-hover th:nth-child(4),
+        .table-fit.table-hover td:nth-child(4) {
+            width: 22%;
+        }
+
+        .table-fit.table-hover th:nth-child(5),
+        .table-fit.table-hover td:nth-child(5) {
+            width: 18%;
+        }
+
+        .table-fit.table-hover th:nth-child(6),
+        .table-fit.table-hover td:nth-child(6) {
+            width: 14%;
+        }
+    </style>
+}
 
 @section Scripts {
     <script>

@@ -1,4 +1,4 @@
-﻿// AuthDbContext.cs
+// AuthDbContext.cs
 using Microsoft.EntityFrameworkCore;
 using Project_Creation.DTO;
 using Project_Creation.Models.Entities;
@@ -20,13 +20,24 @@ namespace Project_Creation.Data
         public DbSet<UsersAdditionInfo> UsersAdditionInfo { get; set; }
         public DbSet<BOBusinessProfile> BOBusinessProfiles { get; set; }
         public DbSet<Chat> Chats { get; set; }
-        public DbSet<Supplier2> Supplier2 { get; set; }
-        public DbSet<Product2> Products2 { get; set; }
+        public DbSet<Supplier> Supplier2 { get; set; }
+        public DbSet<Product> Products2 { get; set; }
         public DbSet<Sale> Sales { get; set; }
         public DbSet<SaleItem> SaleItems { get; set; }
         public DbSet<InventoryLog> InventoryLogs { get; set; }
         public DbSet<Campaign> Campaigns { get; set; }
         public DbSet<Staff> Staffs { get; set; }
+        public DbSet<Calendar> Calendar { get; set; }
+        public DbSet<UserDevice> UserDevices { get; set; }
+        public DbSet<UserSocialMediaLinks> UserSocialMediaLinks { get; set; }
+        public DbSet<LeadActivityLog> LeadActivityLogs { get; set; }
+        public DbSet<MessageTemplate> MessageTemplates { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
+        public DbSet<CalendarTask> CalendarTasks { get; set; }
+        public DbSet<ProductOrder> ProductOrders { get; set; }
+        public DbSet<StaffActivityLogs> StaffActivityLogs { get; set; }
+        public DbSet<ContactMessage> ContactMessages { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -68,11 +79,18 @@ namespace Project_Creation.Data
                 .HasForeignKey(c => c.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<Product2>()
+            // Configure the Calendar entity to properly reference Users
+            modelBuilder.Entity<Staff>()
+                .HasOne(c => c.User)
+                .WithMany()
+                .HasForeignKey(c => c.BOId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Product>()
                 .Property(p => p.SellingPrice)
                 .HasPrecision(18, 2);
 
-            modelBuilder.Entity<Product2>()
+            modelBuilder.Entity<Product>()
                 .Property(p => p.PurchasePrice)
                 .HasPrecision(18, 2);
 
@@ -94,10 +112,75 @@ namespace Project_Creation.Data
             modelBuilder.Entity<SaleItem>()
                 .Property(si => si.TotalPrice)
                 .HasColumnType("decimal(18,2)");
+
+            // Configure ProductOrder entity
+            modelBuilder.Entity<ProductOrder>()
+                .Property(po => po.UnitPrice)
+                .HasColumnType("decimal(18,2)");
+                
+            modelBuilder.Entity<ProductOrder>()
+                .Property(po => po.TotalPrice)
+                .HasColumnType("decimal(18,2)");
+                
+            modelBuilder.Entity<ProductOrder>()
+                .HasOne(po => po.Buyer)
+                .WithMany()
+                .HasForeignKey(po => po.BuyerId)
+                .OnDelete(DeleteBehavior.Restrict);
+                
+            modelBuilder.Entity<ProductOrder>()
+                .HasOne(po => po.Seller)
+                .WithMany()
+                .HasForeignKey(po => po.SellerId)
+                .OnDelete(DeleteBehavior.Restrict);
+                
+            modelBuilder.Entity<ProductOrder>()
+                .HasOne(po => po.Product)
+                .WithMany()
+                .HasForeignKey(po => po.ProductId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // leads keys
+            modelBuilder.Entity<Leads>()
+                .HasOne(l => l.CreatedBy)
+                .WithMany()
+                .HasForeignKey(l => l.CreatedById)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<Leads>()
+                .HasOne(l => l.Product)
+                .WithMany()
+                .HasForeignKey(l => l.LastPurchasedId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<Leads>()
+                .HasOne(l => l.CreatedBy)
+                .WithMany()
+                .HasForeignKey(l => l.CreatedById)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Configure MessageTemplate entity
+            modelBuilder.Entity<MessageTemplate>()
+                .HasOne(mt => mt.BusinessOwner)
+                .WithMany()
+                .HasForeignKey(mt => mt.BOId)
+                .OnDelete(DeleteBehavior.Cascade);
+                
+            modelBuilder.Entity<MessageTemplate>()
+                .Property(mt => mt.Name)
+                .IsRequired()
+                .HasMaxLength(100);
+                
+            modelBuilder.Entity<MessageTemplate>()
+                .Property(mt => mt.Subject)
+                .IsRequired();
+                
+            modelBuilder.Entity<MessageTemplate>()
+                .Property(mt => mt.Content)
+                .IsRequired();
         }
         public DbSet<Project_Creation.Models.Entities.Leads> Leads { get; set; } = default!;
         public DbSet<Project_Creation.Models.Entities.Campaign> Campaign { get; set; } = default!;
         public DbSet<Project_Creation.Models.Entities.Staff> Staff { get; set; } = default!;
-        public DbSet<Project_Creation.Models.Entities.Calendar> Calendar { get; set; } = default!;
     }
 }

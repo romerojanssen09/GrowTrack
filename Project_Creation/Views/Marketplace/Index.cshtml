@@ -4,175 +4,546 @@
     ViewData["Title"] = "Marketplace";
 }
 
-<div class="container mt-4">
-    <div class="row">
-        <!-- Sidebar -->
-        <div class="col-lg-3 mb-4">
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Categories</h5>
-                </div>
-                <div class="list-group list-group-flush">
-                    <a href="@Url.Action("Index", "Marketplace")" class="list-group-item list-group-item-action @(string.IsNullOrEmpty(Model.CategoryFilter) ? "active" : "")">
-                        All Categories
+<div class="marketplace-container">
+    <!-- Marketplace Header -->
+    <div class="marketplace-header">
+        <div class="header-content">
+            <h1>Marketplace</h1>
+            <p>Find quality products from our trusted sellers</p>
+        </div>
+    </div>
+
+    <div class="marketplace-wrapper">
+        <!-- Top Categories -->
+        <div class="categories-container">
+            <div class="categories-scroll">
+                <a href="@Url.Action("Index", "Marketplace")" class="category-pill @(string.IsNullOrEmpty(Model.CategoryFilter) ? "active" : "")">
+                    <i class="fas fa-th-large"></i> All Categories
+                </a>
+                @foreach (var category in ViewBag.Categories)
+                {
+                    <a href="@Url.Action("Index", "Marketplace", new { category = category.CategoryName, search = Model.SearchQuery })"
+                       class="category-pill @(Model.CategoryFilter == category.CategoryName ? "active" : "")">
+                        <i class="fas fa-tag"></i> @category.CategoryName
                     </a>
-                    @foreach (var category in ViewBag.Categories)
-                    {
-                        <a href="@Url.Action("Index", "Marketplace", new { category = category.CategoryName, search = Model.SearchQuery })"
-                           class="list-group-item list-group-item-action @(Model.CategoryFilter == category.CategoryName ? "active" : "")">
-                            @category.CategoryName
-                        </a>
-                    }
-                </div>
+                }
             </div>
         </div>
-        
+
         <!-- Main Content -->
-        <div class="col-lg-9">
-            <div class="card shadow">
-                <div class="card-body">
-                    <!-- Search Bar -->
-                    <form asp-action="Index" method="get" class="mb-4">
-                        <div class="input-group">
-                            <input type="text" name="search" class="form-control" placeholder="Search products..." value="@Model.SearchQuery">
+        <div class="marketplace-content">
+            <div class="content-card">
+                <!-- Search Bar -->
+                <div class="search-container">
+                    <form asp-action="Index" method="get" class="search-form">
+                        <div class="search-input-group">
+                            <input type="text" name="search" class="search-input" placeholder="Search products..." value="@Model.SearchQuery">
                             @if (!string.IsNullOrEmpty(Model.CategoryFilter))
                             {
                                 <input type="hidden" name="category" value="@Model.CategoryFilter" />
                             }
-                            <button class="btn btn-primary" type="submit">
+                            <button class="search-button" type="submit">
                                 <i class="fas fa-search"></i>
                             </button>
                         </div>
                     </form>
-                    
-                    <!-- Featured Products -->
-                    @* @if (Model.FeaturedProducts.Any() && string.IsNullOrEmpty(Model.SearchQuery) && Model.CurrentPage == 1) *@
-                    @* { *@
-                    @*     <div class="mb-4"> *@
-                    @*         <h5 class="border-bottom pb-2 mb-3"> *@
-                    @*             <i class="fas fa-star text-warning me-2"></i>Featured Products *@
-                    @*         </h5> *@
-                    @*         <div class="row"> *@
-                    @*             @foreach (var product in Model.FeaturedProducts) *@
-                    @*             { *@
-                    @*                 <div class="col-md-6 col-lg-3 mb-4"> *@
-                    @*                     <div class="card h-100 product-card"> *@
-                    @*                         <div class="badge bg-warning text-dark position-absolute" style="top: 0.5rem; right: 0.5rem">Featured</div> *@
-                    @*                         <img src="@product.MainImageUrl" class="card-img-top" alt="@product.CategoryName" style="height: 180px; object-fit: cover;"> *@
-                    @*                         <div class="card-body d-flex flex-column"> *@
-                    @*                             <h6 class="card-title text-truncate">@product.Name</h6> *@
-                    @*                             <p class="card-text text-muted small mb-2"> *@
-                    @*                                 <i class="fas fa-tags me-1"></i> @product.CategoryName *@
-                    @*                                 <br/> *@
-                    @*                                 <a href="@Url.RouteUrl("ViewBusinessProfile", new { id = product.BusinessOwnerId, category = product.CategoryName })"> *@
-                    @*                                     <i class="fas fa-store me-1"></i> Sold by: @product.BusinessName Store *@
-                    @*                                 </a> *@
-                    @*                             </p> *@
-                    @*                             <p class="card-text text-truncate small">@product.Description</p> *@
-                    @*                             <div class="mt-auto d-flex justify-content-between align-items-center"> *@
-                    @*                                 <span class="fw-bold text-primary">@product.Price.ToString("C")</span> *@
-                    @*                                 <a asp-action="Details" asp-route-id="@product.Id" class="btn btn-sm btn-outline-primary"> *@
-                    @*                                     View Details *@
-                    @*                                 </a> *@
-                    @*                             </div> *@
-                    @*                         </div> *@
-                    @*                     </div> *@
-                    @*                 </div> *@
-                    @*             } *@
-                    @*         </div> *@
-                    @*     </div> *@
-                    @* } *@
-                    
-                    <!-- Main Products List -->
+                </div>
+
+                <!-- Main Products List -->
+                <div class="products-container">
                     @if (Model.Products.Any())
                     {
-                        <h5 class="border-bottom pb-2 mb-3">
+                        <div class="products-header">
                             @if (!string.IsNullOrEmpty(Model.CategoryFilter))
                             {
-                                <span>@Model.CategoryFilter</span>
+                                <h4><i class="fas fa-tag me-2"></i>@Model.CategoryFilter</h4>
                             }
                             else if (!string.IsNullOrEmpty(Model.SearchQuery))
                             {
-                                <span>Search Results for "@Model.SearchQuery"</span>
+                                <h4><i class="fas fa-search me-2"></i>Results for "@Model.SearchQuery"</h4>
                             }
                             else
                             {
-                                <span>All Products</span>
+                                <h4><i class="fas fa-store me-2"></i>All Products</h4>
                             }
-                        </h5>
-                        
-                        <div class="row">
+                        </div>
+
+                        <div class="products-grid">
                             @foreach (var product in Model.Products)
                             {
-                                <div class="col-md-4 mb-4">
-                                    <div class="card h-100 shadow-sm">
-                                        <img src="@product.MainImageUrl" class="card-img-top" alt="@product.Name" style="height: 200px; object-fit: cover;">
-                                        <div class="card-body">
-                                            <h5 class="card-title">@product.Name</h5>
-                                            <p class="card-text text-muted small">
-                                                <i class="fas fa-tags me-1"></i> @product.CategoryName
-                                                <br/>
-                                                <i class="fas fa-store me-1"></i> 
-                                                Sold by: 
-                                                <strong>
-                                                    <a href="@Url.RouteUrl("ViewBusinessProfile", new { id = product.BusinessOwnerId, category = product.CategoryName })">
-                                                        @product.BusinessName
-                                                    </a>
-                                                </strong>
-                                            </p>
-                                            <p class="card-text">@Html.Raw(product.Description.Length > 100 ? product.Description.Substring(0, 100) + "..." : product.Description)</p>
+                                <div class="product-card">
+                                    <div class="product-image">
+                                        <img src="@product.MainImageUrl" alt="@product.Name">
+                                    </div>
+                                    <div class="product-details">
+                                        <h5 class="product-title">@product.Name</h5>
+                                        <div class="product-meta">
+                                            <span class="product-category"><i class="fas fa-tags me-1"></i> @product.CategoryName</span>
+                                            <span class="product-seller">
+                                                <i class="fas fa-store me-1"></i>
+                                                <a href="@Url.RouteUrl("ViewBusinessProfile", new { id = product.BusinessOwnerId, category = product.CategoryName })">
+                                                    @product.BusinessName
+                                                </a>
+                                            </span>
                                         </div>
-                                        <div class="card-footer d-flex justify-content-between align-items-center">
-                                            <span class="fw-bold text-primary">@Html.DisplayFor(m => product.Price)</span>
-                                            <a href="@Url.Action("Details", "Marketplace", new { id = product.Id })" class="btn btn-primary">
-                                                <i class="fas fa-info-circle me-1"></i> Details
+                                        <p class="product-description">@Html.Raw(product.Description.Length > 100 ? product.Description.Substring(0, 100) + "..." : product.Description)</p>
+                                        <div class="product-footer">
+                                            <span class="product-price">@Html.DisplayFor(m => product.Price)</span>
+                                            <a href="@Url.Action("Details", "Marketplace", new { id = product.Id })" class="product-button">
+                                                View Details
                                             </a>
                                         </div>
                                     </div>
                                 </div>
                             }
                         </div>
-                        
+
                         <!-- Pagination -->
                         @if (Model.TotalPages > 1)
                         {
-                            <div class="d-flex justify-content-center mt-4">
-                                <nav aria-label="Product pagination">
-                                    <ul class="pagination">
-                                        <li class="page-item @(Model.CurrentPage == 1 ? "disabled" : "")">
-                                            <a class="page-link" href="@Url.Action("Index", "Marketplace", new { category = Model.CategoryFilter, search = Model.SearchQuery, page = Model.CurrentPage - 1 })">
-                                                Previous
-                                            </a>
-                                        </li>
-                                        
-                                        @for (int i = 1; i <= Model.TotalPages; i++)
-                                        {
-                                            <li class="page-item @(Model.CurrentPage == i ? "active" : "")">
-                                                <a class="page-link" href="@Url.Action("Index", "Marketplace", new { category = Model.CategoryFilter, search = Model.SearchQuery, page = i })">
-                                                    @i
-                                                </a>
-                                            </li>
-                                        }
-                                        
-                                        <li class="page-item @(Model.CurrentPage == Model.TotalPages ? "disabled" : "")">
-                                            <a class="page-link" href="@Url.Action("Index", "Marketplace", new { category = Model.CategoryFilter, search = Model.SearchQuery, page = Model.CurrentPage + 1 })">
-                                                Next
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </nav>
+                            <div class="pagination-container">
+                                <div class="pagination">
+                                    <a class="pagination-item @(Model.CurrentPage == 1 ? "disabled" : "")"
+                                       href="@Url.Action("Index", "Marketplace", new { category = Model.CategoryFilter, search = Model.SearchQuery, page = Model.CurrentPage - 1 })">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </a>
+
+                                    @for (int i = 1; i <= Model.TotalPages; i++)
+                                    {
+                                        <a class="pagination-item @(Model.CurrentPage == i ? "active" : "")"
+                                           href="@Url.Action("Index", "Marketplace", new { category = Model.CategoryFilter, search = Model.SearchQuery, page = i })">
+                                            @i
+                                        </a>
+                                    }
+
+                                    <a class="pagination-item @(Model.CurrentPage == Model.TotalPages ? "disabled" : "")"
+                                       href="@Url.Action("Index", "Marketplace", new { category = Model.CategoryFilter, search = Model.SearchQuery, page = Model.CurrentPage + 1 })">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                </div>
                             </div>
                         }
                     }
                     else
                     {
-                        <div class="alert alert-info">
-                            <i class="fas fa-info-circle me-2"></i>
-                            No products found. Please try a different search or category.
+                        <div class="empty-state">
+                            <div class="empty-state-icon">
+                                <i class="fas fa-search"></i>
+                            </div>
+                            <h4>No products found</h4>
+                            <p>Try a different search term or category</p>
                         </div>
                     }
                 </div>
             </div>
         </div>
     </div>
-</div> 
+</div>
+
+<style>
+    /* Modern Marketplace Styling */
+    .marketplace-container {
+        padding: 0 0 1.5rem 0;
+        background-color: #faf6f2;
+        min-height: calc(100vh - 60px);
+    }
+
+    /* Marketplace Header */
+    .marketplace-header {
+        background-color: #304251;
+        color: white;
+        border-radius: 12px;
+        padding: 2rem 0;
+        text-align: center;
+        margin-bottom: 2rem;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+
+    .header-content {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 1rem;
+    }
+
+    .marketplace-header h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+
+    .marketplace-header p {
+        font-size: 1rem;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    .marketplace-wrapper {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 1rem;
+    }
+
+    /* Categories at Top */
+    .categories-container {
+        margin-bottom: 1.5rem;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        padding: 1rem;
+        overflow: hidden;
+    }
+
+    .categories-scroll {
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding: 0.5rem 0;
+        gap: 0.75rem;
+        scrollbar-width: thin;
+        scrollbar-color: #f48c06 #faf6f2;
+    }
+
+        .categories-scroll::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .categories-scroll::-webkit-scrollbar-track {
+            background: #faf6f2;
+            border-radius: 10px;
+        }
+
+        .categories-scroll::-webkit-scrollbar-thumb {
+            background-color: #f48c06;
+            border-radius: 10px;
+        }
+
+    .category-pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.5rem 1rem;
+        background: #faf6f2;
+        color: #444;
+        border-radius: 50px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+        .category-pill i {
+            margin-right: 0.5rem;
+            font-size: 0.85rem;
+            color: #f48c06;
+        }
+
+        .category-pill:hover {
+            background: #ffd8a8;
+            color: #9a3412;
+        }
+
+        .category-pill.active {
+            background: #f48c06;
+            color: white;
+        }
+
+            .category-pill.active i {
+                color: white;
+            }
+
+    /* Main Content Styling */
+    .marketplace-content {
+        width: 100%;
+    }
+
+    .content-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        overflow: hidden;
+    }
+
+    /* Search Bar Styling */
+    .search-container {
+        padding: 1.5rem;
+        border-bottom: 1px solid #f1f1f1;
+    }
+
+    .search-form {
+        margin: 0;
+    }
+
+    .search-input-group {
+        display: flex;
+        position: relative;
+    }
+
+    .search-input {
+        flex-grow: 1;
+        padding: 0.75rem 1rem;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all 0.2s ease;
+    }
+
+        .search-input:focus {
+            border-color: #f48c06;
+            box-shadow: 0 0 0 3px rgba(244, 140, 6, 0.15);
+            outline: none;
+        }
+
+    .search-button {
+        position: absolute;
+        right: 5px;
+        top: 5px;
+        bottom: 5px;
+        background: #f48c06;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 0 1.25rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+        .search-button:hover {
+            background: #dc6803;
+        }
+
+    /* Products Container */
+    .products-container {
+        padding: 1.5rem;
+    }
+
+    .products-header {
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #f1f1f1;
+    }
+
+        .products-header h4 {
+            margin: 0;
+            color: #333;
+            font-weight: 600;
+        }
+
+    /* Products Grid */
+    .products-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+
+    /* Product Card */
+    .product-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 3px 15px rgba(0,0,0,0.05);
+        overflow: hidden;
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        border: 1px solid #f1f1f1;
+    }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(244, 140, 6, 0.1);
+            border-color: #ffd8a8;
+        }
+
+    .product-image {
+        height: 200px;
+        overflow: hidden;
+        position: relative;
+    }
+
+        .product-image::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: linear-gradient(to top, rgba(255,255,255,0.8), rgba(255,255,255,0));
+            z-index: 1;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+    .product-card:hover .product-image::after {
+        opacity: 1;
+    }
+
+    .product-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+
+    .product-card:hover .product-image img {
+        transform: scale(1.05);
+    }
+
+    .product-details {
+        padding: 1.25rem;
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+    }
+
+    .product-title {
+        margin: 0 0 0.75rem;
+        font-size: 1.1rem;
+        color: #333;
+        font-weight: 600;
+    }
+
+    .product-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .product-category, .product-seller {
+        font-size: 0.85rem;
+        color: #666;
+    }
+
+        .product-seller a {
+            color: #dc6803;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+            .product-seller a:hover {
+                text-decoration: underline;
+                color: #9a3412;
+            }
+
+    .product-description {
+        font-size: 0.9rem;
+        color: #555;
+        margin-bottom: 1.25rem;
+        flex-grow: 1;
+        line-height: 1.5;
+    }
+
+    .product-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: auto;
+    }
+
+    .product-price {
+        font-weight: 700;
+        font-size: 1.2rem;
+        color: #dc6803;
+    }
+
+    .product-button {
+        background: transparent;
+        color: #f48c06;
+        border: 1px solid #304251;
+        border-radius: 6px;
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+        .product-button:hover {
+            background: #f48c06;
+            color: white;
+        }
+
+    /* Pagination */
+    .pagination-container {
+        margin-top: 2rem;
+        display: flex;
+        justify-content: center;
+    }
+
+    .pagination {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .pagination-item {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        background: white;
+        color: #555;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        border: 1px solid #f1f1f1;
+    }
+
+        .pagination-item:hover:not(.disabled) {
+            background: #f48c06;
+            color: white;
+            border-color: #f48c06;
+        }
+
+        .pagination-item.active {
+            background: #f48c06;
+            color: white;
+            border-color: #f48c06;
+        }
+
+        .pagination-item.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+    }
+
+    .empty-state-icon {
+        font-size: 3rem;
+        color: #ffd8a8;
+        margin-bottom: 1rem;
+    }
+
+    .empty-state h4 {
+        color: #333;
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-state p {
+        color: #666;
+    }
+
+    /* Responsive Design */
+    @@media (max-width: 768px) {
+        .products-grid {
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        }
+    }
+
+    @@media (max-width: 576px) {
+        .products-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .search-button {
+            padding: 0 1rem;
+        }
+    }
+</style> 

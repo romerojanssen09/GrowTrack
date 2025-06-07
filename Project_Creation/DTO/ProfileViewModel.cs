@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http;
+using Project_Creation.Models.Entities;
 
 namespace Project_Creation.DTO
 {
@@ -56,43 +57,13 @@ namespace Project_Creation.DTO
         public bool IsAllowEditSecCertPath { get; set; } = true;
         public string DtiCertPath { get; set; } = string.Empty;
         public bool IsAllowEditDtiCertPath { get; set; } = true;
+        public string MarkerPlaceStatus { get; set; } = string.Empty;
 
-        public string IsAllowedToMarketPlace { get; set; } = string.Empty;
-
-
-
-
+        public UserSocialMediaLinks userSocialMediaLinks { get; set; } = new UserSocialMediaLinks();
 
         // For uploading a new business permit
         public IFormFile? BusinessPermitFile { get; set; }
 
         public UsersAdditionalInfoDto? UsersAdditionalInfo { get; set; } = new UsersAdditionalInfoDto();
-    }
-
-    public class SettingsViewModel
-    {
-        [Display(Name = "Email")]
-        public string Email { get; set; } = string.Empty;
-
-        public ChangePasswordViewModel? ChangePassword { get; set; }
-    }
-
-    public class ChangePasswordViewModel
-    {
-        [Required]
-        [DataType(DataType.Password)]
-        [Display(Name = "Current Password")]
-        public string CurrentPassword { get; set; } = string.Empty;
-
-        [Required]
-        [StringLength(100, ErrorMessage = "The {0} must be at least {2} characters long.", MinimumLength = 6)]
-        [DataType(DataType.Password)]
-        [Display(Name = "New Password")]
-        public string NewPassword { get; set; } = string.Empty;
-
-        [DataType(DataType.Password)]
-        [Display(Name = "Confirm New Password")]
-        [Compare("NewPassword", ErrorMessage = "The new password and confirmation password do not match.")]
-        public string ConfirmPassword { get; set; } = string.Empty;
     }
 } 

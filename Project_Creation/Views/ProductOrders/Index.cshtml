@@ -1,0 +1,629 @@
+@model Project_Creation.Models.ViewModels.ProductOrderListViewModel
+@using Project_Creation.Models.Entities
+@using System.Security.Claims
+
+@{
+    ViewData["Title"] = "My Orders";
+    var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+}
+
+<div class="container mt-4 animate__animated animate__fadeIn">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 fw-bold">@ViewData["Title"]</h1>
+            <p class="text-muted mb-0">Manage your purchases and sales in one place</p>
+        </div>
+
+        <div>
+            <a href="@Url.Action("Index", "Marketplace")" class="btn btn-outline-primary rounded-pill">
+                <i class="fas fa-shopping-basket me-2"></i> Marketplace
+            </a>
+        </div>
+    </div>
+
+    <!-- Status Counters -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-3 fw-bold"><i class="fas fa-chart-pie me-2 text-primary"></i>Order Status Overview</h5>
+                    <div class="d-flex flex-wrap gap-3">
+                        <a href="@Url.Action("Index", new { status = "Pending" })" class="text-decoration-none status-badge">
+                            <div class="badge bg-secondary p-2 d-flex align-items-center rounded-pill">
+                                <span class="me-1">Pending</span>
+                                <span class="badge bg-white text-secondary rounded-circle">@Model.PendingCount</span>
+                            </div>
+                        </a>
+                        <a href="@Url.Action("Index", new { status = "Accepted" })" class="text-decoration-none status-badge">
+                            <div class="badge bg-info p-2 d-flex align-items-center rounded-pill">
+                                <span class="me-1">Accepted</span>
+                                <span class="badge bg-white text-info rounded-circle">@Model.AcceptedCount</span>
+                            </div>
+                        </a>
+                        <a href="@Url.Action("Index", new { status = "Preparing" })" class="text-decoration-none status-badge">
+                            <div class="badge bg-primary p-2 d-flex align-items-center rounded-pill">
+                                <span class="me-1">Preparing</span>
+                                <span class="badge bg-white text-primary rounded-circle">@Model.PreparingCount</span>
+                            </div>
+                        </a>
+                        <a href="@Url.Action("Index", new { status = "Shipping" })" class="text-decoration-none status-badge">
+                            <div class="badge bg-warning p-2 d-flex align-items-center rounded-pill">
+                                <span class="me-1">Shipping</span>
+                                <span class="badge bg-white text-warning rounded-circle">@Model.ShippingCount</span>
+                            </div>
+                        </a>
+                        <a href="@Url.Action("Index", new { status = "Delivered" })" class="text-decoration-none status-badge">
+                            <div class="badge bg-success p-2 d-flex align-items-center rounded-pill">
+                                <span class="me-1">Delivered</span>
+                                <span class="badge bg-white text-success rounded-circle">@Model.DeliveredCount</span>
+                            </div>
+                        </a>
+                        <a href="@Url.Action("Index", new { status = "Received" })" class="text-decoration-none status-badge">
+                            <div class="badge bg-success p-2 d-flex align-items-center rounded-pill">
+                                <span class="me-1">Received</span>
+                                <span class="badge bg-white text-success rounded-circle">@Model.ReceivedCount</span>
+                            </div>
+                        </a>
+                        <a href="@Url.Action("Index", new { status = "Cancelled" })" class="text-decoration-none status-badge">
+                            <div class="badge bg-danger p-2 d-flex align-items-center rounded-pill">
+                                <span class="me-1">Cancelled</span>
+                                <span class="badge bg-white text-danger rounded-circle">@Model.CancelledCount</span>
+                            </div>
+                        </a>
+                        <a href="@Url.Action("Index", new { status = "Rejected" })" class="text-decoration-none status-badge">
+                            <div class="badge bg-danger p-2 d-flex align-items-center rounded-pill">
+                                <span class="me-1">Rejected</span>
+                                <span class="badge bg-white text-danger rounded-circle">@Model.RejectedCount</span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters and Search -->
+    <div class="card shadow-sm border-0 rounded-4 mb-4 filter-card">
+        <div class="card-body">
+            <form method="get" action="@Url.Action("Index")" class="row g-3">
+                <div class="col-md-4">
+                    <label for="search" class="form-label fw-medium">Search</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="fas fa-search text-muted"></i></span>
+                        <input type="text" class="form-control border-start-0 ps-0" id="search" name="search"
+                               placeholder="Search orders..." value="@Model.SearchQuery">
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <label for="status" class="form-label fw-medium">Status</label>
+                    <select class="form-select custom-select" id="status" name="status">
+                        <option value="">All Statuses</option>
+                        @foreach (var status in Enum.GetValues(typeof(ProductOrderStatus)))
+                        {
+                            <option value="@status" selected="@(Model.StatusFilter == status.ToString())">
+                                @status
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary rounded-pill me-2 btn-with-icon">
+                        <i class="fas fa-filter me-2"></i> Filter
+                    </button>
+                    <a href="@Url.Action("Index")" class="btn btn-outline-secondary rounded-pill btn-with-icon">
+                        <i class="fas fa-times me-2"></i> Clear
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tabs for Buying/Selling -->
+    <ul class="nav nav-tabs nav-fill mb-4 border-0 custom-tabs">
+        <li class="nav-item">
+            <a class="nav-link active rounded-top border border-bottom-0 px-4" href="#buyingOrders" data-bs-toggle="tab">
+                <i class="fas fa-shopping-cart me-2"></i> My Purchases
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link rounded-top border border-bottom-0 px-4" href="#sellingOrders" data-bs-toggle="tab">
+                <i class="fas fa-store me-2"></i> My Sales
+            </a>
+        </li>
+    </ul>
+
+    <!-- Tab Content -->
+    <div class="tab-content">
+        <!-- Buying Orders Tab -->
+        <div class="tab-pane fade show active" id="buyingOrders">
+            @if (!Model.Orders.Any(o => o.BuyerId == currentUserId))
+            {
+                <div class="alert alert-info rounded-4 border-0 shadow-sm empty-state">
+                    <div class="d-flex align-items-center">
+                        <div class="empty-state-icon me-4">
+                            <i class="fas fa-shopping-cart fa-3x"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-2">No purchases yet</h5>
+                            <p class="mb-2">You haven't made any purchases yet.</p>
+                            <a href="@Url.Action("Index", "Marketplace")" class="btn btn-sm btn-primary rounded-pill">
+                                <i class="fas fa-shopping-basket me-2"></i> Browse the marketplace
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="card border-0 rounded-4 shadow-sm table-card">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-4">ID</th>
+                                    <th>Product</th>
+                                    <th>Seller</th>
+                                    <th>Date</th>
+                                    <th>Quantity</th>
+                                    <th>Total</th>
+                                    <th>Status</th>
+                                    <th class="pe-4">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var order in Model.Orders.Where(o => o.BuyerId == currentUserId))
+                                {
+                                    <tr class="order-row">
+                                        <td class="ps-4 fw-medium">#@order.Id</td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="product-img-wrapper me-2">
+                                                    <img src="@order.ProductImageUrl" alt="@order.ProductName"
+                                                         class="rounded-3" style="width: 48px; height: 48px; object-fit: cover;">
+                                                </div>
+                                                <span class="fw-medium">@order.ProductName</span>
+                                            </div>
+                                        </td>
+                                        <td><span class="seller-name">@order.BusinessName</span></td>
+                                        <td><span class="order-date">@order.CreatedAt.ToString("MMM dd, yyyy")</span></td>
+                                        <td><span class="order-quantity">@order.Quantity</span></td>
+                                        <td class="fw-bold price-value">@Html.DisplayFor(m => order.TotalPrice)</td>
+                                        <td>
+                                            <span class="badge @order.StatusBadgeClass rounded-pill px-3 py-2">@order.StatusText</span>
+                                        </td>
+                                        <td class="pe-4">
+                                            <div class="action-buttons">
+                                                <a href="@Url.Action("Details", new { id = order.Id })" class="btn btn-sm btn-outline-primary rounded-pill mb-1 w-100 btn-with-icon">
+                                                    <i class="fas fa-eye"></i> View Details
+                                                </a>
+
+                                                @if (order.Status == ProductOrderStatus.Delivered)
+                                                {
+                                                    <form method="post" action="@Url.Action("UpdateStatus", new { id = order.Id, status = ProductOrderStatus.Received })"
+                                                          class="d-inline w-100">
+                                                        @Html.AntiForgeryToken()
+                                                        <button type="submit" class="btn btn-sm btn-success rounded-pill w-100 btn-with-icon">
+                                                            <i class="fas fa-check"></i> Confirm Receipt
+                                                        </button>
+                                                    </form>
+                                                }
+
+                                                @if (order.CanCancel)
+                                                {
+                                                    <form method="post" action="@Url.Action("Cancel", new { id = order.Id })"
+                                                          class="d-inline mt-1 w-100" onsubmit="return confirmCancel(event);">
+                                                        @Html.AntiForgeryToken()
+                                                        <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill w-100 btn-with-icon">
+                                                            <i class="fas fa-times"></i> Cancel
+                                                        </button>
+                                                    </form>
+                                                }
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Selling Orders Tab -->
+        <div class="tab-pane fade" id="sellingOrders">
+            @if (!Model.Orders.Any(o => o.SellerId == currentUserId))
+            {
+                <div class="alert alert-info rounded-4 border-0 shadow-sm empty-state">
+                    <div class="d-flex align-items-center">
+                        <div class="empty-state-icon me-4">
+                            <i class="fas fa-store fa-3x"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-2">No sales yet</h5>
+                            <p class="mb-0">You haven't received any orders yet.</p>
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="card border-0 rounded-4 shadow-sm table-card">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-4">ID</th>
+                                    <th>Product</th>
+                                    <th>Buyer</th>
+                                    <th>Date</th>
+                                    <th>Quantity</th>
+                                    <th>Total</th>
+                                    <th>Status</th>
+                                    <th class="pe-4">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var order in Model.Orders.Where(o => o.SellerId == currentUserId))
+                                {
+                                    <tr class="order-row">
+                                        <td class="ps-4 fw-medium">#@order.Id</td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="product-img-wrapper me-2">
+                                                    <img src="@order.ProductImageUrl" alt="@order.ProductName"
+                                                         class="rounded-3" style="width: 48px; height: 48px; object-fit: cover;">
+                                                </div>
+                                                <span class="fw-medium">@order.ProductName</span>
+                                            </div>
+                                        </td>
+                                        <td><span class="buyer-name">@order.BuyerName</span></td>
+                                        <td><span class="order-date">@order.CreatedAt.ToString("MMM dd, yyyy")</span></td>
+                                        <td><span class="order-quantity">@order.Quantity</span></td>
+                                        <td class="fw-bold price-value">@Html.DisplayFor(m => order.TotalPrice)</td>
+                                        <td>
+                                            <span class="badge @order.StatusBadgeClass rounded-pill px-3 py-2">@order.StatusText</span>
+                                        </td>
+                                        <td class="pe-4">
+                                            <div class="action-buttons">
+                                                <a href="@Url.Action("Details", new { id = order.Id })" class="btn btn-sm btn-outline-primary rounded-pill mb-1 w-100 btn-with-icon">
+                                                    <i class="fas fa-eye"></i> View Details
+                                                </a>
+
+                                                @if (order.Status == ProductOrderStatus.Pending)
+                                                {
+                                                    <form method="post" action="@Url.Action("UpdateStatus", new { id = order.Id, status = ProductOrderStatus.Accepted })"
+                                                          class="d-inline w-100 mb-1">
+                                                        @Html.AntiForgeryToken()
+                                                        <button type="submit" class="btn btn-sm btn-primary rounded-pill w-100 btn-with-icon">
+                                                            <i class="fas fa-check"></i> Accept Order
+                                                        </button>
+                                                    </form>
+                                                }
+                                                else if (order.Status == ProductOrderStatus.Accepted)
+                                                {
+                                                    <form method="post" action="@Url.Action("UpdateStatus", new { id = order.Id, status = ProductOrderStatus.Preparing })"
+                                                          class="d-inline w-100 mb-1">
+                                                        @Html.AntiForgeryToken()
+                                                        <button type="submit" class="btn btn-sm btn-info rounded-pill w-100 btn-with-icon">
+                                                            <i class="fas fa-box"></i> Start Preparing
+                                                        </button>
+                                                    </form>
+                                                }
+                                                else if (order.Status == ProductOrderStatus.Preparing)
+                                                {
+                                                    <form method="post" action="@Url.Action("UpdateStatus", new { id = order.Id, status = ProductOrderStatus.Shipping })"
+                                                          class="d-inline w-100 mb-1">
+                                                        @Html.AntiForgeryToken()
+                                                        <button type="submit" class="btn btn-sm btn-primary rounded-pill w-100 btn-with-icon">
+                                                            <i class="fas fa-shipping-fast"></i> Mark Shipped
+                                                        </button>
+                                                    </form>
+                                                }
+                                                else if (order.Status == ProductOrderStatus.Shipping)
+                                                {
+                                                    <form method="post" action="@Url.Action("UpdateStatus", new { id = order.Id, status = ProductOrderStatus.Delivered })"
+                                                          class="d-inline w-100 mb-1">
+                                                        @Html.AntiForgeryToken()
+                                                        <button type="submit" class="btn btn-sm btn-success rounded-pill w-100 btn-with-icon">
+                                                            <i class="fas fa-truck"></i> Mark Delivered
+                                                        </button>
+                                                    </form>
+                                                }
+
+                                                @if (order.CanCancel)
+                                                {
+                                                    <form method="post" action="@Url.Action("Cancel", new { id = order.Id })"
+                                                          class="d-inline mt-1 w-100" onsubmit="return confirmCancel(event);">
+                                                        @Html.AntiForgeryToken()
+                                                        <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill w-100 btn-with-icon">
+                                                            <i class="fas fa-times"></i> Cancel
+                                                        </button>
+                                                    </form>
+                                                }
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    @if (Model.TotalPages > 1)
+    {
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center custom-pagination">
+                <li class="page-item @(Model.CurrentPage == 1 ? "disabled" : "")">
+                    <a class="page-link rounded-start-pill" href="@Url.Action("Index", new { page = Model.CurrentPage - 1, status = Model.StatusFilter, search = Model.SearchQuery })">
+                        <i class="fas fa-chevron-left"></i> Previous
+                    </a>
+                </li>
+
+                @for (int i = 1; i <= Model.TotalPages; i++)
+                {
+                    <li class="page-item @(Model.CurrentPage == i ? "active" : "")">
+                        <a class="page-link" href="@Url.Action("Index", new { page = i, status = Model.StatusFilter, search = Model.SearchQuery })">
+                            @i
+                        </a>
+                    </li>
+                }
+
+                <li class="page-item @(Model.CurrentPage == Model.TotalPages ? "disabled" : "")">
+                    <a class="page-link rounded-end-pill" href="@Url.Action("Index", new { page = Model.CurrentPage + 1, status = Model.StatusFilter, search = Model.SearchQuery })">
+                        Next <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Auto-submit the form when status filter changes
+            $('#status').change(function() {
+                $(this).closest('form').submit();
+            });
+
+            // Add hover effect to table rows
+            $('.order-row').hover(
+                function() { $(this).addClass('table-hover-effect'); },
+                function() { $(this).removeClass('table-hover-effect'); }
+            );
+
+            // Add animation to status badges
+            $('.status-badge').hover(
+                function() { $(this).addClass('badge-hover'); },
+                function() { $(this).removeClass('badge-hover'); }
+            );
+
+            // Enhance tab switching with animation
+            $('.nav-tabs .nav-link').on('click', function() {
+                $('.tab-pane').removeClass('animate__animated animate__fadeIn');
+                setTimeout(function() {
+                    $('.tab-pane.active').addClass('animate__animated animate__fadeIn');
+                }, 150);
+            });
+
+            // Initialize first tab with animation
+            $('.tab-pane.active').addClass('animate__animated animate__fadeIn');
+        });
+
+        // Custom confirm dialog for cancellation
+        function confirmCancel(event) {
+            event.preventDefault();
+
+            if (confirm('Are you sure you want to cancel this order? This action cannot be undone.')) {
+                event.target.submit();
+            }
+
+            return false;
+        }
+    </script>
+
+    <style>
+        /* Modern styling enhancements */
+        @@import url('https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css');
+
+        .table-hover-effect {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            transition: all 0.2s ease;
+        }
+
+        .card {
+            transition: all 0.3s ease;
+        }
+
+        .filter-card:hover {
+            box-shadow: 0 8px 15px rgba(0,0,0,0.08) !important;
+        }
+
+        .custom-tabs .nav-link.active {
+            font-weight: 600;
+            color: #304251;
+            border-color: #dee2e6 #dee2e6 #fff;
+            position: relative;
+        }
+
+            .custom-tabs .nav-link.active::after {
+                content: '';
+                position: absolute;
+                bottom: -1px;
+                left: 0;
+                right: 0;
+                height: 3px;
+                background-color: #304251;
+            }
+
+        .custom-tabs .nav-link:not(.active) {
+            background-color: #f8f9fa;
+            color: #6c757d;
+        }
+
+        .custom-tabs .nav-link:hover:not(.active) {
+            background-color: #e9ecef;
+            border-color: #e9ecef #e9ecef #dee2e6;
+        }
+
+        .table thead th {
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+        }
+
+        .badge {
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+        }
+
+        .badge-hover {
+            transform: scale(1.1);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .btn-with-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+            .btn-with-icon:hover {
+                transform: translateY(-1px);
+            }
+
+        .empty-state {
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .empty-state-icon {
+            color: #6c757d;
+            opacity: 0.7;
+            transition: all 0.3s ease;
+        }
+
+        .empty-state:hover .empty-state-icon {
+            transform: scale(1.1);
+            color: #304251;
+        }
+
+        .product-img-wrapper {
+            overflow: hidden;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+            .product-img-wrapper img {
+                transition: all 0.5s ease;
+            }
+
+        .order-row:hover .product-img-wrapper img {
+            transform: scale(1.1);
+        }
+
+        .price-value {
+            color: #304251;
+        }
+
+        .seller-name, .buyer-name {
+            position: relative;
+            padding-left: 18px;
+        }
+
+            .seller-name::before {
+                content: '\f54e';
+                font-family: 'Font Awesome 5 Free';
+                font-weight: 900;
+                position: absolute;
+                left: 0;
+                color: #6c757d;
+            }
+
+            .buyer-name::before {
+                content: '\f007';
+                font-family: 'Font Awesome 5 Free';
+                font-weight: 900;
+                position: absolute;
+                left: 0;
+                color: #6c757d;
+            }
+
+        .order-date {
+            position: relative;
+            padding-left: 18px;
+        }
+
+            .order-date::before {
+                content: '\f133';
+                font-family: 'Font Awesome 5 Free';
+                font-weight: 400;
+                position: absolute;
+                left: 0;
+                color: #6c757d;
+            }
+
+        .order-quantity {
+            position: relative;
+            padding-left: 18px;
+        }
+
+            .order-quantity::before {
+                content: '\f3ff';
+                font-family: 'Font Awesome 5 Free';
+                font-weight: 900;
+                position: absolute;
+                left: 0;
+                color: #6c757d;
+            }
+
+        .custom-select {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 16px 12px;
+        }
+
+        .custom-pagination .page-link {
+            border: none;
+            color: #6c757d;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .custom-pagination .page-item.active .page-link {
+            background-color: #304251;
+            color: white;
+        }
+
+        .custom-pagination .page-link:hover:not(.disabled) {
+            background-color: #e9ecef;
+            color: #304251;
+            transform: translateY(-2px);
+        }
+
+        .table-card {
+            overflow: hidden;
+        }
+
+        .action-buttons {
+            opacity: 0.9;
+            transition: all 0.3s ease;
+        }
+
+        .order-row:hover .action-buttons {
+            opacity: 1;
+        }
+    </style>
+} 

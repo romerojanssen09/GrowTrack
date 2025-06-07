@@ -4,149 +4,959 @@
     ViewData["Title"] = "Business Owner Registration";
 }
 
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h3>Business Owner Registration</h3>
-                </div>
-                <div class="card-body">
-                    <form asp-action="Register" method="post" enctype="multipart/form-data" onsubmit="return verifyCode()">
-                        @Html.AntiForgeryToken()
-                        <input type="hidden" id="generatedCode" name="generatedCode" />
+<style>
+    :root {
+        --main-bg-color: #304251;
+        --primary-color: #E48A30;
+        --text-color: #304251;
+        --light-text: rgba(255, 255, 255, 0.9);
+        --border-color: rgba(255, 255, 255, 0.2);
+    }
 
-                        <!-- Personal Information -->
-                        <div class="mb-4">
-                            <h5 class="border-bottom pb-2">Personal Information</h5>
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
+    html, body {
+        background: var(--main-bg-color) !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        min-height: 100vh !important;
+        height: 100% !important;
+        position: relative;
+    }
+
+    .animated-background {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+        background: var(--main-bg-color) !important;
+        overflow: hidden;
+    }
+
+    .circle {
+        position: absolute;
+        border-radius: 50%;
+        background: linear-gradient(45deg, rgba(228, 138, 48, 0.1), rgba(228, 138, 48, 0.05));
+        animation: float 12s infinite ease-in-out;
+    }
+
+        .circle:nth-child(1) {
+            width: 250px;
+            height: 250px;
+            top: -5%;
+            right: 8%;
+            animation-delay: 0s;
+        }
+
+        .circle:nth-child(2) {
+            width: 150px;
+            height: 150px;
+            bottom: 12%;
+            left: 5%;
+            animation-delay: 2s;
+        }
+
+        .circle:nth-child(3) {
+            width: 80px;
+            height: 80px;
+            top: 28%;
+            right: 22%;
+            animation-delay: 4s;
+        }
+
+        .circle:nth-child(4) {
+            width: 180px;
+            height: 180px;
+            bottom: 38%;
+            right: 12%;
+            animation-delay: 1s;
+        }
+
+        .circle:nth-child(5) {
+            width: 120px;
+            height: 120px;
+            top: 42%;
+            left: 18%;
+            animation-delay: 3s;
+        }
+
+        .circle:nth-child(6) {
+            width: 200px;
+            height: 200px;
+            bottom: 8%;
+            right: 28%;
+            animation-delay: 2.5s;
+        }
+
+        .circle:nth-child(7) {
+            width: 100px;
+            height: 100px;
+            top: 65%;
+            left: 12%;
+            animation-delay: 1.5s;
+        }
+
+        .circle:nth-child(8) {
+            width: 160px;
+            height: 160px;
+            top: 18%;
+            left: 22%;
+            animation-delay: 3.5s;
+        }
+
+        .circle:nth-child(9) {
+            width: 140px;
+            height: 140px;
+            bottom: 22%;
+            left: 32%;
+            animation-delay: 2.8s;
+        }
+
+        .circle:nth-child(10) {
+            width: 90px;
+            height: 90px;
+            top: 32%;
+            right: 38%;
+            animation-delay: 1.8s;
+        }
+
+        .circle:nth-child(11) {
+            width: 170px;
+            height: 170px;
+            bottom: 42%;
+            left: 3%;
+            animation-delay: 3.2s;
+        }
+
+        .circle:nth-child(12) {
+            width: 110px;
+            height: 110px;
+            top: 52%;
+            right: 6%;
+            animation-delay: 2.2s;
+        }
+
+    .wavy-line {
+        position: absolute;
+        border: 3px solid rgba(228, 138, 48, 0.15);
+        animation: moveAround 15s infinite ease-in-out;
+        z-index: 1;
+    }
+
+        .wavy-line:nth-child(13) {
+            width: 180px;
+            height: 60px;
+            top: 15%;
+            left: 12%;
+            border-radius: 40% 60% 60% 40% / 40% 40% 60% 60%;
+            animation-delay: 0s;
+        }
+
+        .wavy-line:nth-child(14) {
+            width: 140px;
+            height: 45px;
+            bottom: 25%;
+            right: 8%;
+            border-radius: 60% 40% 40% 60% / 60% 60% 40% 40%;
+            animation-delay: 2s;
+        }
+
+        .wavy-line:nth-child(15) {
+            width: 120px;
+            height: 35px;
+            top: 45%;
+            right: 25%;
+            border-radius: 50% 50% 30% 70% / 50% 50% 70% 30%;
+            animation-delay: 4s;
+        }
+
+        .wavy-line:nth-child(16) {
+            width: 160px;
+            height: 50px;
+            bottom: 32%;
+            left: 28%;
+            border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+            animation-delay: 1s;
+        }
+
+        .wavy-line:nth-child(17) {
+            width: 130px;
+            height: 40px;
+            top: 58%;
+            right: 35%;
+            border-radius: 70% 30% 30% 70% / 70% 70% 30% 30%;
+            animation-delay: 3s;
+        }
+
+        .wavy-line:nth-child(18) {
+            width: 150px;
+            height: 55px;
+            top: 22%;
+            left: 38%;
+            border-radius: 45% 55% 65% 35% / 35% 45% 55% 65%;
+            animation-delay: 2.5s;
+        }
+
+        .wavy-line:nth-child(19) {
+            width: 170px;
+            height: 45px;
+            bottom: 18%;
+            right: 32%;
+            border-radius: 55% 45% 35% 65% / 65% 35% 45% 55%;
+            animation-delay: 1.5s;
+        }
+
+        .wavy-line:nth-child(20) {
+            width: 140px;
+            height: 50px;
+            top: 68%;
+            left: 15%;
+            border-radius: 35% 65% 45% 55% / 55% 45% 65% 35%;
+            animation-delay: 3.5s;
+        }
+
+    .curved-line {
+        position: absolute;
+        width: 300px;
+        height: 300px;
+        border: 2px solid rgba(228, 138, 48, 0.1);
+        border-radius: 50%;
+        animation: rotate 20s linear infinite;
+    }
+
+        .curved-line:nth-child(4) {
+            top: 20%;
+            left: 10%;
+            width: 400px;
+            height: 200px;
+            border-top: none;
+            border-left: none;
+        }
+
+        .curved-line:nth-child(5) {
+            bottom: 30%;
+            right: 15%;
+            width: 300px;
+            height: 300px;
+            border-bottom: none;
+            border-right: none;
+        }
+
+    .squiggly {
+        position: absolute;
+        width: 100px;
+        height: 100px;
+        border: 4px solid #E48A30;
+        border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+        animation: morph 8s infinite ease-in-out;
+    }
+
+        .squiggly:nth-child(6) {
+            top: 20%;
+            right: 20%;
+            animation-delay: 1s;
+        }
+
+        .squiggly:nth-child(7) {
+            bottom: 20%;
+            left: 20%;
+            animation-delay: 3s;
+        }
+
+    /* Animated dotted lines */
+    .dotted-line {
+        position: absolute;
+        width: 2px;
+        height: 2px;
+        background-color: rgba(228, 138, 48, 0.5);
+        border-radius: 50%;
+        animation: moveDot 15s linear infinite;
+    }
+
+        .dotted-line:nth-child(8) {
+            top: 25%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .dotted-line:nth-child(9) {
+            top: 40%;
+            right: 15%;
+            animation-delay: 2s;
+        }
+
+        .dotted-line:nth-child(10) {
+            bottom: 30%;
+            left: 20%;
+            animation-delay: 4s;
+        }
+
+        .dotted-line:nth-child(11) {
+            top: 60%;
+            right: 25%;
+            animation-delay: 6s;
+        }
+
+        .dotted-line:nth-child(12) {
+            bottom: 40%;
+            left: 30%;
+            animation-delay: 8s;
+        }
+
+    @@keyframes moveDot {
+        0% {
+            transform: translate(0, 0) scale(1);
+            opacity: 0;
+        }
+
+        20% {
+            opacity: 1;
+        }
+
+        80% {
+            opacity: 1;
+        }
+
+        100% {
+            transform: translate(200px, 200px) scale(0);
+            opacity: 0;
+        }
+    }
+
+    @@keyframes moveAround {
+        0% {
+            transform: translate(0, 0) rotate(0deg) scale(1);
+            border-radius: 40% 60% 60% 40% / 40% 40% 60% 60%;
+        }
+
+        25% {
+            transform: translate(50px, 30px) rotate(90deg) scale(1.1);
+            border-radius: 60% 40% 40% 60% / 60% 60% 40% 40%;
+        }
+
+        50% {
+            transform: translate(0, 60px) rotate(180deg) scale(1);
+            border-radius: 40% 60% 60% 40% / 40% 40% 60% 60%;
+        }
+
+        75% {
+            transform: translate(-50px, 30px) rotate(270deg) scale(1.1);
+            border-radius: 60% 40% 40% 60% / 60% 60% 40% 40%;
+        }
+
+        100% {
+            transform: translate(0, 0) rotate(360deg) scale(1);
+            border-radius: 40% 60% 60% 40% / 40% 40% 60% 60%;
+        }
+    }
+
+    @@keyframes float {
+        0% {
+            transform: translate(0, 0) rotate(0deg) scale(1);
+        }
+
+        25% {
+            transform: translate(20px, 15px) rotate(5deg) scale(1.05);
+        }
+
+        50% {
+            transform: translate(-20px, 30px) rotate(-5deg) scale(1);
+        }
+
+        75% {
+            transform: translate(-15px, 15px) rotate(3deg) scale(1.05);
+        }
+
+        100% {
+            transform: translate(0, 0) rotate(0deg) scale(1);
+        }
+    }
+
+    @@keyframes morph {
+        0%, 100% {
+            border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+        }
+
+        50% {
+            border-radius: 70% 30% 30% 70% / 70% 70% 30% 30%;
+        }
+    }
+
+    @@keyframes rotate {
+        from {
+            transform: rotate(0deg);
+        }
+
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    .glass-container {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37), 0 8px 32px rgba(228, 138, 48, 0.15);
+        border-radius: 20px;
+        overflow: hidden;
+    }
+
+    .content-wrapper {
+        min-height: calc(100vh - 60px);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 2rem 0;
+    }
+
+    .content-container {
+        flex: 1;
+        opacity: 1;
+        transition: opacity 0.3s ease-out;
+        display: flex;
+        align-items: center;
+    }
+
+    .image-side {
+        position: relative;
+        background-color: rgba(48, 66, 81, 0.3);
+        border-radius: 20px 0 0 20px;
+        overflow: hidden;
+        min-height: 600px;
+    }
+
+    .image-background {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: url('/images/register.png');
+        background-size: 75%;
+        background-position: center;
+        background-repeat: no-repeat;
+        z-index: 1;
+    }
+
+    .form-side {
+        background-color: white;
+        border-radius: 0 20px 20px 0;
+        padding: 2rem;
+    }
+
+    .form-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .form-title {
+        color: var(--text-color);
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-title span {
+        color: var(--primary-color);
+    }
+
+    .form-subtitle {
+        color: #6c757d;
+        font-size: 1rem;
+    }
+
+    .step-indicator {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    .step {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: #e9ecef;
+        color: #6c757d;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        position: relative;
+        z-index: 2;
+        transition: all 0.3s ease;
+    }
+
+    .step.active {
+        background-color: var(--primary-color);
+        color: white;
+        box-shadow: 0 0 0 5px rgba(228, 138, 48, 0.2);
+        transform: scale(1.1);
+    }
+
+    .step.completed {
+        background-color: var(--text-color);
+        color: white;
+    }
+
+    .step-line {
+        flex: 1;
+        height: 3px;
+        background-color: #e9ecef;
+        position: relative;
+        z-index: 1;
+        transition: all 0.3s ease;
+    }
+
+    .step-line.completed {
+        background-color: var(--primary-color);
+    }
+
+    .form-section {
+        display: none;
+    }
+
+    .form-section.active {
+        display: block;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .form-control {
+        border: 1px solid #ced4da;
+        border-radius: 0.375rem;
+        padding: 0.75rem;
+        width: 100%;
+        font-size: 1rem;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+
+    .form-control:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.25rem rgba(228, 138, 48, 0.25);
+        outline: 0;
+    }
+
+    .text-danger {
+        color: #dc3545;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+
+    .btn {
+        display: inline-block;
+        font-weight: 600;
+        text-align: center;
+        vertical-align: middle;
+        cursor: pointer;
+        border: 1px solid transparent;
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+        border-radius: 50px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+        background-color: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+        box-shadow: 0 4px 10px rgba(228, 138, 48, 0.3);
+    }
+
+    .btn-primary:hover {
+        background-color: #d47d29;
+        border-color: #d47d29;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(228, 138, 48, 0.4);
+    }
+
+    .btn-secondary {
+        background-color: #6c757d;
+        color: white;
+        border-color: #6c757d;
+    }
+
+    .btn-secondary:hover {
+        background-color: #5a6268;
+        border-color: #545b62;
+    }
+
+    .d-grid {
+        display: grid;
+    }
+
+    .gap-2 {
+        gap: 0.5rem;
+    }
+
+    .file-input-container {
+        position: relative;
+        margin-bottom: 1rem;
+    }
+
+    .custom-file-input {
+        position: relative;
+        z-index: 2;
+        width: 100%;
+        height: calc(1.5em + 0.75rem + 2px);
+        margin: 0;
+        opacity: 0;
+    }
+
+    .custom-file-label {
+        position: absolute;
+        top: 0;
+        right: 0;
+        left: 0;
+        z-index: 1;
+        height: calc(1.5em + 0.75rem + 2px);
+        padding: 0.375rem 0.75rem;
+        font-weight: 400;
+        line-height: 1.5;
+        color: #495057;
+        background-color: #fff;
+        border: 1px solid #ced4da;
+        border-radius: 0.25rem;
+        display: flex;
+        align-items: center;
+    }
+
+    .custom-file-button {
+        display: inline-block;
+        padding: 0.375rem 0.75rem;
+        margin-right: 0.5rem;
+        background-color: #e9ecef;
+        border-right: 1px solid #ced4da;
+        border-radius: 0.25rem 0 0 0.25rem;
+    }
+
+    .file-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .form-text {
+        color: #6c757d;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+
+    .login-link {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.3s ease;
+    }
+
+    .login-link:hover {
+        color: #d47d29;
+        text-decoration: underline;
+    }
+
+    /* Responsive adjustments */
+    @@media (max-width: 991px) {
+        .glass-container {
+            margin: 1rem;
+        }
+        
+        .image-side {
+            min-height: 300px;
+            border-radius: 20px 20px 0 0;
+        }
+        
+        .form-side {
+            border-radius: 0 0 20px 20px;
+        }
+    }
+    
+    @@media (max-width: 767px) {
+        .content-container {
+            padding: 1rem 0;
+        }
+        
+        .form-side {
+            padding: 1.5rem;
+        }
+        
+        .form-title {
+            font-size: 1.75rem;
+        }
+        
+        .step {
+            width: 35px;
+            height: 35px;
+        }
+    }
+    
+    @@media (max-width: 575px) {
+        .glass-container {
+            margin: 0.5rem;
+        }
+        
+        .form-side {
+            padding: 1.25rem 1rem;
+        }
+        
+        .image-side {
+            min-height: 200px;
+        }
+        
+        .form-title {
+            font-size: 1.5rem;
+        }
+    }
+
+    footer {
+        display: none;
+    }
+</style>
+
+<!-- Include the auth navbar -->
+<partial name="_AuthNavbar" />
+
+<div class="animated-background">
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+</div>
+
+<div class="content-wrapper">
+    <div class="container content-container">
+        <div class="row glass-container shadow-lg w-100 mx-auto" style="max-width: 1100px;">
+            <!-- Left Side: Image Container -->
+            <div class="col-lg-6 p-0 image-side">
+                <div class="image-background"></div>
+            </div>
+
+            <!-- Right Side: Registration Form -->
+            <div class="col-lg-6 p-4 form-side">
+                <div class="form-header">
+                    <h1 class="form-title">Welcome to <span>GrowTrack</span></h1>
+                    <p class="form-subtitle">Register your business to get started</p>
+                </div>
+
+                <div class="step-indicator mb-4">
+                    <div class="step active" id="step1-indicator">1</div>
+                    <div class="step-line" id="step-line-1"></div>
+                    <div class="step" id="step2-indicator">2</div>
+                    <div class="step-line" id="step-line-2"></div>
+                    <div class="step" id="step3-indicator">3</div>
+                </div>
+
+                <form asp-action="Register" method="post" enctype="multipart/form-data" onsubmit="return validateForm()" id="registrationForm">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" id="generatedCode" name="generatedCode" />
+
+                    <!-- Step 1: Personal Information -->
+                    <div class="form-section active" id="step1">
+                        <h5 class="border-bottom pb-2 mb-4" style="color: #304251;">Personal Information</h5>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
                                     <label asp-for="FirstName" class="form-label">First Name *</label>
                                     <input asp-for="FirstName" id="firstnamexyz" class="form-control" required maxlength="50">
                                     <span asp-validation-for="FirstName" class="text-danger"></span>
                                 </div>
-                                <div class="col-md-6 mb-3">
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
                                     <label asp-for="LastName" class="form-label">Last Name *</label>
                                     <input asp-for="LastName" id="lastnamexyz" class="form-control" required maxlength="50">
                                     <span asp-validation-for="LastName" class="text-danger"></span>
                                 </div>
                             </div>
+                        </div>
 
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
                                     <label asp-for="Email" class="form-label">Email *</label>
                                     <input asp-for="Email" id="emailxyz" type="email" class="form-control" required>
                                     <span asp-validation-for="Email" class="text-danger"></span>
                                 </div>
-                                <div class="col-md-6 mb-3">
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
                                     <label asp-for="PhoneNumber" class="form-label">Phone Number *</label>
-                                    <input asp-for="PhoneNumber" class="form-control" id="phoneNumber" type="text" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 11)" required />
+                                    <input asp-for="PhoneNumber" class="form-control" id="phoneNumber" type="text"
+                                           oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 11)" required>
                                     <span asp-validation-for="PhoneNumber" class="text-danger"></span>
                                 </div>
                             </div>
+                        </div>
 
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Verification Code *</label>
-                                    <div class="d-flex gap-2">
-                                    <input type="number" id="number" class="form-control" placeholder="e.g 123456" required />
-                                    <button type="button" id="generate" class="btn btn-secondary">Generate</button>
-                                    </div>
-                                    <small class="text-muted">Click Generate and check your email for verification code</small>
-                                    <div id="permitError" class="text-danger small"></div>
-                                </div>
-                                <div class="col-md-6 mb-3"></div>
+                        <div class="d-grid mt-4">
+                            <button type="button" class="btn btn-primary" onclick="sendVerificationAndProceed()">
+                                Verify Email <i class="fas fa-arrow-right ms-2"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Verification Code -->
+                    <div class="form-section" id="step2">
+                        <h5 class="border-bottom pb-2 mb-4" style="color: #304251;">Email Verification</h5>
+                        
+                        <div class="text-center mb-4">
+                            <div class="verification-icon mb-3">
+                                <i class="fas fa-envelope-open-text" style="font-size: 3rem; color: var(--primary-color);"></i>
+                            </div>
+                            <p>We've sent a verification code to <strong id="displayEmail"></strong></p>
+                            <p class="text-muted">Please check your inbox and enter the 6-digit code below</p>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Verification Code *</label>
+                            <div class="d-flex gap-2">
+                                <input type="text" id="verificationCode" class="form-control form-control-lg text-center" 
+                                       placeholder="000000" maxlength="6" 
+                                       oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 6)" required />
+                                <button type="button" id="resendCode" class="btn btn-outline-secondary">
+                                    Resend
+                                </button>
+                            </div>
+                            <div id="codeError" class="text-danger small mt-1"></div>
+                            <div class="text-center mt-2">
+                                <span id="countdown" class="text-muted"></span>
                             </div>
                         </div>
 
-                        <!-- Business Information -->
-                        <div class="mb-4">
-                            <h5 class="border-bottom pb-2">Business Information</h5>
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="button" class="btn btn-primary" onclick="verifyCodeAndProceed()">
+                                Verify & Continue <i class="fas fa-arrow-right ms-2"></i>
+                            </button>
+                            <button type="button" class="btn btn-secondary mb-2" onclick="goToStep(1)">
+                                <i class="fas fa-arrow-left me-2"></i> Back
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Business Information -->
+                    <div class="form-section" id="step3">
+                        <h5 class="border-bottom pb-2 mb-4" style="color: #304251;">Business Information</h5>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
                                     <label asp-for="BusinessName" class="form-label">Business Name *</label>
                                     <input asp-for="BusinessName" class="form-control" required maxlength="100">
                                     <span asp-validation-for="BusinessName" class="text-danger"></span>
                                 </div>
-                                <div class="col-md-6 mb-3">
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
                                     <label asp-for="DTIReqistrationNumber" class="form-label">DTI Registration Number *</label>
-                                    <input asp-for="DTIReqistrationNumber" class="form-control" id="DTINumber" type="text" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 13)" min-length="9" required />
+                                    <input asp-for="DTIReqistrationNumber" class="form-control" id="DTINumber" type="text"
+                                           oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 13)" required>
                                     <span asp-validation-for="DTIReqistrationNumber" class="text-danger"></span>
                                 </div>
                             </div>
+                        </div>
 
-                            <div class="row">
-                                <div class="col-12 mb-3">
-                                    <label asp-for="BusinessAddress" class="form-label">Business Address *</label>
-                                    <input asp-for="BusinessAddress" class="form-control" required maxlength="100">
-                                    <span asp-validation-for="BusinessAddress" class="text-danger"></span>
-                                </div>
-                            </div>
+                        <div class="form-group">
+                            <label asp-for="BusinessAddress" class="form-label">Business Address *</label>
+                            <input asp-for="BusinessAddress" class="form-control" required maxlength="100">
+                            <span asp-validation-for="BusinessAddress" class="text-danger"></span>
+                        </div>
 
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
                                     <label asp-for="NumberOfBusinessYearsOperation" class="form-label">Years in Operation *</label>
-                                    <input asp-for="NumberOfBusinessYearsOperation" class="form-control" required oninput="this.value = this.value.replace(/[^0-9]/g, '')" maxlength="100">
+                                    <input asp-for="NumberOfBusinessYearsOperation" class="form-control" required
+                                           oninput="this.value = this.value.replace(/[^0-9]/g, '')" maxlength="100">
                                     <span asp-validation-for="NumberOfBusinessYearsOperation" class="text-danger"></span>
                                 </div>
-                                <div class="col-md-6 mb-3 mb-3">
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
                                     <label asp-for="NumberOfEmployees" class="form-label">Number of Employees *</label>
-                                    <input asp-for="NumberOfEmployees" class="form-control" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required maxlength="100">
+                                    <input asp-for="NumberOfEmployees" class="form-control" required
+                                           oninput="this.value = this.value.replace(/[^0-9]/g, '')" maxlength="100">
                                     <span asp-validation-for="NumberOfEmployees" class="text-danger"></span>
                                 </div>
                             </div>
+                        </div>
 
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label asp-for="CategoryOfBusiness" class="form-label">Scope of Business *</label>
-                                    <select class="form-control" id="businessCategorySelect" required>
-                                        <option value=""selected disabled>-- Select Category --</option>
-                                        <option value="Retail">Retail</option>
-                                        <option value="Food & Beverage">Food & Beverage</option>
-                                        <option value="Manufacturing">Manufacturing</option>
-                                        <option value="Services">Services</option>
-                                        <option value="Technology">Technology</option>
-                                        <option value="Healthcare">Healthcare</option>
-                                        <option value="Education">Education</option>
-                                        <option value="Construction">Construction</option>
-                                        <option value="Transportation">Transportation</option>
-                                        <option value="Hospitality">Hospitality</option>
-                                        <option value="Other">Other (please specify)</option>
-                                    </select>
-                                </div>
-                                <input type="hidden" asp-for="CategoryOfBusiness" id="actualCategory" />
-                                <div class="col-md-6 mb-3 mb-3" id="otherCategoryContainer" style="display: none;">
-                                    <label asp-for="NumberOfEmployees" class="form-label">Specify Here! *</label>
-                                    <input type="text" id="otherCategoryInput" class="form-control" placeholder="Please specify your business category" maxlength="100">
-                                    <span asp-validation-for="NumberOfEmployees" class="text-danger"></span>
-                                </div>
-                                <span asp-validation-for="CategoryOfBusiness" class="text-danger"></span>
-                            </div>
+                        <div class="form-group">
+                            <label asp-for="CategoryOfBusiness" class="form-label">Scope of Business *</label>
+                            <select class="form-control" id="businessCategorySelect" required>
+                                <option value="" selected disabled>-- Select Category --</option>
+                                <option value="Retail">Retail</option>
+                                <option value="Food & Beverage">Food & Beverage</option>
+                                <option value="Manufacturing">Manufacturing</option>
+                                <option value="Services">Services</option>
+                                <option value="Technology">Technology</option>
+                                <option value="Healthcare">Healthcare</option>
+                                <option value="Education">Education</option>
+                                <option value="Construction">Construction</option>
+                                <option value="Transportation">Transportation</option>
+                                <option value="Hospitality">Hospitality</option>
+                                <option value="Other">Other (please specify)</option>
+                            </select>
+                            <input type="hidden" asp-for="CategoryOfBusiness" id="actualCategory" />
+                        </div>
 
-                            <div class="row">
-                                <div class="col-12 mb-3">
-                                    <label asp-for="CompanyBackground" class="form-label">Company Background *</label>
-                                    <textarea asp-for="CompanyBackground" class="form-control" required maxlength="1000" rows="4"></textarea>
-                                    <span asp-validation-for="CompanyBackground" class="text-danger"></span>
-                                </div>
-                            </div>
+                        <div id="otherCategoryContainer" class="form-group" style="display: none;">
+                            <label class="form-label">Specify Category *</label>
+                            <input type="text" id="otherCategoryInput" class="form-control"
+                                   placeholder="Please specify your business category" maxlength="100">
+                        </div>
 
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Business Permit *</label>
-                                    <input type="file" name="businessPermitFile" id="businessPermitFile" class="form-control" required
-                                           accept=".pdf,.jpg,.jpeg,.png,.gif">
-                                    <small class="text-muted">Upload a scanned copy of your business permit (PDF, JPG, PNG)</small>
-                                    <div id="permitError" class="text-danger small"></div>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Company Logo <small>(Optional)</small></label>
-                                    <input type="file" name="logoFile" id="logoFile" class="form-control"
-                                           accept=".jpg,.jpeg,.png,.gif">
-                                    <small class="text-muted">Optional: Upload your company logo (JPG, PNG)</small>
-                                    <div id="logoError" class="text-danger small"></div>
-                                </div>
+                        <div class="form-group">
+                            <label asp-for="CompanyBackground" class="form-label">Company Background *</label>
+                            <textarea asp-for="CompanyBackground" class="form-control" required maxlength="1000" rows="3"></textarea>
+                            <span asp-validation-for="CompanyBackground" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Business Permit *</label>
+                            <div class="file-input-container">
+                                <input type="file" name="businessPermitFile" id="businessPermitFile"
+                                       class="custom-file-input" required
+                                       accept=".pdf,.jpg,.jpeg,.png,.gif">
+                                <label class="custom-file-label" for="businessPermitFile">
+                                    <span class="custom-file-button">Choose File</span>
+                                    <span class="file-name" id="businessPermitName">No file chosen</span>
+                                </label>
                             </div>
+                            <small class="form-text text-muted">Upload a scanned copy of your business permit (PDF, JPG, PNG)</small>
+                            <div id="permitError" class="text-danger small"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Company Logo <small>(Optional)</small></label>
+                            <div class="file-input-container">
+                                <input type="file" name="logoFile" id="logoFile"
+                                       class="custom-file-input"
+                                       accept=".jpg,.jpeg,.png,.gif">
+                                <label class="custom-file-label" for="logoFile">
+                                    <span class="custom-file-button">Choose File</span>
+                                    <span class="file-name" id="logoName">No file chosen</span>
+                                </label>
+                            </div>
+                            <small class="form-text text-muted">Optional: Upload your company logo (JPG, PNG)</small>
+                            <div id="logoError" class="text-danger small"></div>
                         </div>
 
                         <div class="form-check mb-4">
@@ -157,12 +967,20 @@
                         </div>
 
                         <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary btn-lg">Register</button>
+                            <button type="submit" class="btn btn-primary">
+                                Register <i class="fas fa-check ms-2"></i>
+                            </button>
+                            <button type="button" class="btn btn-secondary mb-2" onclick="goToStep(2)">
+                                <i class="fas fa-arrow-left me-2"></i> Previous
+                            </button>
                         </div>
-                    </form>
-                    <div class="mt-3 text-center">
-                        <a asp-action="Login" asp-controller="Login">Already have an account? Login</a>
                     </div>
+                </form>
+
+                <div class="mt-3 text-center">
+                    <p class="mb-0">
+                        Already have an account? <a asp-action="Login" asp-controller="Login" class="login-link">Login</a>
+                    </p>
                 </div>
             </div>
         </div>
@@ -171,107 +989,110 @@
 
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@@emailjs/browser@3/dist/email.min.js"></script>
 
     <script>
-        // Initialize EmailJS with your User ID
-        (function() {
-            emailjs.init('N8Q598z924uY-yuoh'); // Your EmailJS user ID
-        })();
+        // Form navigation
+        function goToStep(stepNumber) {
+            // Hide all steps
+            document.querySelectorAll('.form-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Reset all step indicators
+            document.querySelectorAll('.step').forEach(step => {
+                step.classList.remove('active', 'completed');
+            });
+            
+            document.querySelectorAll('.step-line').forEach(line => {
+                line.classList.remove('completed');
+            });
+            
+            // Show the target step
+            document.getElementById('step' + stepNumber).classList.add('active');
+            
+            // Update step indicators
+            for (let i = 1; i <= stepNumber; i++) {
+                if (i < stepNumber) {
+                    document.getElementById('step' + i + '-indicator').classList.add('completed');
+                    document.getElementById('step-line-' + i).classList.add('completed');
+                } else {
+                    document.getElementById('step' + i + '-indicator').classList.add('active');
+                }
+            }
+        }
+        
+        function sendVerificationAndProceed() {
+            // Validate first step
+            const firstName = document.getElementById('firstnamexyz').value;
+            const lastName = document.getElementById('lastnamexyz').value;
+            const email = document.getElementById('emailxyz').value;
+            const phone = document.getElementById('phoneNumber').value;
 
-        // Configuration
+            if (!firstName || !lastName || !email || !phone) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Required Fields',
+                    text: 'Please fill in all required fields before proceeding.'
+                });
+                return;
+            }
+            
+            // Check phone number format
+            if (!/^\d{11}$/.test(phone)) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Invalid Phone Number',
+                    text: 'Phone number must be exactly 11 digits (e.g., 09123456789).'
+                });
+                return;
+            }
+            
+            // Send verification code
+            sendVerificationCode().then(success => {
+                if (success) {
+                    // Display the email in step 2
+                    document.getElementById('displayEmail').textContent = email;
+                    
+                    // Go to step 2
+                    goToStep(2);
+                }
+            });
+        }
+        
+        function verifyCodeAndProceed() {
+            const enteredCode = document.getElementById('verificationCode').value;
+            const expectedCode = document.getElementById('generatedCode').value;
+            
+            if (!enteredCode) {
+                document.getElementById('codeError').textContent = 'Please enter the verification code';
+                return;
+            }
+            
+            if (enteredCode !== expectedCode) {
+                document.getElementById('codeError').textContent = 'Invalid verification code. Please try again.';
+                return;
+            }
+            
+            // Clear any error
+            document.getElementById('codeError').textContent = '';
+            
+            // Go to step 3
+            goToStep(3);
+        }
+        
+        // Verification code handling
         const countdownDuration = 60;
         let countdownInterval;
         let currentCountdown = countdownDuration;
-        const generateButton = document.getElementById("generate");
         let generatedCode = null;
-        let ifSendEmail = false;
-
-        // File validation
-        document.getElementById('businessPermitFile').addEventListener('change', function(e) {
-            validateFile(this, 'permitError', ['pdf', 'jpg', 'jpeg', 'png', 'gif']);
-        });
-
-        document.getElementById('logoFile').addEventListener('change', function(e) {
-            validateFile(this, 'logoError', ['jpg', 'jpeg', 'png', 'gif']);
-        });
-
-        function validateFile(input, errorElementId, allowedExtensions) {
-            const errorElement = document.getElementById(errorElementId);
-            errorElement.textContent = '';
-
-            if (input.files.length > 0) {
-                const file = input.files[0];
-                const extension = file.name.split('.').pop().toLowerCase();
-                const isValid = allowedExtensions.includes(extension);
-
-                if (!isValid) {
-                    errorElement.textContent = `Invalid file type. Only ${allowedExtensions.join(', ')} files are allowed.`;
-                    input.value = '';
-                }
-
-                // Additional size validation if needed
-                const maxSize = 5 * 1024 * 1024; // 5MB
-                if (file.size > maxSize) {
-                    errorElement.textContent = 'File size must be less than 5MB';
-                    input.value = '';
-                }
-            }
-        }
-
-        // Add this function to check email existence
-        async function checkEmailExists(email) {
-            try {
-                const response = await fetch(`/Register/CheckEmailExists?email=${encodeURIComponent(email)}`);
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                const data = await response.json();
-                console.log("is email exist? ",data.exists)
-                return data.exists;
-            } catch (error) {
-                console.error('Error checking email:', error);
-                // Show error to user but allow them to try again
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Unable to verify email availability. Please try again.',
-                    confirmButtonText: 'OK'
-                });
-                return false; // Return false to allow the process to continue
-            }
-        }
-
-        // Add this for real-time email validation
-        document.getElementById("emailxyz").addEventListener("blur", async function() {
-            const email = this.value;
-            if (!email) return;
-
-            const emailError = document.querySelector("[data-valmsg-for='Email']");
-            const emailExists = await checkEmailExists(email);
-
-            if (emailExists) {
-                emailError.textContent = "This email is already registered";
-                this.classList.add("is-invalid");
-                generateButton.disabled = true;
-            } else {
-                emailError.textContent = "";
-                this.classList.remove("is-invalid");
-                generateButton.disabled = false;
-            }
-        });
-
-        // Modify the generate button click handler
-        generateButton.addEventListener("click", async function(event) {
-            event.preventDefault();
-
+        
+        async function sendVerificationCode() {
             const email = document.getElementById("emailxyz").value;
             if (!email) {
                 Swal.fire('Error', 'Please enter your email address first!', 'error');
-                return;
+                return false;
             }
 
-            // Check if email exists
             const emailExists = await checkEmailExists(email);
             if (emailExists) {
                 Swal.fire({
@@ -280,7 +1101,7 @@
                     text: 'This email address is already registered. Please use a different email or login.',
                     confirmButtonText: 'OK'
                 });
-                return;
+                return false;
             }
 
             const firstName = document.getElementById("firstnamexyz").value;
@@ -289,44 +1110,116 @@
             generatedCode = generateRandomNumber(6);
             document.getElementById("generatedCode").value = generatedCode;
 
-            // UI updates
-            generateButton.disabled = true;
+            const resendButton = document.getElementById("resendCode");
+            resendButton.disabled = true;
             startCountdown();
 
             try {
-                // Send email using EmailJS
-                const response = await emailjs.send(
-                    'service_3808aw8', // Your service ID
-                    'template_6j7ogl5', // Your template ID
-                    {
-                        to_email: email,
-                        verification_code: generatedCode,
-                        to_name: name,
-                        company_email: "likedjans98@gmail.com"
+                // Show loading state
+                Swal.fire({
+                    title: 'Sending verification code...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
                     }
-                );
+                });
 
-                console.log("Email sent successfully:", response);
+                // Send verification code via server-side API
+                const requestData = {
+                    email: email,
+                    name: name,
+                    code: generatedCode.toString()
+                };
+
+                const response = await fetch('/Register/SendVerificationCode', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(requestData)
+                });
+
+                // Close the loading dialog
+                Swal.close();
+
+                if (!response.ok) {
+                    let errorMessage = `Error ${response.status}: ${response.statusText}`;
+                    try {
+                        const errorData = await response.json();
+                        if (errorData && errorData.message) {
+                            errorMessage = errorData.message;
+                        }
+                    } catch (e) {
+                        console.error("Failed to parse error response:", e);
+                    }
+                    throw new Error(errorMessage);
+                }
+
                 Swal.fire({
                     icon: 'success',
-                    title: 'Verification Sent!',
-                    html: `A 6-digit code was sent to <b>${email}</b>`,
+                    title: 'Verification Code Sent!',
+                    text: `A 6-digit code was sent to ${email}`,
                     confirmButtonText: 'OK'
                 });
+                
+                return true;
             } catch (err) {
                 console.error("Email sending failed:", err);
                 handleSendError();
                 Swal.fire({
                     icon: 'error',
-                    title: 'Error',
-                    text: 'Failed to send verification code. Please try again.',
-                    footer: err.text || ''
+                    title: 'Error Sending Verification Code',
+                    text: err.message || 'Failed to send verification code. Please try again.',
+                    footer: 'If this problem persists, please contact support.'
                 });
+                return false;
             }
+        }
+        
+        function startCountdown() {
+            currentCountdown = countdownDuration;
+            updateCountdownText();
+            
+            const resendButton = document.getElementById("resendCode");
+            resendButton.disabled = true;
+
+            countdownInterval = setInterval(() => {
+                currentCountdown--;
+                updateCountdownText();
+
+                if (currentCountdown <= 0) {
+                    clearInterval(countdownInterval);
+                    resendButton.disabled = false;
+                    document.getElementById("countdown").textContent = "";
+                }
+            }, 1000);
+        }
+
+        function updateCountdownText() {
+            document.getElementById("countdown").textContent = `Resend available in ${currentCountdown} seconds`;
+        }
+
+        function handleSendError() {
+            clearInterval(countdownInterval);
+            document.getElementById("resendCode").disabled = false;
+            document.getElementById("countdown").textContent = "";
+        }
+        
+        // Resend button handler
+        document.getElementById("resendCode").addEventListener("click", function() {
+            sendVerificationCode();
         });
 
-        function verifyCode() {
-            const enteredCode = document.getElementById("number").value;
+        function generateRandomNumber(digits) {
+            const min = Math.pow(10, digits - 1);
+            const max = Math.pow(10, digits) - 1;
+            return Math.floor(min + Math.random() * (max - min + 1));
+        }
+        
+        // Form submission validation
+        function validateForm() {
+            const enteredCode = document.getElementById("verificationCode").value;
             const expectedCode = document.getElementById("generatedCode").value;
             const phoneNumber = document.getElementById("phoneNumber").value.trim();
             const dti = document.getElementById("DTINumber").value.trim();
@@ -343,8 +1236,8 @@
                 errorMessages.push("Please enter your email address.");
             }
 
-            if (!expectedCode) {
-                errorMessages.push("Please generate and enter the verification code.");
+            if (!expectedCode || enteredCode !== expectedCode) {
+                errorMessages.push("Invalid verification code. Please verify your email correctly.");
             }
 
             if (!isNumberValid) {
@@ -353,14 +1246,6 @@
 
             if (!isDtiValid) {
                 errorMessages.push("DTI registration number must be between 9 and 13 characters.");
-            }
-
-            if (typeof ifSendEmail !== "undefined" && ifSendEmail) {
-                errorMessages.push("Please generate and enter the verification code.");
-            }
-
-            if (enteredCode !== expectedCode) {
-                errorMessages.push("Invalid verification code. Please check your email and try again.");
             }
 
             if (!permitFile) {
@@ -383,47 +1268,81 @@
             return true;
         }
 
-        // Helper functions
-        function startCountdown() {
-            currentCountdown = countdownDuration;
-            updateButtonText();
-
-            countdownInterval = setInterval(() => {
-                currentCountdown--;
-                updateButtonText();
-
-                if (currentCountdown <= 0) {
-                    clearInterval(countdownInterval);
-                    generateButton.disabled = false;
-                    generateButton.textContent = "Generate";
+        // Email verification
+        async function checkEmailExists(email) {
+            try {
+                const response = await fetch(`/Register/CheckEmailExists?email=${encodeURIComponent(email)}`);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
                 }
-            }, 1000);
+                const data = await response.json();
+                return data.exists;
+            } catch (error) {
+                console.error('Error checking email:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Unable to verify email availability. Please try again.',
+                    confirmButtonText: 'OK'
+                });
+                return false;
+            }
         }
 
-        function updateButtonText() {
-            generateButton.textContent = `Resend in ${currentCountdown}s`;
-        }
+        document.getElementById("emailxyz").addEventListener("blur", async function() {
+            const email = this.value;
+            if (!email) return;
 
-        function handleSendError() {
-            clearInterval(countdownInterval);
-            generateButton.disabled = false;
-            generateButton.textContent = "Generate";
-        }
+            const emailError = document.querySelector("[data-valmsg-for='Email']");
+            const emailExists = await checkEmailExists(email);
 
-        function generateRandomNumber(digits) {
-            const min = 10 ** (digits - 1);
-            const max = (10 ** digits) - 1;
-            return Math.floor(min + Math.random() * (max - min + 1));
-        }
-
-        // Enable generate button when page loads
-        document.addEventListener("DOMContentLoaded", () => {
-            generateButton.disabled = false;
+            if (emailExists) {
+                emailError.textContent = "This email is already registered";
+                this.classList.add("is-invalid");
+            } else {
+                emailError.textContent = "";
+                this.classList.remove("is-invalid");
+            }
         });
-    </script>
 
-    @* select options *@
-    <script>
+        // File validation
+        document.getElementById('businessPermitFile').addEventListener('change', function() {
+            const fileName = this.files[0] ? this.files[0].name : '';
+            document.getElementById('businessPermitName').textContent = fileName;
+            validateFile(this, 'permitError', ['pdf', 'jpg', 'jpeg', 'png', 'gif']);
+        });
+
+        document.getElementById('logoFile').addEventListener('change', function() {
+            const fileName = this.files[0] ? this.files[0].name : '';
+            document.getElementById('logoName').textContent = fileName;
+            validateFile(this, 'logoError', ['jpg', 'jpeg', 'png', 'gif']);
+        });
+
+        function validateFile(input, errorElementId, allowedExtensions) {
+            const errorElement = document.getElementById(errorElementId);
+            errorElement.textContent = '';
+
+            if (input.files.length > 0) {
+                const file = input.files[0];
+                const extension = file.name.split('.').pop().toLowerCase();
+                const isValid = allowedExtensions.includes(extension);
+
+                if (!isValid) {
+                    errorElement.textContent = `Invalid file type. Only ${allowedExtensions.join(', ')} files are allowed.`;
+                    input.value = '';
+                    return;
+                }
+
+                const maxSize = 5 * 1024 * 1024; // 5MB
+                if (file.size > maxSize) {
+                    errorElement.textContent = 'File size must be less than 5MB';
+                    input.value = '';
+                    return;
+                }
+            }
+        }
+
+        // Business category handling
         $(document).ready(function() {
             const categorySelect = $('#businessCategorySelect');
             const otherContainer = $('#otherCategoryContainer');

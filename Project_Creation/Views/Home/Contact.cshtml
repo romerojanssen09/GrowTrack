@@ -1,0 +1,540 @@
+@model Project_Creation.Models.Entities.ContactMessage
+@{
+    ViewData["Title"] = "Contact Us - GrowTrack";
+}
+
+<!-- Include the auth navbar -->
+<partial name="_AuthNavbar" />
+
+<!-- Contact Hero Section -->
+<div class="contact-hero-section position-relative vh-100">
+    <!-- Background elements -->
+    <div class="contact-bg">
+        <div class="contact-bg-image"></div>
+        <div class="glassmorphism-overlay"></div>
+        <div class="gradient-sphere gradient-1"></div>
+        <div class="gradient-sphere gradient-2"></div>
+        <div class="animated-circle circle-1"></div>
+        <div class="animated-circle circle-2"></div>
+        <div class="grid-pattern"></div>
+    </div>
+    
+    <div class="container position-relative">
+        <div class="row py-5">
+            <div class="col-lg-6 contact-content-col">
+                <div class="contact-badge">
+                    <span>GET IN TOUCH</span>
+                </div>
+                <h1 class="contact-title">Contact <span>Us</span></h1>
+                <p class="contact-description">
+                    Have questions about GrowTrack? Our team is here to help you with any inquiries or support you may need.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Contact Form Section -->
+<div class="contact-form-section py-5">
+    <div class="container">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle me-2"></i> @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        <div class="row">
+            <div class="col-lg-6 mb-5 mb-lg-0">
+                <div class="contact-form-container">
+                    <h2 class="section-title mb-4">Send us a message</h2>
+                    <p class="section-subtitle mb-4">Fill out the form below and we'll get back to you as soon as possible.</p>
+                    
+                    <form id="contactForm" asp-controller="Home" asp-action="Contact" method="post" class="contact-form">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <div class="form-group">
+                                    <label asp-for="Name" class="form-label">Full Name</label>
+                                    <input asp-for="Name" class="form-control" placeholder="Your name" required>
+                                    <span asp-validation-for="Name" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-4">
+                                <div class="form-group">
+                                    <label asp-for="Email" class="form-label">Email Address</label>
+                                    <input asp-for="Email" class="form-control" placeholder="Your email" required>
+                                    <span asp-validation-for="Email" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group mb-4">
+                            <label asp-for="Subject" class="form-label">Subject</label>
+                            <input asp-for="Subject" class="form-control" placeholder="Subject of your message">
+                            <span asp-validation-for="Subject" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="form-group mb-4">
+                            <label asp-for="Message" class="form-label">Message</label>
+                            <textarea asp-for="Message" class="form-control" rows="5" placeholder="Your message" required></textarea>
+                            <span asp-validation-for="Message" class="text-danger"></span>
+                        </div>
+                        
+                        <button type="submit" class="btn-submit">
+                            <span>Send Message</span>
+                            <i class="fas fa-paper-plane ms-2"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="col-lg-5 offset-lg-1">
+                <div class="contact-info-container">
+                    <h2 class="section-title mb-4">Contact Information</h2>
+                    <p class="section-subtitle mb-4">You can also reach out to us using the following contact details.</p>
+                    
+                    <div class="contact-info-item">
+                        <div class="contact-info-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div class="contact-info-content">
+                            <h5>Email</h5>
+                            <p>grow.track.06@gmail.com</p>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-info-item">
+                        <div class="contact-info-icon">
+                            <i class="fas fa-phone-alt"></i>
+                        </div>
+                        <div class="contact-info-content">
+                            <h5>Phone</h5>
+                            <p>+63 956 418 6361</p>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-info-item">
+                        <div class="contact-info-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <div class="contact-info-content">
+                            <h5>Office</h5>
+                            <p>GrowSphere Solutions, Bacolod City, Philippines</p>
+                            <small>(This is for our our project creation project)</small>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-social-links">
+                        <h5 class="mb-3">Follow Us</h5>
+                        <div class="social-icons">
+                            <a href="https://www.facebook.com/" target="_blank" class="social-icon">
+                                <i class="fab fa-facebook-f"></i>
+                            </a>
+                            <a href="https://x.com/" target="_blank" class="social-icon">
+                                <i class="fab fa-twitter"></i>
+                            </a>
+                            <a href="https://www.instagram.com/" target="_blank" class="social-icon">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                            <a href="https://www.linkedin.com/" target="_blank" class="social-icon">
+                                <i class="fab fa-linkedin-in"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Contact Hero Section */
+    .contact-hero-section {
+        background-color: #304251;
+        padding: 6rem 0 4rem;
+        position: relative;
+        overflow: hidden;
+        color: white;
+    }
+    
+    .contact-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+    }
+    
+    .contact-bg-image {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: url('https://images.unsplash.com/photo-1552581234-26160f608093?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80');
+        background-size: cover;
+        background-position: center;
+        opacity: 0.4;
+        z-index: 1;
+    }
+    
+    .contact-content-col {
+        position: relative;
+        z-index: 10;
+    }
+    
+    .contact-badge {
+        display: inline-block;
+        padding: 6px 16px;
+        border-radius: 50px;
+        background-color: rgba(243, 153, 62, 0.2);
+        border: 1px solid rgba(243, 153, 62, 0.3);
+        color: rgb(255, 255, 255);
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 1.5rem;
+        animation: float 3s infinite ease-in-out;
+        position: relative;
+        z-index: 1;
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
+    }
+    
+    .contact-title {
+        font-size: 3.5rem;
+        font-weight: 800;
+        margin-bottom: 1.5rem;
+        line-height: 1.1;
+        letter-spacing: -0.5px;
+        background: linear-gradient(to right, #ffffff, #e0e0e0);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        display: inline-block;
+    }
+    
+    .contact-title span {
+        background: linear-gradient(to right, #F3993E, #ffb366);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        display: inline-block;
+    }
+    
+    .contact-description {
+        font-size: 1.15rem;
+        line-height: 1.6;
+        color: rgba(255, 255, 255, 0.9);
+        margin-bottom: 2rem;
+        max-width: 500px;
+    }
+    
+    /* Contact Form Section */
+    .contact-form-section {
+        background-color: #F7F5EF;
+    }
+    
+    .contact-form-container {
+        background-color: white;
+        border-radius: 15px;
+        padding: 2.5rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        height: 100%;
+    }
+    
+    .contact-info-container {
+        background-color: #304251;
+        border-radius: 15px;
+        padding: 2.5rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        color: white;
+        height: 100%;
+    }
+    
+    .section-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: #304251;
+    }
+    
+    .contact-info-container .section-title {
+        color: white;
+    }
+    
+    .section-subtitle {
+        font-size: 1rem;
+        line-height: 1.6;
+        color: #6c757d;
+    }
+    
+    .contact-info-container .section-subtitle {
+        color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: #304251;
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-control {
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        border: 1px solid #ced4da;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus {
+        border-color: #F3993E;
+        box-shadow: 0 0 0 0.25rem rgba(243, 153, 62, 0.25);
+    }
+    
+    .btn-submit {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.75rem 1.5rem;
+        background: linear-gradient(to right, #F3993E, #ff9f2d);
+        color: white;
+        font-weight: 600;
+        border: none;
+        border-radius: 50px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-submit:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(243, 153, 62, 0.3);
+    }
+    
+    .contact-info-item {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 2rem;
+    }
+    
+    .contact-info-icon {
+        width: 45px;
+        height: 45px;
+        background-color: rgba(243, 153, 62, 0.2);
+        color: #F3993E;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        margin-right: 1rem;
+        flex-shrink: 0;
+    }
+    
+    .contact-info-content h5 {
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+    
+    .contact-info-content p {
+        color: rgba(255, 255, 255, 0.8);
+        margin-bottom: 0;
+    }
+    
+    .contact-social-links {
+        margin-top: 2.5rem;
+    }
+    
+    .social-icons {
+        display: flex;
+        gap: 1rem;
+    }
+    
+    .social-icon {
+        width: 40px;
+        height: 40px;
+        background-color: rgba(255, 255, 255, 0.1);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .social-icon:hover {
+        background-color: #F3993E;
+        color: white;
+        transform: translateY(-3px);
+    }
+    
+    /* Team Section */
+    .team-section {
+        background-color: #F7F5EF;
+        position: relative;
+    }
+    
+    .team-card {
+        background-color: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+    
+    .team-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+    }
+    
+    .team-img-container {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .team-img {
+        width: 100%;
+        height: 300px;
+        object-fit: cover;
+        transition: all 0.5s ease;
+    }
+    
+    .team-card:hover .team-img {
+        transform: scale(1.05);
+    }
+    
+    .team-social {
+        position: absolute;
+        bottom: -50px;
+        left: 0;
+        right: 0;
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        padding: 1rem 0;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0));
+        transition: all 0.3s ease;
+    }
+    
+    .team-card:hover .team-social {
+        bottom: 0;
+    }
+    
+    .team-social-link {
+        width: 35px;
+        height: 35px;
+        background-color: white;
+        color: #304251;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+    }
+    
+    .team-social-link:hover {
+        background-color: #F3993E;
+        color: white;
+        transform: translateY(-3px);
+    }
+    
+    .team-info {
+        padding: 1.5rem;
+    }
+    
+    .team-name {
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: #304251;
+    }
+    
+    .team-position {
+        font-size: 0.9rem;
+        color: #F3993E;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+    
+    .team-bio {
+        font-size: 0.95rem;
+        color: #6c757d;
+        line-height: 1.6;
+        margin-bottom: 0;
+    }
+    
+    /* Responsive styles */
+    @@media (max-width: 991px) {
+        .contact-title {
+            font-size: 3rem;
+        }
+        
+        .contact-form-container,
+        .contact-info-container {
+            margin-bottom: 2rem;
+        }
+    }
+    
+    @@media (max-width: 767px) {
+        .contact-hero-section {
+            padding: 4rem 0 3rem;
+        }
+        
+        .contact-title {
+            font-size: 2.5rem;
+        }
+        
+        .section-title {
+            font-size: 1.8rem;
+        }
+    }
+    
+    @@media (max-width: 575px) {
+        .contact-title {
+            font-size: 2rem;
+        }
+        
+        .contact-form-container,
+        .contact-info-container {
+            padding: 1.5rem;
+        }
+    }
+    
+    /* Alert styles */
+    .alert {
+        border-radius: 10px;
+        margin-bottom: 2rem;
+    }
+    
+    .alert-success {
+        background-color: rgba(25, 135, 84, 0.1);
+        border-color: rgba(25, 135, 84, 0.2);
+        color: #198754;
+    }
+
+    #wrapper {
+        padding: 0px !important;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Auto-dismiss alerts after 5 seconds
+            setTimeout(function() {
+                const alerts = document.querySelectorAll('.alert');
+                alerts.forEach(function(alert) {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                });
+            }, 5000);
+        });
+    </script>
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+} 

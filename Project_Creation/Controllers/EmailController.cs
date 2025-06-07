@@ -3,6 +3,7 @@ using System.Net;
 using Microsoft.AspNetCore.Mvc;
 using Project_Creation.Data;
 using Project_Creation.Models.Entities;
+using System.Text.RegularExpressions;
 
 namespace Project_Creation.Controllers
 {
@@ -39,11 +40,98 @@ namespace Project_Creation.Controllers
     {
         private readonly ILogger<HardcodedEmailService> _logger;
         private readonly IConfiguration _configuration;
+        private readonly AuthDbContext _context;
 
-        public HardcodedEmailService(ILogger<HardcodedEmailService> logger, IConfiguration configuration)
+        public HardcodedEmailService(ILogger<HardcodedEmailService> logger, IConfiguration configuration, AuthDbContext context)
         {
             _logger = logger;
             _configuration = configuration;
+            _context = context;
+        }
+
+        public string ReplacePlaceholders(string content, Leads lead, Users businessOwner)
+        {
+            if (string.IsNullOrEmpty(content))
+                return content;
+            
+            var result = content;
+            
+            // Replace lead placeholders
+            if (lead != null)
+            {
+                result = result.Replace("{{LeadName}}", lead.LeadName ?? "Customer");
+                result = result.Replace("{{LeadEmail}}", lead.LeadEmail ?? "");
+                result = result.Replace("{{LeadPhone}}", lead.LeadPhone ?? "");
+                
+                // Format date placeholders
+                if (lead.LastPurchaseDate.HasValue)
+                {
+                    result = result.Replace("{{LastPurchaseDate}}", lead.LastPurchaseDate.Value.ToString("MMM dd, yyyy"));
+                }
+                else
+                {
+                    result = result.Replace("{{LastPurchaseDate}}", "N/A");
+                }
+                
+                if (lead.LastContacted.HasValue)
+                {
+                    result = result.Replace("{{LastContacted}}", lead.LastContacted.Value.ToString("MMM dd, yyyy"));
+                }
+                else
+                {
+                    result = result.Replace("{{LastContacted}}", "N/A");
+                }
+            }
+            
+            // Replace business owner placeholders
+            if (businessOwner != null)
+            {
+                result = result.Replace("{{BusinessName}}", businessOwner.BusinessName ?? "Our Business");
+                result = result.Replace("{{BusinessOwnerName}}", $"{businessOwner.FirstName} {businessOwner.LastName}".Trim());
+                result = result.Replace("{{BusinessEmail}}", businessOwner.Email ?? "");
+                result = result.Replace("{{BusinessPhone}}", businessOwner.PhoneNumber ?? "");
+            }
+            
+            // Replace product placeholders
+            if (businessOwner != null)
+            {
+                try
+                {
+                    // Match all product placeholders like {{Product:123}}
+                    var regex = new Regex(@"\{\{Product:(\d+)\}\}");
+                    var matches = regex.Matches(result);
+                    
+                    if (matches.Count > 0)
+                    {
+                        foreach (Match match in matches)
+                        {
+                            if (match.Groups.Count > 1 && int.TryParse(match.Groups[1].Value, out int productId))
+                            {
+                                var product = _context.Products2
+                                    .FirstOrDefault(p => p.Id == productId && p.BOId == businessOwner.Id);
+                                
+                                if (product != null)
+                                {
+                                    var productInfo = $"{product.ProductName} - {product.SellingPrice:C}";
+                                    result = result.Replace(match.Value, productInfo);
+                                }
+                                else
+                                {
+                                    // Product not found, replace with empty string
+                                    result = result.Replace(match.Value, "[Product not found]");
+                                }
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Log the error but don't throw - just continue with other replacements
+                    _logger.LogError($"Error replacing product placeholders: {ex.Message}");
+                }
+            }
+            
+            return result;
         }
 
         public async Task SendEmailWithTracking(string senderEmail, string senderName, string receiver, string subject, string body, string campaignId, bool isBodyHtml = false)

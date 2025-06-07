@@ -32,6 +32,10 @@ namespace Project_Creation.Models.Entities
         public string ConfirmPassword { get; set; } = string.Empty;
 
         public string Role { get; set; } = "Admin";
+        public bool AllowLoginAlerts { get; set; } = false;
+        public bool AllowEmailNotifications { get; set; } = true;
+        public bool TwoFactorAuthentication { get; set; } = false;
+        public int? TwoFactorAuthenticationCode { get; set; }
         public DateTime CreatedAt { get; set; } = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Singapore"));
         public DateTime? LastLogin { get; set; }
     }

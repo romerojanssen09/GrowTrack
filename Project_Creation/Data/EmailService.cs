@@ -1,18 +1,21 @@
 ﻿using System.Net;
 using System.Net.Mail;
+using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Project_Creation.Models.Entities;
+using System.Web;
 
 namespace Project_Creation.Data
 {
     public interface IEmailService
     {
-        Task SendEmail(string receiver, string subject, string body, bool isBodyHtml = false);
+        Task SendEmail(string receiver, string subject, string body, bool isBodyHtml = false); // system
         Task SendEmailWithTracking(string senderEmail, string senderName, string receiver, string subject, string body, string campaignId, bool isBodyHtml = false);
         Task SendEmail2(string senderEmail, string senderName, string receiver, string subject, string body, bool isBodyHtml = false);
         Task SendEmailToBO(Users receiver, string subject, string body, bool isBodyHtml = false);
+        string ReplacePlaceholders(string content, Leads lead, Users businessOwner);
     }
 
     public interface ICampaignTracker
@@ -26,15 +29,18 @@ namespace Project_Creation.Data
         private readonly IConfiguration _configuration;
         private readonly ILogger<EmailService> _logger;
         private readonly ICampaignTracker _campaignTracker;
+        private readonly AuthDbContext _context;
 
         public EmailService(
             IConfiguration configuration, 
             ILogger<EmailService> logger,
-            ICampaignTracker campaignTracker)
+            ICampaignTracker campaignTracker,
+            AuthDbContext context)
         {
             _configuration = configuration;
             _logger = logger;
             _campaignTracker = campaignTracker;
+            _context = context;
         }
 
         public async Task SendEmailWithTracking(
@@ -57,8 +63,8 @@ namespace Project_Creation.Data
                     throw new ConfigurationException("Invalid Tracking:BaseUrl configuration");
                 }
 
-                // Add tracking pixel to body
-                string trackedBody = WebUtility.HtmlEncode(body) +
+                // Add tracking pixel to body without HTML encoding the body
+                string trackedBody = body +
                     $"<img src='{trackingUri}track/open/{campaignId}?email={WebUtility.UrlEncode(receiver)}' style='display:none'/>";
 
                 _logger.LogInformation("Sending tracked email for campaign {CampaignId} to {Receiver}",
@@ -77,7 +83,7 @@ namespace Project_Creation.Data
                     From = new MailAddress(senderEmail, senderName),
                     Subject = subject,
                     Body = trackedBody,
-                    IsBodyHtml = isBodyHtml
+                    IsBodyHtml = true // Force HTML for tracking pixel
                 };
                 message.To.Add(receiver);
                 message.Headers.Add("Message-ID", messageId);
@@ -103,7 +109,7 @@ namespace Project_Creation.Data
             // Generate a unique message ID
             string messageId = $"<{Guid.NewGuid()}@{new Uri(_configuration["EMAIL_CONFIGURATION:HOST"]).Host}>";
 
-            // Add tracking pixel to body
+            // Add tracking pixel to body without HTML encoding
             string trackedBody = body +
                 $"<img src='{_configuration["Tracking:BaseUrl"]}/track/open/{campaignId}?email={WebUtility.UrlEncode(receiver)}' style='display:none'/>";
 
@@ -111,7 +117,8 @@ namespace Project_Creation.Data
             _logger.LogInformation("Sending tracked email for campaign {CampaignId} to {Receiver} with Message-ID: {MessageId}",
                 campaignId, receiver, messageId);
 
-            await SendEmailInternal(receiver, subject, trackedBody, isBodyHtml, messageId, campaignId);
+            // Always use HTML for emails with tracking pixel
+            await SendEmailInternal(receiver, subject, trackedBody, true, messageId, campaignId);
         }
 
         public async Task SendEmail2(string senderEmail, string senderName, string receiver, string subject, string body, bool isBodyHtml = false)
@@ -247,6 +254,94 @@ namespace Project_Creation.Data
                 IsBodyHtml = isBodyHtml,
                 Priority = MailPriority.Normal
             };
+        }
+
+        /// <summary>
+        /// Replaces placeholder values in a template with actual lead and business data
+        /// </summary>
+        public string ReplacePlaceholders(string content, Leads lead, Users businessOwner)
+        {
+            if (string.IsNullOrEmpty(content))
+                return content;
+            
+            var result = content;
+            
+            // Replace lead placeholders
+            if (lead != null)
+            {
+                result = result.Replace("{{LeadName}}", HttpUtility.HtmlEncode(lead.LeadName ?? "Customer"));
+                result = result.Replace("{{LeadEmail}}", HttpUtility.HtmlEncode(lead.LeadEmail ?? ""));
+                result = result.Replace("{{LeadPhone}}", HttpUtility.HtmlEncode(lead.LeadPhone ?? ""));
+                
+                // Format date placeholders
+                if (lead.LastPurchaseDate.HasValue)
+                {
+                    result = result.Replace("{{LastPurchaseDate}}", lead.LastPurchaseDate.Value.ToString("MMM dd, yyyy"));
+                }
+                else
+                {
+                    result = result.Replace("{{LastPurchaseDate}}", "N/A");
+                }
+                
+                if (lead.LastContacted.HasValue)
+                {
+                    result = result.Replace("{{LastContacted}}", lead.LastContacted.Value.ToString("MMM dd, yyyy"));
+                }
+                else
+                {
+                    result = result.Replace("{{LastContacted}}", "N/A");
+                }
+            }
+            
+            // Replace business owner placeholders
+            if (businessOwner != null)
+            {
+                result = result.Replace("{{BusinessName}}", HttpUtility.HtmlEncode(businessOwner.BusinessName ?? "Our Business"));
+                result = result.Replace("{{BusinessOwnerName}}", HttpUtility.HtmlEncode($"{businessOwner.FirstName} {businessOwner.LastName}".Trim()));
+                result = result.Replace("{{BusinessEmail}}", HttpUtility.HtmlEncode(businessOwner.Email ?? ""));
+                result = result.Replace("{{BusinessPhone}}", HttpUtility.HtmlEncode(businessOwner.PhoneNumber ?? ""));
+            }
+            
+            // Replace product placeholders
+            if (businessOwner != null)
+            {
+                try
+                {
+                    // Match all product placeholders like {{Product:123}}
+                    var regex = new Regex(@"\{\{Product:(\d+)\}\}");
+                    var matches = regex.Matches(result);
+                    
+                    if (matches.Count > 0)
+                    {
+                        foreach (Match match in matches)
+                        {
+                            if (match.Groups.Count > 1 && int.TryParse(match.Groups[1].Value, out int productId))
+                            {
+                                var product = _context.Products2
+                                    .FirstOrDefault(p => p.Id == productId && p.BOId == businessOwner.Id);
+                                
+                                if (product != null)
+                                {
+                                    var productInfo = $"{product.ProductName} - {product.SellingPrice:C}";
+                                    result = result.Replace(match.Value, productInfo);
+                                }
+                                else
+                                {
+                                    // Product not found, replace with empty string
+                                    result = result.Replace(match.Value, "[Product not found]");
+                                }
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Log the error but don't throw - just continue with other replacements
+                    Console.WriteLine($"Error replacing product placeholders: {ex.Message}");
+                }
+            }
+            
+            return result;
         }
     }
 

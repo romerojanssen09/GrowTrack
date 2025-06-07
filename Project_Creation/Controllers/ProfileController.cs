@@ -1,22 +1,16 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Hosting;
 using Project_Creation.Data;
 using Project_Creation.DTO;
-using System.IO;
-using System.Linq;
 using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
 using Project_Creation.Models.Entities;
-using Microsoft.Data.SqlClient;
-using System;
 using System.Data;
 using Microsoft.AspNetCore.Authentication;
-using BCrypt.Net;
-using NHibernate.Cfg;
 using System.Data.Common;
 using static Project_Creation.Models.Entities.Users;
+using Project_Creation.Models.ViewModels;
+//using NHibernate.Linq;
 
 namespace Project_Creation.Controllers
 {
@@ -73,9 +67,11 @@ namespace Project_Creation.Controllers
                         a.IsAllowEditSecCertPath,
                         a.DtiCertPath,
                         a.IsAllowEditDtiCertPath,
-                        a.OperationToOperate
+                        a.OperationToOperate,
+                        l.*
                     FROM Users u
                     LEFT JOIN UsersAdditionInfo a ON u.Id = a.UserId
+                    LEFT JOIN UserSocialMediaLinks l ON u.Id = a.UserId
                     WHERE u.Id = @Id";
 
                     var parameter = command.CreateParameter();
@@ -117,7 +113,7 @@ namespace Project_Creation.Controllers
                             BusinessPermitPath = user.BusinessPermitPath,
                             IsAllowEditBusinessPermitPath = user.IsAllowEditBusinessPermitPath,
                             CategoryOfBusiness = user.CategoryOfBusiness,
-                            IsAllowedToMarketPlace = user.MarkerPlaceStatus.ToString(),
+                            MarkerPlaceStatus = user.MarkerPlaceStatus.ToString(),
 
                             // Additional info properties
                             BrgyClearancePath = additionalData.BrgyClearancePath,
@@ -128,7 +124,22 @@ namespace Project_Creation.Controllers
                             IsAllowEditSecCertPath = additionalData.IsAllowEditSecCertPath,
                             DtiCertPath = additionalData.DtiCertPath,
                             IsAllowEditDtiCertPath = additionalData.IsAllowEditDtiCertPath,
-                            OperationToOperate = additionalData.OperationToOperate
+                            OperationToOperate = additionalData.OperationToOperate,
+
+                            // social media links
+                            userSocialMediaLinks = new UserSocialMediaLinks
+                            {
+                                FacebookLinks = result.IsDBNull(result.GetOrdinal("FacebookLinks")) ? string.Empty : result.GetString(result.GetOrdinal("FacebookLinks")),
+                                InstagramLinks = result.IsDBNull(result.GetOrdinal("InstagramLinks")) ? string.Empty : result.GetString(result.GetOrdinal("InstagramLinks")),
+                                TwitterLinks = result.IsDBNull(result.GetOrdinal("TwitterLinks")) ? string.Empty : result.GetString(result.GetOrdinal("TwitterLinks")),
+                                TikTokLinks = result.IsDBNull(result.GetOrdinal("TikTokLinks")) ? string.Empty : result.GetString(result.GetOrdinal("TikTokLinks")),
+                                YouTubeLinks = result.IsDBNull(result.GetOrdinal("YouTubeLinks")) ? string.Empty : result.GetString(result.GetOrdinal("YouTubeLinks")),
+                                LinkedInLinks = result.IsDBNull(result.GetOrdinal("LinkedInLinks")) ? string.Empty : result.GetString(result.GetOrdinal("LinkedInLinks")),
+                                PinterestLinks = result.IsDBNull(result.GetOrdinal("PinterestLinks")) ? string.Empty : result.GetString(result.GetOrdinal("PinterestLinks")),
+                                WhatsAppLinks = result.IsDBNull(result.GetOrdinal("WhatsAppLinks")) ? string.Empty : result.GetString(result.GetOrdinal("WhatsAppLinks")),
+                                ThreadsLinks = result.IsDBNull(result.GetOrdinal("ThreadsLinks")) ? string.Empty : result.GetString(result.GetOrdinal("ThreadsLinks")),
+                                SnapchatLinks = result.IsDBNull(result.GetOrdinal("SnapchatLinks")) ? string.Empty : result.GetString(result.GetOrdinal("SnapchatLinks"))
+                            }
                         };
                         return View(profileViewModel);
                     }
@@ -145,7 +156,7 @@ namespace Project_Creation.Controllers
 
         private Users MapUserFromReader(DbDataReader reader)
         {
-            return new Users
+            var user = new Users
             {
                 Id = GetInt32Safe(reader, "Id"),
                 FirstName = GetStringSafe(reader, "FirstName"),
@@ -162,6 +173,15 @@ namespace Project_Creation.Controllers
                 CategoryOfBusiness = GetStringSafe(reader, "CategoryOfBusiness"),
                 IsAllowEditBusinessPermitPath = GetBooleanSafe(reader, "IsAllowEditBusinessPermitPath")
             };
+            
+            // Properly set the MarkerPlaceStatus enum value
+            if (reader.GetOrdinal("MarkerPlaceStatus") >= 0 && !reader.IsDBNull(reader.GetOrdinal("MarkerPlaceStatus")))
+            {
+                int statusValue = reader.GetInt32(reader.GetOrdinal("MarkerPlaceStatus"));
+                user.MarkerPlaceStatus = (MarketplaceStatus)statusValue;
+            }
+            
+            return user;
         }
 
         private UsersAdditionalInfoDto MapAdditionalInfoFromReader(DbDataReader reader)
@@ -481,137 +501,166 @@ namespace Project_Creation.Controllers
 
         public IActionResult Settings()
         {
-            // Get email from claims
+            // Get User from claims
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var email = User.FindFirstValue(ClaimTypes.Email) ?? User.Identity?.Name ?? string.Empty;
+            var fullname = User.FindFirstValue(ClaimTypes.Name) ?? User.Identity?.Name ?? string.Empty;
+
+            // Get user settings from database
+            var user = _context.Users.FirstOrDefault(u => u.Id.ToString() == userId);
+            var admin = _context.Admin.FirstOrDefault(a => a.Id.ToString() == userId);
+            var staff = _context.Staffs.FirstOrDefault(s => s.Id.ToString() == userId);
 
             // Create settings view model
             var settingsViewModel = new SettingsViewModel
             {
-                Email = email
+                Email = email,
+                Fullname = fullname,
+                TwoFactorEnabled = user?.TwoFactorAuthentication ?? admin?.TwoFactorAuthentication ?? staff?.TwoFactorAuthentication ?? false,
+                AllowEmailNotifications = user?.AllowEmailNotifications ?? admin?.AllowEmailNotifications ?? staff?.AllowEmailNotifications ?? false,
+                AllowLoginAlerts = user?.AllowLoginAlerts ?? admin?.AllowLoginAlerts ?? staff?.AllowLoginAlerts ?? false
             };
-
+            
             return View(settingsViewModel);
         }
+
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult ChangePassword(ChangePasswordViewModel model)
         {
-            if (!ModelState.IsValid)
+    if (!ModelState.IsValid)
+    {
+        var email = User.FindFirstValue(ClaimTypes.Email) ?? User.Identity?.Name ?? string.Empty;
+        var fullname = User.FindFirstValue(ClaimTypes.Name) ?? User.Identity?.Name ?? string.Empty;
+        var settingsViewModel = new SettingsViewModel
+        {
+            Email = email,
+            Fullname = fullname
+        };
+        TempData["ErrorMessage"] = "Please correct the errors and try again.";
+        return View("Settings", settingsViewModel);
+    }
+
+    // Check if password and confirmation match
+    if (model.NewPassword != model.ConfirmPassword)
+    {
+        TempData["ErrorMessage"] = "New password and confirmation password do not match.";
+        return RedirectToAction("Settings");
+    }
+
+    // Get the current user's ID from claims
+    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    if (userId == null)
+    {
+        TempData["ErrorMessage"] = "User not found. Please log in again.";
+        return RedirectToAction("Login", "Login");
+    }
+
+    // Parse userId as integer
+    if (!int.TryParse(userId, out int businessOwnerId))
+    {
+        TempData["ErrorMessage"] = "Invalid user ID format.";
+        return RedirectToAction("Dashboard", "Pages");
+    }
+
+    try
+    {
+        // First verify the current password
+        bool passwordVerified = false;
+        string storedHashedPassword = string.Empty;
+
+        // Get the stored hashed password
+        using (var connection = _context.Database.GetDbConnection())
+        {
+            if (connection.State != ConnectionState.Open)
             {
-                var email = User.FindFirstValue(ClaimTypes.Email) ?? User.Identity?.Name ?? string.Empty;
-                var settingsViewModel = new SettingsViewModel
+                connection.Open();
+            }
+
+            using (var command = connection.CreateCommand())
+            {
+                command.CommandText = "SELECT Password FROM Users WHERE Id = @Id";
+                var param = command.CreateParameter();
+                param.ParameterName = "@Id";
+                param.Value = businessOwnerId;
+                command.Parameters.Add(param);
+
+                using (var reader = command.ExecuteReader())
                 {
-                    Email = email
-                };
-                TempData["ErrorMessage"] = "Please correct the errors and try again.";
-                return View("Settings", settingsViewModel);
-            }
-
-            // Get the current user's ID from claims
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userId == null)
-            {
-                TempData["ErrorMessage"] = "User not found. Please log in again.";
-                return RedirectToAction("Login", "Login");
-            }
-
-            // Parse userId as integer
-            if (!int.TryParse(userId, out int businessOwnerId))
-            {
-                TempData["ErrorMessage"] = "Invalid user ID format.";
-                return RedirectToAction("Dashboard", "Pages");
-            }
-
-            try
-            {
-                // First verify the current password
-                bool passwordVerified = false;
-                string storedHashedPassword = string.Empty;
-
-                // Get the stored hashed password
-                using (var connection = _context.Database.GetDbConnection())
-                {
-                    if (connection.State != ConnectionState.Open)
+                    if (reader.Read())
                     {
-                        connection.Open();
+                        storedHashedPassword = reader.IsDBNull(reader.GetOrdinal("Password"))
+                            ? string.Empty : reader.GetString(reader.GetOrdinal("Password"));
                     }
-
-                    using (var command = connection.CreateCommand())
+                    else
                     {
-                        command.CommandText = "SELECT Password FROM Users WHERE Id = @Id";
-                        var param = command.CreateParameter();
-                        param.ParameterName = "@Id";
-                        param.Value = businessOwnerId;
-                        command.Parameters.Add(param);
-
-                        using (var reader = command.ExecuteReader())
-                        {
-                            if (reader.Read())
-                            {
-                                storedHashedPassword = reader.IsDBNull(reader.GetOrdinal("Password"))
-                                    ? string.Empty : reader.GetString(reader.GetOrdinal("Password"));
-                            }
-                            else
-                            {
-                                TempData["ErrorMessage"] = "User not found.";
-                                return RedirectToAction("Settings");
-                            }
-                        }
-                    }
-
-                    // Verify current password
-                    passwordVerified = BCrypt.Net.BCrypt.Verify(model.CurrentPassword, storedHashedPassword);
-
-                    if (!passwordVerified)
-                    {
-                        TempData["ErrorMessage"] = "Current password is incorrect.";
+                        TempData["ErrorMessage"] = "User not found.";
                         return RedirectToAction("Settings");
-                    }
-
-                    // Hash the new password
-                    string newHashedPassword = BCrypt.Net.BCrypt.HashPassword(model.NewPassword);
-
-                    // Update the password
-                    using (var updateCommand = connection.CreateCommand())
-                    {
-                        updateCommand.CommandText = "UPDATE Users SET Password = @Password WHERE Id = @Id";
-
-                        var passwordParam = updateCommand.CreateParameter();
-                        passwordParam.ParameterName = "@Password";
-                        passwordParam.Value = newHashedPassword;
-                        updateCommand.Parameters.Add(passwordParam);
-
-                        var idParam = updateCommand.CreateParameter();
-                        idParam.ParameterName = "@Id";
-                        idParam.Value = businessOwnerId;
-                        updateCommand.Parameters.Add(idParam);
-
-                        int rowsAffected = updateCommand.ExecuteNonQuery();
-
-                        if (rowsAffected > 0)
-                        {
-                            TempData["SuccessMessage"] = "Password changed successfully! Please use your new password the next time you log in.";
-                        }
-                        else
-                        {
-                            TempData["ErrorMessage"] = "Failed to update password. Please try again.";
-                        }
                     }
                 }
             }
-            catch (Exception ex)
+
+            // Verify current password
+            passwordVerified = BCrypt.Net.BCrypt.Verify(model.CurrentPassword, storedHashedPassword);
+
+            if (!passwordVerified)
             {
-                TempData["ErrorMessage"] = $"An error occurred: {ex.Message}";
+                TempData["ErrorMessage"] = "Current password is incorrect.";
+                return RedirectToAction("Settings");
+            }
+            
+            // Check if new password is the same as the current password
+            if (BCrypt.Net.BCrypt.Verify(model.NewPassword, storedHashedPassword))
+            {
+                TempData["ErrorMessage"] = "New password cannot be the same as your current password.";
                 return RedirectToAction("Settings");
             }
 
-            return RedirectToAction(nameof(Settings));
-        }
+            // Hash the new password
+            string newHashedPassword = BCrypt.Net.BCrypt.HashPassword(model.NewPassword);
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ValidationForMarketplace(
+            // Update the password
+            using (var updateCommand = connection.CreateCommand())
+            {
+                updateCommand.CommandText = "UPDATE Users SET Password = @Password WHERE Id = @Id";
+
+                var passwordParam = updateCommand.CreateParameter();
+                passwordParam.ParameterName = "@Password";
+                passwordParam.Value = newHashedPassword;
+                updateCommand.Parameters.Add(passwordParam);
+
+                var idParam = updateCommand.CreateParameter();
+                idParam.ParameterName = "@Id";
+                idParam.Value = businessOwnerId;
+                updateCommand.Parameters.Add(idParam);
+
+                int rowsAffected = updateCommand.ExecuteNonQuery();
+
+                if (rowsAffected > 0)
+                {
+                    TempData["SuccessMessage"] = "Password changed successfully! Please use your new password the next time you log in.";
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = "Failed to update password. Please try again.";
+                }
+            }
+        }
+    }
+    catch (Exception ex)
+    {
+        TempData["ErrorMessage"] = $"An error occurred: {ex.Message}";
+        return RedirectToAction("Settings");
+    }
+
+    return RedirectToAction(nameof(Settings));
+}
+
+[HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> ValidationForMarketplace(
     [FromForm] UsersAdditionalInfoDto model,
     [FromForm] IFormFile BrgyClearanceFile,
     [FromForm] IFormFile OperationToOperate,
@@ -651,6 +700,52 @@ namespace Project_Creation.Controllers
                     return RedirectToAction("Index");
                 }
 
+        var existingUser = await _context.Users.FindAsync(model.UserId);
+        if (existingUser == null)
+        {
+            _logger.LogError("User not found");
+            TempData["ErrorMessage"] = "User Not Found!";
+            return RedirectToAction("Login", "Login");
+        }
+
+        // Check if user has rejected status and needs to replace files
+        bool isResubmission = existingUser.MarkerPlaceStatus == MarketplaceStatus.Rejected;
+        
+        // Get existing additional info if any
+        var existingAdditionalInfo = await _context.UsersAdditionInfo.FirstOrDefaultAsync(a => a.UserId == model.UserId);
+        
+        // List to track files to delete
+        var filesToDelete = new List<string>();
+        
+        // If it's a resubmission, collect old file paths to delete them later
+        if (isResubmission && existingAdditionalInfo != null)
+        {
+            if (!string.IsNullOrEmpty(existingAdditionalInfo.BrgyClearancePath))
+                filesToDelete.Add(existingAdditionalInfo.BrgyClearancePath);
+                
+            if (!string.IsNullOrEmpty(existingAdditionalInfo.BusinessOwnerValidId))
+                filesToDelete.Add(existingAdditionalInfo.BusinessOwnerValidId);
+                
+            if (!string.IsNullOrEmpty(existingAdditionalInfo.SecCertPath))
+                filesToDelete.Add(existingAdditionalInfo.SecCertPath);
+                
+            if (!string.IsNullOrEmpty(existingAdditionalInfo.DtiCertPath))
+                filesToDelete.Add(existingAdditionalInfo.DtiCertPath);
+                
+            if (!string.IsNullOrEmpty(existingAdditionalInfo.OperationToOperate))
+                filesToDelete.Add(existingAdditionalInfo.OperationToOperate);
+                
+            // Remove existing record if it's a resubmission
+            _context.UsersAdditionInfo.Remove(existingAdditionalInfo);
+            await _context.SaveChangesAsync();
+        }
+        
+        // Add business permit to files to delete if it's a resubmission
+        if (isResubmission && !string.IsNullOrEmpty(existingUser.BusinessPermitPath))
+        {
+            filesToDelete.Add(existingUser.BusinessPermitPath);
+        }
+        
                 // Process file uploads
                 var additionalInfo = new UsersAdditionInfo
                 {
@@ -673,14 +768,6 @@ namespace Project_Creation.Controllers
                     additionalInfo.OperationToOperate = await SaveFile(model.UserId.ToString(), OperationToOperate, "BusinessPermits");
                 }
 
-                var existingUser = await _context.Users.FindAsync(model.UserId);
-                if (existingUser == null)
-                {
-                    _logger.LogError("User not found");
-                    TempData["ErrorMessage"] = "User Not Found!";
-                    return RedirectToAction("Login", "Login");
-                }
-
                 if (BusinessPermitFile != null && BusinessPermitFile.Length > 0)
                 {
                     // Save the file and get the file path
@@ -689,8 +776,8 @@ namespace Project_Creation.Controllers
                 }
                 
                 // Assign the saved file path to the BusinessPermitPath property
-                existingUser.MarkerPlaceStatus = MarketplaceStatus.Requesting;
-                _logger.LogError("existingUser.IsAllowedToMarketPlace = " + existingUser.MarkerPlaceStatus);
+                existingUser.MarkerPlaceStatus = MarketplaceStatus.AwaitingApproval;
+        _logger.LogInformation("existingUser.MarkerPlaceStatus set to {Status}", existingUser.MarkerPlaceStatus);
 
                 _context.Users.Update(existingUser);
                 await _context.SaveChangesAsync();
@@ -699,6 +786,25 @@ namespace Project_Creation.Controllers
 
                 // Save all changes
                 await _context.SaveChangesAsync();
+        
+        // Now that new files are saved, delete old files
+        foreach (var filePath in filesToDelete)
+        {
+            try 
+            {
+                var physicalPath = Path.Combine(_environment.WebRootPath, filePath.TrimStart('/'));
+                if (System.IO.File.Exists(physicalPath))
+                {
+                    System.IO.File.Delete(physicalPath);
+                    _logger.LogInformation("Deleted old file: {FilePath}", physicalPath);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log but continue with other files
+                _logger.LogWarning(ex, "Error deleting old file {FilePath}", filePath);
+            }
+        }
 
                 // Get user details for email
                 var user = await _context.Users
@@ -722,31 +828,34 @@ namespace Project_Creation.Controllers
 
                     await _emailService.SendEmail(
                         user.Email,
-                        "Marketplace Validation Submission Received",
+                isResubmission ? "Marketplace Validation Resubmission Received" : "Marketplace Validation Submission Received",
                         userEmailBody,
                         true);
 
                     // Send notification to admin
                     var adminEmail = _configuration["AdminSettings:Email"];
                     var adminEmailBody = $@"
-                        <h3>New Marketplace Validation Submission</h3>
+                <h3>{(isResubmission ? "Resubmitted" : "New")} Marketplace Validation Submission</h3>
                         <p>User Details:</p>
                         <ul>
                             <li>Name: {user.FirstName} {user.LastName}</li>
                             <li>Email: {user.Email}</li>
                             <li>Business: {user.BusinessName}</li>
+                    <li>Status: {(isResubmission ? "Resubmission after rejection" : "New submission")}</li>
                         </ul>
                         <p>Please review the submitted documents in the admin panel.</p>";
 
                     await _emailService.SendEmail(
                         adminEmail,
-                        "New Marketplace Validation Submission Needs Review",
+                $"{(isResubmission ? "Resubmitted" : "New")} Marketplace Validation Submission Needs Review",
                         adminEmailBody,
                         true);
                 }
 
                 _logger.LogInformation("Successfully processed marketplace validation for user {UserId}", model.UserId);
-                TempData["SuccessMessage"] = "Documents submitted successfully! You'll receive an email once verification is complete.";
+        TempData["SuccessMessage"] = isResubmission 
+            ? "Documents resubmitted successfully! You'll receive an email once verification is complete." 
+            : "Documents submitted successfully! You'll receive an email once verification is complete.";
                 return RedirectToAction("Index");
             }
             catch (Exception ex)
@@ -769,6 +878,188 @@ namespace Project_Creation.Controllers
 
                 TempData["ErrorMessage"] = "An error occurred while processing your registration. Please try again.";
                 return RedirectToAction("Index");
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteAccount()
+        {
+            try
+            {
+                // Get the current user's ID from claims
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (userId == null)
+                {
+                    TempData["ErrorMessage"] = "User not found. Please log in again.";
+                    return RedirectToAction("Login", "Login");
+                }
+
+                // Parse userId as integer
+                if (!int.TryParse(userId, out int businessOwnerId))
+                {
+                    TempData["ErrorMessage"] = "Invalid user ID format.";
+                    return RedirectToAction("Dashboard", "Pages");
+                }
+
+                // Find the user
+                var user = await _context.Users.FindAsync(businessOwnerId);
+                if (user == null)
+                {
+                    TempData["ErrorMessage"] = "User not found.";
+                    return RedirectToAction("Login", "Login");
+                }
+
+                // Find and delete additional info if exists
+                var additionalInfo = await _context.UsersAdditionInfo.FirstOrDefaultAsync(a => a.UserId == businessOwnerId);
+                if (additionalInfo != null)
+                {
+                    _context.UsersAdditionInfo.Remove(additionalInfo);
+                }
+
+                // Find and delete all chat messages
+                var userChats = await _context.Chats.Where(c => c.SenderId == businessOwnerId || c.ReceiverId == businessOwnerId).ToListAsync();
+                if (userChats.Any())
+                {
+                    _context.Chats.RemoveRange(userChats);
+                    _logger.LogInformation("Deleted {Count} chat messages for user {UserId}", userChats.Count, userId);
+                }
+
+                // Delete staff records
+                var staff = await _context.Staff.Where(a => a.BOId == businessOwnerId).ToListAsync();
+                if (staff.Any())
+                {
+                    _context.Staff.RemoveRange(staff);
+                }
+
+                // Delete supplier records
+                var suppliers = await _context.Supplier2.Where(a => a.BOId == businessOwnerId).ToListAsync();
+                if (suppliers.Any())
+                {
+                    _context.Supplier2.RemoveRange(suppliers);
+                }
+
+                // Delete sales and related items
+                var sales = await _context.Sales.Where(a => a.BOId == businessOwnerId).ToListAsync();
+                if (sales.Any())
+                {
+                    var saleIds = sales.Select(s => s.Id).ToList();
+                    var saleItems = await _context.SaleItems.Where(a => saleIds.Contains(a.SaleId)).ToListAsync();
+                    if (saleItems.Any())
+                    {
+                        _context.SaleItems.RemoveRange(saleItems);
+                    }
+                    _context.Sales.RemoveRange(sales);
+                }
+
+                // Delete products and related images
+                var products = await _context.Products2.Where(a => a.BOId == businessOwnerId).ToListAsync();
+                if (products.Any())
+                {
+                    var productIds = products.Select(p => p.Id).ToList();
+                    var productImages = await _context.ProductImages.Where(a => productIds.Contains(a.ProductId)).ToListAsync();
+                    if (productImages.Any())
+                    {
+                        _context.ProductImages.RemoveRange(productImages);
+                    }
+                    _context.Products2.RemoveRange(products);
+                }
+
+                // Delete other related entities
+                var entitiesToDelete = new List<IQueryable<object>>
+                {
+                    _context.Leads.Where(a => a.CreatedById == businessOwnerId),
+                    _context.InventoryTransactions.Where(a => a.BOId == businessOwnerId),
+                    _context.InventoryLogs.Where(a => a.BOId == businessOwnerId),
+                    _context.Categories.Where(a => a.BOId == businessOwnerId),
+                    _context.Campaigns.Where(a => a.SenderId == businessOwnerId),
+                    _context.Calendar.Where(a => a.UserId == businessOwnerId),
+                    _context.BOBusinessProfiles.Where(a => a.UserId == businessOwnerId)
+                };
+
+                foreach (var entityQuery in entitiesToDelete)
+                {
+                    var entities = await entityQuery.ToListAsync();
+                    if (entities.Any())
+                    {
+                        _context.RemoveRange(entities);
+                    }
+                }
+
+                // Delete user files and folders
+                try
+                {
+                    var userUploadsFolder = Path.Combine(_environment.WebRootPath, "uploads", userId);
+                    if (Directory.Exists(userUploadsFolder))
+                    {
+                        Directory.Delete(userUploadsFolder, true);
+                        _logger.LogInformation("Deleted main uploads folder for user {UserId}", userId);
+                    }
+
+                    var uploadsBaseFolder = Path.Combine(_environment.WebRootPath, "uploads");
+                    if (Directory.Exists(uploadsBaseFolder))
+                    {
+                        // Search in specific subfolders
+                        string[] commonSubfolders = { "business_permits", "BrgyClearance", "BusinessOwnerValidId", "SecCertPath", "DtiCertPath" };
+                        foreach (var subfolder in commonSubfolders)
+                        {
+                            var path = Path.Combine(uploadsBaseFolder, subfolder);
+                            if (Directory.Exists(path))
+                            {
+                                foreach (var file in Directory.GetFiles(path, $"*{userId}*", SearchOption.AllDirectories))
+                                {
+                                    System.IO.File.Delete(file);
+                                    _logger.LogInformation("Deleted user file: {File}", file);
+                                }
+                            }
+                        }
+
+                        // Search for any remaining user folders
+                        foreach (var folder in Directory.GetDirectories(uploadsBaseFolder, $"*{userId}*", SearchOption.AllDirectories))
+                        {
+                            if (folder != userUploadsFolder)
+                            {
+                                Directory.Delete(folder, true);
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Error deleting user files for {UserId}", userId);
+                }
+
+                // Remove user and save changes
+                _context.Users.Remove(user);
+                await _context.SaveChangesAsync();
+
+                // Sign out
+                await HttpContext.SignOutAsync();
+
+                // Send confirmation email
+                try
+                {
+                    await _emailService.SendEmail(
+                        user.Email,
+                        "Account Deletion Confirmation",
+                        $@"<h3>Account Deleted</h3>
+                   <p>Hello {user.FirstName},</p>
+                   <p>Your account and all associated data have been permanently deleted.</p>",
+                        true);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to send deletion email to {Email}", user.Email);
+                }
+
+                TempData["SuccessMessage"] = "Your account has been permanently deleted.";
+                return RedirectToAction("Index", "Home");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Account deletion failed");
+                TempData["ErrorMessage"] = "Account deletion failed. Please contact support.";
+                return RedirectToAction("Settings");
             }
         }
 
@@ -804,6 +1095,320 @@ namespace Project_Creation.Controllers
             }
 
             return $"/uploads/{userId}/{subFolder}/{fileName}";
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ToggleTwoFactor(bool enabled)
+        {
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Json(new { success = false, message = "User not found." });
+                }
+
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Id.ToString() == userId);
+                var admin = await _context.Admin.FirstOrDefaultAsync(a => a.Id.ToString() == userId);
+                var staff = await _context.Staffs.FirstOrDefaultAsync(s => s.Id.ToString() == userId);
+
+                if (user != null)
+                {
+                    user.TwoFactorAuthentication = enabled;
+                }
+                else if (admin != null)
+                {
+                    admin.TwoFactorAuthentication = enabled;
+                }
+                else if (staff != null)
+                {
+                    staff.TwoFactorAuthentication = enabled;
+                }
+                else
+                {
+                    return Json(new { success = false, message = "User not found." });
+                }
+
+                await _context.SaveChangesAsync();
+                _logger.LogInformation("Two-factor authentication {Status} for user {UserId}", 
+                    enabled ? "enabled" : "disabled", userId);
+
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error toggling two-factor authentication");
+                return Json(new { success = false, message = "An error occurred while updating settings." });
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ToggleEmailNotifications(bool enabled)
+        {
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Json(new { success = false, message = "User not found." });
+                }
+
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Id.ToString() == userId);
+                var admin = await _context.Admin.FirstOrDefaultAsync(a => a.Id.ToString() == userId);
+                var staff = await _context.Staffs.FirstOrDefaultAsync(s => s.Id.ToString() == userId);
+
+                if (user != null)
+                {
+                    user.AllowEmailNotifications = enabled;
+                }
+                else if (admin != null)
+                {
+                    admin.AllowEmailNotifications = enabled;
+                }
+                else if (staff != null)
+                {
+                    staff.AllowEmailNotifications = enabled;
+                }
+                else
+                {
+                    return Json(new { success = false, message = "User not found." });
+                }
+
+                await _context.SaveChangesAsync();
+                _logger.LogInformation("Email notifications {Status} for user {UserId}", 
+                    enabled ? "enabled" : "disabled", userId);
+
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error toggling email notifications");
+                return Json(new { success = false, message = "An error occurred while updating settings." });
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ToggleLoginAlerts(bool enabled)
+        {
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Json(new { success = false, message = "User not found." });
+                }
+
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Id.ToString() == userId);
+                var admin = await _context.Admin.FirstOrDefaultAsync(a => a.Id.ToString() == userId);
+                var staff = await _context.Staffs.FirstOrDefaultAsync(s => s.Id.ToString() == userId);
+
+                if (user != null)
+                {
+                    user.AllowLoginAlerts = enabled;
+                }
+                else if (admin != null)
+                {
+                    admin.AllowLoginAlerts = enabled;
+                }
+                else if (staff != null)
+                {
+                    staff.AllowLoginAlerts = enabled;
+                }
+                else
+                {
+                    return Json(new { success = false, message = "User not found." });
+                }
+
+                await _context.SaveChangesAsync();
+                _logger.LogInformation("Login alerts {Status} for user {UserId}", 
+                    enabled ? "enabled" : "disabled", userId);
+
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error toggling login alerts");
+                return Json(new { success = false, message = "An error occurred while updating settings." });
+            }
+        }
+
+        public async Task<IActionResult> SocialMediaLinks(ProfileViewModel model)
+        {
+            var link = model.userSocialMediaLinks;
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
+            {
+                TempData["ErrorMessage"] = "User not found. Please log in again.";
+                return RedirectToAction("Login", "Login");
+            }
+            // Parse userId as integer
+            if (!int.TryParse(userId, out int businessOwnerId))
+            {
+                TempData["ErrorMessage"] = "Invalid user ID format.";
+                return RedirectToAction("Dashboard", "Pages");
+            }
+            var user = await _context.Users.FindAsync(businessOwnerId);
+            if (user == null)
+            {
+                TempData["ErrorMessage"] = "User not found.";
+                return RedirectToAction("Login", "Login");
+            }
+            if (link != null)
+            {
+                var existingLink = await _context.UserSocialMediaLinks.FirstOrDefaultAsync(l => l.UserId == businessOwnerId);
+                if (existingLink != null)
+                {
+                    _context.UserSocialMediaLinks.Remove(existingLink);
+                }
+                var newLink = new UserSocialMediaLinks
+                {
+                    UserId = businessOwnerId,
+                    FacebookLinks = link.FacebookLinks,
+                    InstagramLinks = link.InstagramLinks,
+                    TwitterLinks = link.TwitterLinks,
+                    TikTokLinks = link.TikTokLinks,
+                    PinterestLinks = link.PinterestLinks,
+                    WhatsAppLinks = link.WhatsAppLinks,
+                    ThreadsLinks = link.ThreadsLinks,
+                    YouTubeLinks = link.YouTubeLinks,
+                    SnapchatLinks = link.SnapchatLinks,
+                    LinkedInLinks = link.LinkedInLinks
+                };
+                _context.UserSocialMediaLinks.Update(newLink);
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Social media links updated successfully!";
+                return RedirectToAction("Index");
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Failed to update social media links.";
+                return RedirectToAction("Index");
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetMarketplaceValidation()
+        {
+            try
+            {
+                // Get the current user's ID from claims
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (userId == null)
+                {
+                    TempData["ErrorMessage"] = "User not found. Please log in again.";
+                    return RedirectToAction("Login", "Login");
+                }
+
+                // Parse userId as integer
+                if (!int.TryParse(userId, out int businessOwnerId))
+                {
+                    TempData["ErrorMessage"] = "Invalid user ID format.";
+                    return RedirectToAction("Index");
+                }
+
+                // Get the user
+                var user = await _context.Users.FindAsync(businessOwnerId);
+                if (user == null)
+                {
+                    TempData["ErrorMessage"] = "User not found.";
+                    return RedirectToAction("Index");
+                }
+
+                // Check if the user's marketplace status is actually "Rejected"
+                if (user.MarkerPlaceStatus != MarketplaceStatus.Rejected)
+                {
+                    TempData["ErrorMessage"] = "You can only reset when your application has been rejected.";
+                    return RedirectToAction("Index");
+                }
+
+                // Get existing additional info
+                var additionalInfo = await _context.UsersAdditionInfo.FirstOrDefaultAsync(a => a.UserId == businessOwnerId);
+                
+                // List to track files to delete
+                var filesToDelete = new List<string>();
+                
+                // If additional info exists, collect file paths to delete
+                if (additionalInfo != null)
+                {
+                    if (!string.IsNullOrEmpty(additionalInfo.BrgyClearancePath))
+                        filesToDelete.Add(additionalInfo.BrgyClearancePath);
+                        
+                    if (!string.IsNullOrEmpty(additionalInfo.BusinessOwnerValidId))
+                        filesToDelete.Add(additionalInfo.BusinessOwnerValidId);
+                        
+                    if (!string.IsNullOrEmpty(additionalInfo.SecCertPath))
+                        filesToDelete.Add(additionalInfo.SecCertPath);
+                        
+                    if (!string.IsNullOrEmpty(additionalInfo.DtiCertPath))
+                        filesToDelete.Add(additionalInfo.DtiCertPath);
+                        
+                    if (!string.IsNullOrEmpty(additionalInfo.OperationToOperate))
+                        filesToDelete.Add(additionalInfo.OperationToOperate);
+                        
+                    // Remove existing record
+                    _context.UsersAdditionInfo.Remove(additionalInfo);
+                }
+                
+                // Add business permit to delete list
+                if (!string.IsNullOrEmpty(user.BusinessPermitPath))
+                {
+                    filesToDelete.Add(user.BusinessPermitPath);
+                    user.BusinessPermitPath = string.Empty;
+                }
+                
+                // Set status to NotApplied so user can reapply
+                user.MarkerPlaceStatus = MarketplaceStatus.NotApplied;
+                _context.Users.Update(user);
+                
+                // Save changes to database
+                await _context.SaveChangesAsync();
+                
+                // Delete the physical files
+                foreach (var filePath in filesToDelete)
+                {
+                    try 
+                    {
+                        var physicalPath = Path.Combine(_environment.WebRootPath, filePath.TrimStart('/'));
+                        if (System.IO.File.Exists(physicalPath))
+                        {
+                            System.IO.File.Delete(physicalPath);
+                            _logger.LogInformation("Deleted file: {FilePath}", physicalPath);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        // Log error but continue with other files
+                        _logger.LogWarning(ex, "Error deleting file {FilePath}", filePath);
+                    }
+                }
+                
+                // Send notification to user
+                var emailBody = $@"
+                    <h3>Marketplace Application Reset</h3>
+                    <p>Hello {user.FirstName},</p>
+                    <p>Your marketplace application has been reset successfully. You can now submit new documents for validation.</p>
+                    <p>Please ensure that you upload all required documents correctly to avoid rejection.</p>
+                    <p>If you have any questions, please contact our support team.</p>";
+                    
+                await _emailService.SendEmail(
+                    user.Email,
+                    "Marketplace Application Reset",
+                    emailBody,
+                    true);
+                    
+                TempData["SuccessMessage"] = "Your marketplace application has been reset. You can now submit new documents.";
+                return RedirectToAction("Index");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error resetting marketplace validation for user");
+                TempData["ErrorMessage"] = "An error occurred while resetting your application. Please try again.";
+                return RedirectToAction("Index");
+            }
         }
     }
 }

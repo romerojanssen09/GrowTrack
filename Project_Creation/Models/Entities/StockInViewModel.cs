@@ -18,6 +18,6 @@ namespace Project_Creation.Models.ViewModels
         public DateTime ReceivingDate { get; set; }
 
         public string Notes { get; set; } = "Stock In";
-        public List<Product2>? AvailableProducts { get; set; }
+        public List<Product>? AvailableProducts { get; set; }
     }
 }

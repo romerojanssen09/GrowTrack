@@ -1,0 +1,480 @@
+@model List<Project_Creation.DTO.AccountManagementViewModel>
+@{
+    ViewData["Title"] = "Business Owner Account Management";
+}
+
+<div class="container mt-4">
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="bi bi-people-fill me-2"></i>Business Owner Account Management</h5>
+            <div class="d-flex gap-2">
+                <div class="input-group input-group-sm" style="width: 200px;">
+                    <select class="form-select form-select-sm" id="accountStatusFilter">
+                        <option selected value="All">All Statuses</option>
+                        <option value="Active">Active</option>
+                        <option value="Suspended">Suspended</option>
+                        <option value="Deactivated">Deactivated</option>
+                    </select>
+                </div>
+                <div class="input-group input-group-sm" style="width: 200px;">
+                    <select class="form-select form-select-sm" id="categoryFilter">
+                        <option selected value="All">All Categories</option>
+                        @if (Model != null && Model.Any())
+                        {
+                            var categories = Model.Select(x => x.CategoryOfBusiness).Distinct().OrderBy(x => x);
+                            foreach (var category in categories)
+                            {
+                                <option value="@category">@category</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <input type="search" class="form-control form-control-sm search-input" placeholder="Search accounts..." id="searchAccounts">
+                <button class="btn btn-sm btn-light" title="Help" id="helpButton"><i class="bi bi-question-circle"></i></button>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" id="accountsTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="sort" data-sort="business">Business Name <i class="bi bi-arrow-down-up"></i></th>
+                            <th class="sort" data-sort="owner">Owner <i class="bi bi-arrow-down-up"></i></th>
+                            <th class="sort" data-sort="email">Email <i class="bi bi-arrow-down-up"></i></th>
+                            <th class="sort" data-sort="category">Category <i class="bi bi-arrow-down-up"></i></th>
+                            <th class="sort" data-sort="status">Account Status <i class="bi bi-arrow-down-up"></i></th>
+                            <th class="sort" data-sort="registered">Registered <i class="bi bi-arrow-down-up"></i></th>
+                            <th class="sort" data-sort="lastlogin">Last Login <i class="bi bi-arrow-down-up"></i></th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var account in Model)
+                            {
+                                <tr data-id="@account.Id" data-category="@account.CategoryOfBusiness" data-status="@account.AccountStatus">
+                                    <td class="business">@account.BusinessName</td>
+                                    <td class="owner">@account.OwnerName</td>
+                                    <td class="email">@account.Email</td>
+                                    <td class="category">@account.CategoryOfBusiness</td>
+                                    <td class="status text-center">
+                                        @switch (account.AccountStatus)
+                                        {
+                                            case Project_Creation.Models.Entities.Users.AccountStatuss.Active:
+                                                <span class="badge bg-success">Active</span>
+                                                break;
+                                            case Project_Creation.Models.Entities.Users.AccountStatuss.Suspended:
+                                                <span class="badge bg-warning">Suspended</span>
+                                                break;
+                                            case Project_Creation.Models.Entities.Users.AccountStatuss.Deactivated:
+                                                <span class="badge bg-danger">Deactivated</span>
+                                                break;
+                                        }
+                                    </td>
+                                    <td class="registered">@account.RegistrationDate.ToString("MMM dd, yyyy")</td>
+                                    <td class="lastlogin">@(account.LastLoginDate.HasValue ? account.LastLoginDate.Value.ToString("MMM dd, yyyy HH:mm") : "Never")</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <button class="btn btn-sm btn-outline-primary btn-view-account"
+                                                    data-id="@account.Id"
+                                                    title="View Details">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-secondary btn-edit-status"
+                                                    data-id="@account.Id"
+                                                    data-business="@account.BusinessName"
+                                                    data-owner="@account.OwnerName"
+                                                    data-status="@((int)account.AccountStatus)"
+                                                    title="Change Status">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-info btn-edit-limit"
+                                                    data-id="@account.Id"
+                                                    data-business="@account.BusinessName"
+                                                    data-owner="@account.OwnerName"
+                                                    data-limit="@account.StaffLimit"
+                                                    data-current="@account.CurrentStaffCount"
+                                                    title="Edit Staff Limit">
+                                                <i class="bi bi-people"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="8" class="text-center py-4 text-muted">No business owner accounts found</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>About Account Management</h5>
+        </div>
+        <div class="card-body">
+            <p>This page allows you to manage business owner accounts in the system:</p>
+            <ul>
+                <li><strong>Active:</strong> Account is fully functional with normal access to the platform</li>
+                <li><strong>Suspended:</strong> Account is temporarily disabled but data is preserved</li>
+                <li><strong>Deactivated:</strong> Account is disabled and hidden from public view</li>
+            </ul>
+            <div class="alert alert-warning">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                <strong>Note:</strong> Changing account status will affect the business owner's ability to access the platform and will send an automatic notification email.
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Account Status Modal -->
+<div class="modal fade" id="editStatusModal" tabindex="-1" aria-labelledby="editStatusModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="editStatusModalLabel"><i class="bi bi-shield-lock me-2"></i>Change Account Status</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editStatusForm">
+                    <input type="hidden" id="userId" name="userId">
+
+                    <div class="mb-3">
+                        <label for="businessNameDisplay" class="form-label">Business</label>
+                        <input type="text" class="form-control" id="businessNameDisplay" readonly>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="ownerNameDisplay" class="form-label">Owner</label>
+                        <input type="text" class="form-control" id="ownerNameDisplay" readonly>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="accountStatus" class="form-label">Account Status</label>
+                        <select class="form-select" id="accountStatus" name="accountStatus" required>
+                            <option value="0">Active</option>
+                            <option value="1">Suspended</option>
+                            <option value="2">Deactivated</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="statusReason" class="form-label">Reason for Status Change</label>
+                        <textarea class="form-control" id="statusReason" name="statusReason" rows="3" required></textarea>
+                        <div class="form-text">This reason will be included in the notification email sent to the business owner.</div>
+                    </div>
+
+                    <div class="alert alert-warning" id="statusWarning">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <span id="warningText">Changing account status will affect the business owner's ability to access the platform.</span>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveStatus">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading overlay -->
+<div class="loading-overlay" style="display: none;">
+    <div class="loading-spinner">
+        <div class="spinner-border text-light" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <div class="mt-2 text-light">Processing...</div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Helper functions for loading overlay
+            function showLoading() {
+                $('.loading-overlay').show();
+            }
+
+            function hideLoading() {
+                $('.loading-overlay').hide();
+            }
+
+            // Search functionality
+            $('#searchAccounts').on('keyup', function() {
+                var value = $(this).val().toLowerCase();
+                $('#accountsTable tbody tr').filter(function() {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                });
+            });
+
+            // Sort functionality
+            $('.sort').click(function() {
+                const table = $(this).closest('table');
+                const index = $(this).index();
+                const rows = table.find('tbody > tr').get();
+                const isAsc = $(this).hasClass('asc');
+
+                // Remove all sort classes
+                table.find('.sort').removeClass('asc desc');
+
+                // Sort rows
+                rows.sort(function(a, b) {
+                    const aVal = $(a).find('td').eq(index).text().toLowerCase();
+                    const bVal = $(b).find('td').eq(index).text().toLowerCase();
+                    return isAsc ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+                });
+
+                // Re-add rows in new order
+                $.each(rows, function(index, row) {
+                    table.find('tbody').append(row);
+                });
+
+                // Add appropriate class to header
+                $(this).addClass(isAsc ? 'desc' : 'asc');
+            });
+
+            // Filter by account status
+            $('#accountStatusFilter').change(function() {
+                const status = $(this).val();
+                if (status === 'All') {
+                    $('#accountsTable tbody tr').show();
+                } else {
+                    $('#accountsTable tbody tr').hide();
+                    $('#accountsTable tbody tr[data-status="' + status + '"]').show();
+                }
+            });
+
+            // Filter by business category
+            $('#categoryFilter').change(function() {
+                const category = $(this).val();
+                if (category === 'All') {
+                    $('#accountsTable tbody tr').show();
+                } else {
+                    $('#accountsTable tbody tr').hide();
+                    $('#accountsTable tbody tr[data-category="' + category + '"]').show();
+                }
+            });
+
+            // Help button
+            $('#helpButton').click(function() {
+                Swal.fire({
+                    title: 'Account Management Help',
+                    icon: 'info',
+                    html: `
+                        <div class="text-start">
+                            <p>This page allows you to manage business owner accounts:</p>
+                            <ul>
+                                <li><strong>Active:</strong> Account has full access to the platform</li>
+                                <li><strong>Suspended:</strong> Account is temporarily disabled</li>
+                                <li><strong>Deactivated:</strong> Account is disabled and hidden</li>
+                            </ul>
+                            <p>You can:</p>
+                            <ul>
+                                <li>Search for accounts using the search box</li>
+                                <li>Filter accounts by status or business category</li>
+                                <li>Sort any column by clicking the column header</li>
+                                <li>Change account status with the edit button</li>
+                                <li>Manage staff limits for each business owner</li>
+                            </ul>
+                        </div>
+                    `,
+                    confirmButtonText: 'Got it!'
+                });
+            });
+
+            // Edit status button
+            $('.btn-edit-status').click(function() {
+                const userId = $(this).data('id');
+                const business = $(this).data('business');
+                const owner = $(this).data('owner');
+                const status = $(this).data('status');
+
+                $('#userId').val(userId);
+                $('#businessNameDisplay').val(business);
+                $('#ownerNameDisplay').val(owner);
+                $('#accountStatus').val(status);
+                $('#statusReason').val('');
+
+                updateStatusWarning(status);
+
+                $('#editStatusModal').modal('show');
+            });
+
+            // Account status change warning
+            $('#accountStatus').on('change', function() {
+                const status = $(this).val();
+                updateStatusWarning(status);
+            });
+
+            function updateStatusWarning(status) {
+                let warningText = '';
+                let alertClass = 'alert-warning';
+
+                if (status == 0) { // Active
+                    warningText = 'Activating this account will allow the business owner full access to the platform.';
+                    alertClass = 'alert-info';
+                } else if (status == 1) { // Suspended
+                    warningText = 'Suspending this account will temporarily prevent the business owner from accessing the platform. All data will be preserved.';
+                    alertClass = 'alert-warning';
+                } else if (status == 2) { // Deactivated
+                    warningText = 'Deactivating this account will prevent the business owner from accessing the platform and hide their business from public view.';
+                    alertClass = 'alert-danger';
+                }
+
+                $('#warningText').text(warningText);
+                $('#statusWarning').removeClass('alert-info alert-warning alert-danger').addClass(alertClass);
+            }
+
+            // Save status changes
+            $('#saveStatus').click(function() {
+                const userId = $('#userId').val();
+                const accountStatus = $('#accountStatus').val();
+                const statusReason = $('#statusReason').val();
+
+                if (!statusReason) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Reason Required',
+                        text: 'Please provide a reason for the status change'
+                    });
+                    return;
+                }
+
+                showLoading();
+
+                $.ajax({
+                    url: '@Url.Action("UpdateAccountStatus", "Admin")',
+                    type: 'POST',
+                    headers: {
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    data: {
+                        userId: userId,
+                        accountStatus: accountStatus,
+                        statusReason: statusReason
+                    },
+                    success: function(response) {
+                        hideLoading();
+                        if (response.success) {
+                            $('#editStatusModal').modal('hide');
+
+                            // Update the table row with new status
+                            const row = $(`#accountsTable tbody tr[data-id="${userId}"]`);
+                            let badgeClass = '';
+                            let statusText = '';
+
+                            if (accountStatus == 0) {
+                                badgeClass = 'bg-success';
+                                statusText = 'Active';
+                            } else if (accountStatus == 1) {
+                                badgeClass = 'bg-warning';
+                                statusText = 'Suspended';
+                            } else if (accountStatus == 2) {
+                                badgeClass = 'bg-danger';
+                                statusText = 'Deactivated';
+                            }
+
+                            row.find('td.status span').removeClass().addClass(`badge ${badgeClass}`).text(statusText);
+                            row.attr('data-status', statusText);
+
+                            // Update the data attribute on the edit button
+                            row.find('.btn-edit-status').data('status', accountStatus);
+
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Status Updated',
+                                text: 'Account status has been updated successfully',
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: response.message || 'Failed to update account status'
+                            });
+                        }
+                    },
+                    error: function(xhr) {
+                        hideLoading();
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'An error occurred while updating the account status'
+                        });
+                    }
+                });
+            });
+
+            // View account details button
+            $('.btn-view-account').click(function() {
+                const userId = $(this).data('id');
+                window.location.href = '@Url.Action("GetUserDetails", "Admin")/' + userId;
+            });
+
+            // Edit staff limit button (reuse from StaffLimits page)
+            $('.btn-edit-limit').click(function() {
+                const userId = $(this).data('id');
+                const business = $(this).data('business');
+                const owner = $(this).data('owner');
+                const currentLimit = $(this).data('limit');
+                const currentStaff = $(this).data('current');
+
+                window.location.href = '@Url.Action("StaffLimits", "Admin")?highlight=' + userId;
+            });
+        });
+    </script>
+}
+
+<style>
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .card {
+        border: none;
+        border-radius: 0.5rem;
+        overflow: hidden;
+    }
+
+    .table th {
+        position: relative;
+        cursor: pointer;
+    }
+
+        .table th.sort::after {
+            content: "";
+            display: inline-block;
+            margin-left: 0.25rem;
+        }
+
+        .table th.sort.asc::after {
+            content: "↑";
+        }
+
+        .table th.sort.desc::after {
+            content: "↓";
+        }
+
+    .badge {
+        font-size: 0.85rem;
+        padding: 0.35em 0.65em;
+    }
+</style>

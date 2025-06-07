@@ -1,0 +1,184 @@
+﻿@model Project_Creation.DTO.SalesComparisonViewModel
+@{
+    ViewData["Title"] = "Compare Sales Reports";
+}
+
+<div class="container mt-4">
+    <h2>Compare Sales</h2>
+    <p class="text-muted">Select two date periods to compare sales data.</p>
+
+    <div class="card mt-4">
+        <div class="card-body">
+            <h5 class="card-title">Sales Comparison Setup</h5>
+            <form asp-action="CompareSales" method="post" class="row g-3">
+                @Html.AntiForgeryToken()
+                <div class="col-md-6">
+                    <label asp-for="Period1StartDate" class="form-label">Period 1 Start</label>
+                    <input asp-for="Period1StartDate" class="form-control" type="date" />
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Period1EndDate" class="form-label">Period 1 End</label>
+                    <input asp-for="Period1EndDate" class="form-control" type="date" />
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Period2StartDate" class="form-label">Period 2 Start</label>
+                    <input asp-for="Period2StartDate" class="form-control" type="date" />
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Period2EndDate" class="form-label">Period 2 End</label>
+                    <input asp-for="Period2EndDate" class="form-control" type="date" />
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary mt-2">
+                        <i class="fas fa-balance-scale me-1"></i> Compare
+                    </button>
+                </div>
+                <div class="col-12">
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div class="alert alert-danger mt-2">
+                            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                            {
+                                <div>@error.ErrorMessage</div>
+                            }
+                        </div>
+                    }
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @if (Model != null && Model.ShowResults)
+    {
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-header bg-primary">
+                        <strong>Period 1</strong>
+                        <span class="ms-2 text-muted small">(@Model.Period1Summary.StartDate.ToString("yyyy-MM-dd") to @Model.Period1Summary.EndDate.ToString("yyyy-MM-dd"))</span>
+                    </div>
+                    <div class="card-body">
+                        @if (Model.Period1Summary.IsDataAvailable)
+                        {
+                            <table class="table table-sm">
+                                <tr><th>Total Sales</th><td>@Model.Period1Summary.TotalSalesCount</td></tr>
+                                <tr><th>Total Revenue</th><td>@Model.Period1Summary.TotalRevenue.ToString("C")</td></tr>
+                                <tr><th>Products Sold</th><td>@Model.Period1Summary.TotalProductsSold</td></tr>
+                                <tr><th>Avg. Sale Value</th><td>@Model.Period1Summary.AverageSaleValue.ToString("C")</td></tr>
+                            </table>
+                        }
+                        else
+                        {
+                            <div class="alert alert-info">No sales data for this period.</div>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-header bg-primary">
+                        <strong>Period 2</strong>
+                        <span class="ms-2 text-muted small">(@Model.Period2Summary.StartDate.ToString("yyyy-MM-dd") to @Model.Period2Summary.EndDate.ToString("yyyy-MM-dd"))</span>
+                    </div>
+                    <div class="card-body">
+                        @if (Model.Period2Summary.IsDataAvailable)
+                        {
+                            <table class="table table-sm">
+                                <tr><th>Total Sales</th><td>@Model.Period2Summary.TotalSalesCount</td></tr>
+                                <tr><th>Total Revenue</th><td>@Model.Period2Summary.TotalRevenue.ToString("C")</td></tr>
+                                <tr><th>Products Sold</th><td>@Model.Period2Summary.TotalProductsSold</td></tr>
+                                <tr><th>Avg. Sale Value</th><td>@Model.Period2Summary.AverageSaleValue.ToString("C")</td></tr>
+                            </table>
+                        }
+                        else
+                        {
+                            <div class="alert alert-info">No sales data for this period.</div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mt-3">
+            <div class="card-header bg-info">
+                <strong>Comparison Summary</strong>
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>Period 1</th>
+                            <th>Period 2</th>
+                            <th>Difference</th>
+                            <th>% Change</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th>Total Sales</th>
+                            <td>@Model.Period1Summary.TotalSalesCount</td>
+                            <td>@Model.Period2Summary.TotalSalesCount</td>
+                            <td>@Model.SalesCountDifference</td>
+                            <td>@Model.SalesCountChangePercentage.ToString("+#,##0.##;-#,##0.##;0")%</td>
+                        </tr>
+                        <tr>
+                            <th>Total Revenue</th>
+                            <td>@Model.Period1Summary.TotalRevenue.ToString("C")</td>
+                            <td>@Model.Period2Summary.TotalRevenue.ToString("C")</td>
+                            <td>@Model.RevenueDifference.ToString("C")</td>
+                            <td>@Model.RevenueChangePercentage.ToString("+#,##0.##;-#,##0.##;0")%</td>
+                        </tr>
+                        <tr>
+                            <th>Products Sold</th>
+                            <td>@Model.Period1Summary.TotalProductsSold</td>
+                            <td>@Model.Period2Summary.TotalProductsSold</td>
+                            <td>@(Model.Period2Summary.TotalProductsSold - Model.Period1Summary.TotalProductsSold)</td>
+                            <td>
+                                @if (Model.Period1Summary.TotalProductsSold > 0)
+                                {
+                                    @(((double)(Model.Period2Summary.TotalProductsSold - Model.Period1Summary.TotalProductsSold) / Model.Period1Summary.TotalProductsSold * 100).ToString("+#,##0.##;-#,##0.##;0") + "%")
+                                }
+                                else if (Model.Period2Summary.TotalProductsSold > 0)
+                                {
+                                    @("+100%")
+                                }
+                                else
+                                {
+                                    @("0%")
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Avg. Sale Value</th>
+                            <td>@Model.Period1Summary.AverageSaleValue.ToString("C")</td>
+                            <td>@Model.Period2Summary.AverageSaleValue.ToString("C")</td>
+                            <td>@((Model.Period2Summary.AverageSaleValue - Model.Period1Summary.AverageSaleValue).ToString("C"))</td>
+                            <td>
+                                @if (Model.Period1Summary.AverageSaleValue > 0)
+                                {
+                                    @(((double)(Model.Period2Summary.AverageSaleValue - Model.Period1Summary.AverageSaleValue) / (double)Model.Period1Summary.AverageSaleValue * 100).ToString("+#,##0.##;-#,##0.##;0") + "%")
+                                }
+                                else if (Model.Period2Summary.AverageSaleValue > 0)
+                                {
+                                    @("+100%")
+                                }
+                                else
+                                {
+                                    @("0%")
+                                }
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Optionally, add client-side validation or enhancements here
+        });
+    </script>
+} 

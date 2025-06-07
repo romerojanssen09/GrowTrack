@@ -1,0 +1,174 @@
+﻿@model Project_Creation.Models.Entities.Leads
+
+@{
+    ViewData["Title"] = "Edit Lead";
+}
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h4 class="mb-0 text-accent">Edit Lead</h4>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Back to List
+        </a>
+    </div>
+    <div class="card-body">
+        @if (ViewData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-warning">
+                @ViewData["ErrorMessage"]
+            </div>
+        }
+        
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Id" />
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <h5 class="text-primary mb-3">Basic Information</h5>
+                    
+                    <div class="mb-3">
+                        <label asp-for="LeadName" class="form-label">Name</label>
+                        <input asp-for="LeadName" class="form-control" />
+                        <span asp-validation-for="LeadName" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="LeadEmail" class="form-label">Email</label>
+                        <input asp-for="LeadEmail" class="form-control" />
+                        <span asp-validation-for="LeadEmail" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="LeadPhone" class="form-label">Phone</label>
+                        <input asp-for="LeadPhone" class="form-control" />
+                        <span asp-validation-for="LeadPhone" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="Notes" class="form-label">Notes</label>
+                        <textarea asp-for="Notes" class="form-control" rows="4"></textarea>
+                        <span asp-validation-for="Notes" class="text-danger"></span>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <h5 class="text-primary mb-3">Additional Information</h5>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Status</label>
+                        <div>
+                            @{
+                                string statusClass = "";
+                                string statusText = Model.Status.ToString();
+                                
+                                // Calculate additional points from transaction value (1 point per ₱1,000)
+                                decimal totalSpend = 0;
+                                int spendPoints = 0;
+                                DateTime past30Days = DateTime.Now.AddDays(-30);
+                                
+                                if (Model.PurchaseHistory != null && Model.PurchaseHistory.Any())
+                                {
+                                    var recentPurchases = Model.PurchaseHistory.Where(p => p.Sale?.SaleDate >= past30Days);
+                                    
+                                    if (recentPurchases.Any())
+                                    {
+                                        totalSpend = recentPurchases.Sum(p => p.TotalPrice);
+                                        spendPoints = (int)(totalSpend / 1000);
+                                    }
+                                }
+                                
+                                // Base stored points (product variety only)
+                                int basePoints = Model.LeadPoints ?? 0;
+                                
+                                // Total display points (base + spend points)
+                                int displayPoints = basePoints + spendPoints;
+                                
+                                // Determine status class and text based on points
+                                if (displayPoints >= 30) {
+                                    statusClass = "bg-danger";
+                                    statusText = "Hot";
+                                } else if (displayPoints >= 15) {
+                                    statusClass = "bg-warning text-dark";
+                                    statusText = "Warm";
+                                } else if (displayPoints >= 5) {
+                                    statusClass = "bg-info";
+                                    statusText = "Cold";
+                                } else if (Model.LastPurchaseDate.HasValue && 
+                                          Model.LastPurchaseDate.Value < DateTime.Now.AddDays(-30) &&
+                                          Model.PurchaseHistory != null && Model.PurchaseHistory.Any()) {
+                                    statusClass = "bg-secondary";
+                                    statusText = "Lost";
+                                } else {
+                                    statusClass = "bg-light text-dark border border-secondary";
+                                    statusText = "New";
+                                }
+                            }
+                            <div>
+                                <div class="d-flex align-items-center mb-2">
+                                    <span class="badge bg-dark me-2 px-2 py-1">@displayPoints pts total</span>
+                                    <span class="badge @statusClass px-3 py-2">@statusText</span>
+                                    <span class="text-muted small fst-italic px-2 py-1">Status is automatically calculated based on points</span>
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" asp-for="Status" />
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="LastContacted" class="form-label">Last Contacted</label>
+                        <input asp-for="LastContacted" class="form-control" type="datetime-local" />
+                        <span asp-validation-for="LastContacted" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Your Products They're Interested In</label>
+                        <div class="product-checkbox-container border rounded p-2" style="height: 150px; overflow-y: auto;">
+                            @if (ViewBag.Products != null)
+                            {
+                                var productItems = ViewBag.Products as IEnumerable<SelectListItem>;
+                                if (productItems != null && productItems.Any())
+                                {
+                                    foreach (var item in productItems)
+                                    {
+                                        bool isChecked = Model.SelectedProductIds != null && Model.SelectedProductIds.Contains(int.Parse(item.Value));
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="SelectedProductIds" 
+                                                   value="@item.Value" id="product-@item.Value" @(isChecked ? "checked" : "") />
+                                            <label class="form-check-label" for="product-@item.Value">
+                                                @item.Text
+                                            </label>
+                                        </div>
+                                    }
+                                }
+                                else
+                                {
+                                    <p class="text-muted">No products available to select</p>
+                                }
+                            }
+                            else
+                            {
+                                <p class="text-muted">No products available to select</p>
+                            }
+                        </div>
+                        <small class="form-text text-muted">Select all products the lead is interested in</small>
+                    </div>
+                    
+                    <!-- Hidden but preserved for data integrity -->
+                    <input type="hidden" asp-for="CreatedAt" />
+                    <input type="hidden" asp-for="UpdatedAt" value="@DateTime.Now" />
+                </div>
+            </div>
+            
+            <div class="d-flex justify-content-end mt-4">
+                <button type="submit" class="btn btn-accent">
+                    <i class="fas fa-save me-1"></i> Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

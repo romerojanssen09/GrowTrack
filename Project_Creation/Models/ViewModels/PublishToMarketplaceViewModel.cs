@@ -35,12 +35,17 @@ namespace Project_Creation.Models.ViewModels
         [Display(Name = "Featured Product")]
         public bool DisplayFeatured { get; set; }
 
-        [Display(Name = "Product Images")]
+        [Display(Name = "Product Images (Up to 8 images, max 5MB each)")]
         [ValidateFile(AllowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" }, MaxSize = 5 * 1024 * 1024)]
+        [MaxImageCount(8, ErrorMessage = "You can upload a maximum of 8 images")]
         public List<IFormFile> ImageFiles { get; set; } = new List<IFormFile>();
 
         public List<ProductImageViewModel> ExistingImages { get; set; } = new List<ProductImageViewModel>();
+        
+        // Returns total image count including existing and new uploads
+        public int TotalImageCount => (ExistingImages?.Count ?? 0) + (ImageFiles?.Count ?? 0);
     }
+    
     public class ProductImageViewModel
     {
         public int Id { get; set; }
@@ -72,6 +77,38 @@ namespace Project_Creation.Models.ViewModels
             {
                 return new ValidationResult(ErrorMessage);
             }
+            return ValidationResult.Success;
+        }
+    }
+
+    // Custom validation attribute for maximum image count
+    public class MaxImageCountAttribute : ValidationAttribute
+    {
+        private readonly int _maxCount;
+        
+        public MaxImageCountAttribute(int maxCount)
+        {
+            _maxCount = maxCount;
+        }
+        
+        protected override ValidationResult IsValid(object value, ValidationContext validationContext)
+        {
+            var model = validationContext.ObjectInstance as PublishToMarketplaceViewModel;
+            
+            if (model == null)
+            {
+                return ValidationResult.Success;
+            }
+            
+            // Check if adding new images would exceed the maximum count
+            var existingCount = model.ExistingImages?.Count ?? 0;
+            var newCount = (value as List<IFormFile>)?.Count ?? 0;
+            
+            if (existingCount + newCount > _maxCount)
+            {
+                return new ValidationResult($"Total image count cannot exceed {_maxCount}. You already have {existingCount} images.");
+            }
+            
             return ValidationResult.Success;
         }
     }

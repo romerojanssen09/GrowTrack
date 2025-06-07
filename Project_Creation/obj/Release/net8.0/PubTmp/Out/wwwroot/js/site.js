@@ -150,7 +150,7 @@ function closeDropdownOnClickOutside(e) {
 //        currentStatus = newStatus;
 //        console.log("Status changed to:", newStatus);
 //    }
-//    // Do not send here – we send in the heartbeat below
+//    // Do not send here ï¿½ we send in the heartbeat below
 //}
 
 //function updateActivity() {
@@ -182,3 +182,104 @@ function closeDropdownOnClickOutside(e) {
 //        }
 //    });
 //}, 60000);
+
+// Function to check for today's calendar events
+function checkTodayCalendarEvents() {
+    // Only check if user is authenticated
+    if (document.body.classList.contains('user-authenticated')) {
+        // Check if today's events have already been fetched today (using localStorage)
+        const today = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
+        const lastChecked = localStorage.getItem('lastCalendarEventsCheck');
+        
+        // Only fetch once per day
+        if (lastChecked !== today) {
+            $.ajax({
+                url: '/Calendar/GetTodayEvents',
+                type: 'GET',
+                success: function(response) {
+                    if (response.success) {
+                        // Store that we've checked today
+                        localStorage.setItem('lastCalendarEventsCheck', today);
+                        
+                        // No need to do anything else - the controller handles 
+                        // notifications and emails
+                        console.log('Calendar events checked for today');
+                    }
+                },
+                error: function(error) {
+                    console.error('Error checking today\'s calendar events:', error);
+                }
+            });
+        }
+    }
+}
+
+// Run when the document is ready
+$(document).ready(function() {
+    // Check for today's calendar events
+    checkTodayCalendarEvents();
+    
+    // ... existing code ...
+});
+
+// Make all tables responsive
+function makeTablesResponsive() {
+    // Find all tables that aren't already in a .table-responsive container
+    document.querySelectorAll('table.table').forEach(table => {
+        // Skip if this table is already wrapped in a .table-responsive
+        if (table.parentElement.classList.contains('table-responsive')) {
+            return;
+        }
+        
+        // Skip if this table is inside a DataTables wrapper (they have their own scrolling)
+        if (table.closest('.dataTables_wrapper')) {
+            // Add responsive class to DataTables wrapper if needed
+            const wrapper = table.closest('.dataTables_wrapper');
+            if (!wrapper.classList.contains('dt-responsive')) {
+                wrapper.classList.add('dt-responsive');
+            }
+            return;
+        }
+        
+        // Create responsive wrapper
+        const wrapper = document.createElement('div');
+        wrapper.className = 'table-responsive position-relative';
+        
+        // Replace table with wrapper containing table
+        table.parentNode.insertBefore(wrapper, table);
+        wrapper.appendChild(table);
+    });
+}
+
+// Initialize tables when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', function() {
+    makeTablesResponsive();
+    
+    // Set up mutation observer to make any dynamically added tables responsive
+    const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            mutation.addedNodes.forEach(function(node) {
+                if (node.nodeType === 1) { // Only process element nodes
+                    // If a table was added directly
+                    if (node.tagName === 'TABLE' && node.classList.contains('table')) {
+                        makeTablesResponsive();
+                    }
+                    
+                    // If a container with tables was added
+                    if (node.querySelectorAll) {
+                        const tables = node.querySelectorAll('table.table');
+                        if (tables.length > 0) {
+                            makeTablesResponsive();
+                        }
+                    }
+                }
+            });
+        });
+    });
+    
+    // Observe the entire body for changes
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true
+    });
+});

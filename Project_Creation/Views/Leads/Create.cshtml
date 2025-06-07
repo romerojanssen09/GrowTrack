@@ -1,0 +1,122 @@
+@model Project_Creation.Models.Entities.Leads
+
+@{
+    ViewData["Title"] = "Add New Lead";
+}
+
+<div class="card shadow-sm mb-4 m-2">
+    <div class="card-header">
+        <h4 class="mb-0 text-accent">Add New Lead</h4>
+    </div>
+    <div class="card-body">
+        @if (ViewData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-warning">
+                @ViewData["ErrorMessage"]
+            </div>
+        }
+        
+        @if (ViewData["WarningMessage"] != null)
+        {
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                @ViewData["WarningMessage"]
+            </div>
+        }
+        
+        @if (ViewData["InfoMessage"] != null)
+        {
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                @ViewData["InfoMessage"]
+            </div>
+        }
+        
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="row">
+                <div class="col-md-6">
+                    <h5 class="text-primary mb-3">Basic Information</h5>
+                    
+                    <div class="mb-3">
+                        <label asp-for="LeadName" class="form-label">Name</label>
+                        <input asp-for="LeadName" class="form-control" placeholder="Enter lead's full name" />
+                        <span asp-validation-for="LeadName" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="LeadEmail" class="form-label">Email</label>
+                        <input asp-for="LeadEmail" class="form-control" placeholder="Enter lead's email address" />
+                        <span asp-validation-for="LeadEmail" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="LeadPhone" class="form-label">Phone</label>
+                        <input asp-for="LeadPhone" class="form-control" placeholder="Enter lead's phone number" />
+                        <span asp-validation-for="LeadPhone" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="Notes" class="form-label">Notes</label>
+                        <textarea asp-for="Notes" class="form-control" rows="4" placeholder="Add any notes about this lead"></textarea>
+                        <span asp-validation-for="Notes" class="text-danger"></span>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <h5 class="text-primary mb-3">Additional Information</h5>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Status</label>
+                        <div class="d-flex align-items-center">
+                            <span class="badge bg-light text-dark border border-secondary px-3 py-2">New</span>
+                            <span class="ms-3 text-muted small fst-italic">Status will be automatically calculated based on points</span>
+                        </div>
+                    </div>
+                
+                    <div class="mb-3">
+                        <label class="form-label">Products They're Interested In</label>
+                        <div class="product-checkbox-container border rounded p-2" style="height: 150px; overflow-y: auto;">
+                            @if (ViewBag.Products != null)
+                            {
+                                var productItems = ViewBag.Products as IEnumerable<SelectListItem>;
+                                if (productItems != null && productItems.Any())
+                                {
+                                    foreach (var item in productItems)
+                                    {
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="SelectedProductIds" value="@item.Value" id="product-@item.Value" />
+                                            <label class="form-check-label" for="product-@item.Value">
+                                                @item.Text
+                                            </label>
+                                        </div>
+                                    }
+                                }
+                                else
+                                {
+                                    <p class="text-muted">No products available to select</p>
+                                }
+                            }
+                            else
+                            {
+                                <p class="text-muted">No products available to select</p>
+                            }
+                        </div>
+                        <small class="form-text text-muted">Select all products the lead is interested in</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="d-flex justify-content-between">
+                <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
+                <button type="submit" class="btn btn-accent">
+                    <i class="fas fa-save me-1"></i> Save Lead
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

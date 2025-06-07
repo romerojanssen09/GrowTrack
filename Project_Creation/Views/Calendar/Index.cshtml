@@ -1,15 +1,20 @@
+@using System.Security.Claims
+@using Project_Creation.Models.Entities
+@{
+    var role = User.FindFirstValue(ClaimTypes.Role);
+    bool canAccess = false;
+
+    if (role == "Staff")
+    {
+        canAccess = User.FindFirstValue("AccessLevel")
+            .Split(',')
+            .Select(a => a.Trim())
+            .Contains(StaffAccessLevel.Calendar.ToString());
+    }
+}
+
 @section Styles {
     <style>
-        /* :root { */
-        /*     --primary-color: #4361ee; */
-        /*     --secondary-color: #3f37c9; */
-        /*     --accent-color: #4895ef; */
-        /*     --light-color: #f8f9fa; */
-        /*     --dark-color: #212529; */
-        /*     --success-color: #4cc9f0; */
-        /*     --danger-color: #f72585; */
-        /* } */
-
         body {
             background-color: #f5f7fa;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -121,6 +126,32 @@
             background-color: #adb5bd !important;
             border-color: #adb5bd !important;
         }
+        
+        .past-event {
+            opacity: 0.6;
+            background-color: #e9ecef !important;
+            border-color: #ced4da !important;
+            font-style: italic;
+        }
+        
+        .past-and-completed-event {
+            opacity: 0.5;
+            text-decoration: line-through;
+            background-color: #dee2e6 !important;
+            border-color: #adb5bd !important;
+            font-style: italic;
+        }
+
+        .task-item.past {
+            opacity: 0.7;
+            background-color: #f8f9fa;
+            border-left-color: #ced4da;
+        }
+
+        .task-item.past .task-title {
+            color: #6c757d;
+            font-style: italic;
+        }
 
         .priority-high {
             border-left-color: var(--danger-color);
@@ -183,40 +214,158 @@
         .btn-close {
             filter: brightness(0) invert(1);
         }
+
+        .select2-container {
+            width: 100% !important;
+        }
+
+        .select2-selection {
+            height: 38px !important;
+            padding: 6px 12px !important;
+            border: 1px solid #ced4da !important;
+            border-radius: 0.25rem !important;
+        }
+
+        .select2-selection--multiple {
+            min-height: 38px !important;
+        }
+
+        .select2-search__field {
+            margin-top: 5px !important;
+        }
+
+        .select2-container--default .select2-selection--multiple {
+            border: 1px solid #ced4da;
+            border-radius: 0.25rem;
+            min-height: 38px;
+        }
+
+        .select2-container--default .select2-selection--multiple .select2-selection__choice {
+            background-color: var(--primary-color);
+            border: none;
+            color: white;
+            padding: 2px 8px;
+            margin: 2px;
+        }
+
+        .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+            color: white;
+            margin-right: 5px;
+        }
+
+        .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
+            color: #fff;
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .select2-container--default .select2-search--inline .select2-search__field {
+            margin-top: 7px;
+        }
+
+        .select2-container--default .select2-results__option--highlighted[aria-selected] {
+            background-color: var(--primary-color);
+        }
+
+        /* Modal and Select2 z-index fixes */
+        .modal {
+            z-index: 1050 !important;
+        }
+
+        .modal-backdrop {
+            z-index: 1040 !important;
+        }
+
+        .select2-container--open {
+            z-index: 1060 !important;
+        }
+
+        .select2-dropdown {
+            z-index: 1060 !important;
+        }
+
+        .select2-container {
+            z-index: 1050 !important;
+        }
+
+        /* Ensure modal content is above everything */
+        .modal-dialog {
+            z-index: 1060 !important;
+        }
+
+        .modal-content {
+            z-index: 1060 !important;
+        }
+
+        /* Ensure select2 dropdowns appear above modal when modal is open */
+        .modal-open .select2-container--open {
+            z-index: 1060 !important;
+        }
+
+        .modal-open .select2-dropdown {
+            z-index: 1060 !important;
+        }
+
+        /* Business owner styling */
+        .business-owner-name {
+            font-weight: 500;
+            
+        }
+        
+        .business-owner-personal {
+            color: #6c757d;
+            font-size: 0.9em;
+            font-style: italic;
+            margin-left: 5px;
+        }
     </style>
 }
 
 <div class="container mt-4 mb-5">
     <div class="header text-center">
-        <h1 class="text-primary"><i class="fas fa-calendar-check me-2"></i>Task Scheduler</h1>
-        <p class="mb-0 text-primary">Organize your tasks and schedule efficiently</p>
+        <h1 class="text-primary"><i class="fas fa-calendar-check me-2"></i>Appointment Scheduler</h1>
+        <p class="mb-0 text-primary">Organize your appointments and schedule efficiently</p>
     </div>
 
     <div class="row g-4">
         <div class="col-lg-8">
             <div class="calendar-container">
                 <div class="d-flex justify-content-end mb-3">
+                    @if (role != "Staff" || canAccess)
+                    {
                     <button class="btn btn-primary" id="openAddTaskModal">
-                        <i class="fas fa-plus me-2"></i>Add New Task
+                            <i class="fas fa-plus me-2"></i>Add New Appointment
                     </button>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info mb-0 me-auto">
+                            <i class="fas fa-info-circle me-2"></i>You can only view appointments and mark them as complete.
+                        </div>
+                    }
                 </div>
                 <div id="calendar"></div>
+                <!-- Add this button in an appropriate place in the calendar view -->
+                <div class="mb-3">
+                    <button type="button" id="checkTodayEvents" class="btn btn-info">
+                        <i class="fas fa-calendar-day me-2"></i> Check Today's Events
+                    </button>
+                </div>
             </div>
         </div>
         <div class="col-lg-4">
             <div class="todo-container">
-                <h4 class="mt-2 mb-3"><i class="fas fa-tasks me-2"></i>Today's Tasks</h4>
+                <h4 class="mt-2 mb-3"><i class="fas fa-tasks me-2"></i>Today's Appointments</h4>
                 <div class="d-flex justify-content-between mb-3">
-                    <span class="badge bg-primary rounded-pill" id="taskCount">0 tasks</span>
+                    <span class="badge bg-primary rounded-pill" id="taskCount">0 appointments</span>
                     <div>
                         <button class="btn btn-sm btn-outline-secondary me-2" id="filterAll">All</button>
-                        <button class="btn btn-sm btn-outline-secondary" id="filterPending">Pending</button>
+                        <button class="btn btn-sm btn-outline-secondary" id="filterPending">Upcoming</button>
                     </div>
                 </div>
                 <div class="task-list" id="todayTasks">
                     <div class="text-center py-4 text-muted">
                         <i class="fas fa-clipboard-list fa-2x mb-2"></i>
-                        <p>No tasks for today</p>
+                        <p>No appointments for today</p>
                     </div>
                 </div>
             </div>
@@ -224,21 +373,106 @@
     </div>
 </div>
 
-<!-- Add/Edit Task Modal -->
+<!-- Add/Edit Appointment Modal -->
 <div class="modal fade" id="taskModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="taskModalTitle">Add New Task</h5>
+                <h5 class="modal-title" id="taskModalTitle">Add New Appointment</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <form id="taskForm">
+                    @Html.AntiForgeryToken()
                     <input type="hidden" id="taskId" value="" />
                     <div class="mb-3">
-                        <label for="taskTitle" class="form-label">Task Title*</label>
-                        <input type="text" class="form-control" id="taskTitle" placeholder="What needs to be done?" required>
+                        <label for="taskTitle" class="form-label">Appointment Title*</label>
+                        <input type="text" class="form-control" id="taskTitle" placeholder="What is this appointment for?" required>
                     </div>
+
+                    @if (role == "Admin" || role == "BusinessOwner")
+                    {
+                        <div class="mb-3 form-check" id="isAllContainer">
+                            <input type="checkbox" class="form-check-input" id="isAllCheckbox">
+                            <label class="form-check-label" for="isAllCheckbox">
+                                @if (role == "Admin")
+                                {
+                                    <span>Make visible to all business owners</span>
+                                }
+                                else if (role == "BusinessOwner")
+                                {
+                                    <span>Make visible to all staff</span>
+                                }
+                                else if (role == "Staff" && canAccess)
+                                {
+                                    <span>Make visible to all staff</span>
+                                }
+                            </label>
+                            @if (role == "Admin")
+                            {
+                                <div class="form-text text-muted small">When checked, all business owners will see this appointment. When unchecked, only specific categories or business owners will see it.</div>
+                            }
+                            else if (role == "BusinessOwner")
+                            {
+                                <div class="form-text text-muted small">When checked, all your staff will see this appointment. When unchecked, only selected staff will see it.</div>
+                            }
+                            else if (role == "Staff" && canAccess)
+                            {
+                                <div class="form-text text-muted small">When checked, all staff members will see this appointment. When unchecked, only selected staff will see it. You are creating this appointment on behalf of your business owner.</div>
+                            }
+                        </div>
+                    }
+
+                    @if (role == "Admin")
+                    {
+                        <div class="mb-3" id="adminSharingOptions">
+                            <div class="mb-3">
+                                <label class="form-label">Share with Business Categories</label>
+                                <div class="mb-2">
+                                    <input type="text" class="form-control" id="categorySearch" placeholder="Search categories...">
+                                </div>
+                                <div class="categories-list-container border rounded p-2" style="max-height: 150px; overflow-y: auto;">
+                                    <div id="categoryCheckboxList">
+                                        <!-- Will be populated by JavaScript -->
+                                        <div class="text-center py-2">Loading categories...</div>
+                                    </div>
+                                </div>
+                                <small class="text-muted">Select one or more business categories</small>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Share with Specific Business Owners</label>
+                                <div class="mb-2">
+                                    <input type="text" class="form-control" id="businessOwnerSearch" placeholder="Search business owners...">
+                                </div>
+                                <div class="business-owners-list-container border rounded p-2" style="max-height: 150px; overflow-y: auto;">
+                                    <div id="businessOwnerCheckboxList">
+                                        <!-- Will be populated by JavaScript -->
+                                        <div class="text-center py-2">Loading business owners...</div>
+                                    </div>
+                                </div>
+                                <small class="text-muted">Select one or more business owners</small>
+                            </div>
+                        </div>
+                    }
+
+                    @if (role == "BusinessOwner" || (role == "Staff" && canAccess))
+                    {
+                        <div class="mb-3" id="boSharingOptions">
+                            <label class="form-label">Share with Staff</label>
+                            <div class="mb-2">
+                                <input type="text" class="form-control" id="staffSearch" placeholder="Search staff...">
+                            </div>
+                            <div class="staff-list-container border rounded p-2" style="max-height: 200px; overflow-y: auto;">
+                                <div id="staffCheckboxList">
+                                    <!-- Will be populated by JavaScript -->
+                                    <div class="text-center py-2">Loading staff members...</div>
+                                </div>
+                            </div>
+                            <small class="text-muted">Select one or more staff members</small>
+                        </div>
+                    }
+
                     <div class="row g-2 mb-3">
                         <div class="col-md-6">
                             <label for="taskDate" class="form-label">Date*</label>
@@ -252,68 +486,326 @@
                     <div class="mb-3">
                         <label for="taskPriority" class="form-label">Priority</label>
                         <select class="form-select" id="taskPriority">
-                            <option value="low">Low</option>
-                            <option value="medium" selected>Medium</option>
-                            <option value="high">High</option>
+                            <option value="0">Low</option>
+                            <option value="1" selected>Medium</option>
+                            <option value="2">High</option>
                         </select>
                     </div>
                     <div class="mb-3">
                         <label for="taskNotes" class="form-label">Notes (optional)</label>
                         <textarea class="form-control" id="taskNotes" rows="3" placeholder="Additional details..."></textarea>
                     </div>
-                    <div class="mb-3" id="completionStatusContainer" style="display:none;">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="taskCompletionStatus">
-                            <label class="form-check-label" for="taskCompletionStatus">
-                                Mark as completed
-                            </label>
-                        </div>
-                    </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="saveTask">Save Task</button>
+                <button type="button" class="btn btn-primary" id="saveTask">Save Appointment</button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Task Details Modal -->
+<!-- Appointment Details Modal -->
 <div class="modal fade" id="taskDetailsModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Task Details</h5>
+                <h5 class="modal-title">Appointment Details</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body" id="taskDetailsContent">
                 <!-- Content will be dynamically populated -->
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-outline-primary" id="editTaskBtn">Edit Task</button>
-                <button type="button" class="btn btn-danger" id="deleteTaskBtn">Delete Task</button>
+                                    
+            <div class="modal-footer">             
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>     
+                @if (role != "Staff" || canAccess)              
+                {             
+                    <div id="adminAppointmentMessage" class="text-danger me-auto" style="display: none;">           
+                        <i class="fas fa-info-circle me-1"></i>Admin-created appointments cannot be modified     
+                    </div>          
+                    <button type="button" class="btn btn-outline-primary" id="editTaskBtn">Edit Appointment</button>    
+                    <button type="button" class="btn btn-danger" id="deleteTaskBtn">Delete Appointment</button>    
+                }       
             </div>
         </div>
     </div>
 </div>
+
 
 @section Scripts {
     <!-- FullCalendar JS -->
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Add Select2 JS and CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
+        // Store the pre-loaded data
+        const businessCategories = @Html.Raw(Json.Serialize(ViewBag.BusinessCategories));
+        const businessOwners = @Html.Raw(Json.Serialize(ViewBag.BusinessOwners));
+        const staffMembers = @Html.Raw(Json.Serialize(ViewBag.StaffMembers));
+
+        // Format option for select2 dropdowns
+        function formatOption(option) {
+            if (!option.id) {
+                return option.text;
+            }
+            return $('<span><i class="fas fa-check-circle me-2"></i>' + option.text + '</span>');
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             // Initialize calendar
             var calendarEl = document.getElementById('calendar');
             var tasks = []; // Will be loaded from the database
+            var staffCache = {}; // Cache for storing staff info
 
             // Set today's date as default in the date picker
             var today = new Date();
             var todayStr = today.toISOString().split('T')[0];
             document.getElementById('taskDate').value = todayStr;
+
+            // Initialize select2 with pre-loaded data
+            $('.select2-with-search').select2({
+                placeholder: "Search and select...",
+                allowClear: true,
+                width: '100%',
+                language: {
+                    noResults: function() {
+                        return "No results found";
+                    },
+                    searching: function() {
+                        return "Searching...";
+                    }
+                },
+                templateResult: formatOption,
+                templateSelection: formatOption
+            });
+
+            // Load sharing options based on user role
+            const role = '@User.FindFirstValue(ClaimTypes.Role)';
+            const canAccess = '@canAccess' === 'True';
+
+            if (role === 'Admin') {
+                $('#boSharingOptions').hide();
+                initializeBusinessCategories();
+                initializeBusinessOwners();
+                
+                // When business categories change, update business owners list - removed select2 trigger
+                $('#categoryCheckboxList').on('change', 'input[type="checkbox"]', function() {
+                    updateBusinessOwnersList();
+                });
+            } else if (role === 'BusinessOwner') {
+                $('#adminSharingOptions').hide();
+                initializeStaffMembers();
+            } else if (role === 'Staff' && canAccess) {
+                $('#adminSharingOptions').hide();
+                $('#isAllContainer').show();
+                initializeStaffMembers();
+            } else {
+                $('#isAllContainer, #adminSharingOptions, #boSharingOptions').hide();
+            }
+
+            function initializeBusinessCategories() {
+                console.log('Initializing business categories from ViewBag data');
+                
+                // Clear existing category list
+                const categoryCheckboxList = document.getElementById('categoryCheckboxList');
+                if (categoryCheckboxList) {
+                    categoryCheckboxList.innerHTML = '';
+                    
+                if (businessCategories && businessCategories.length > 0) {
+                        // Generate checkboxes for each business category
+                        businessCategories.forEach((category, index) => {
+                            const categoryItem = document.createElement('div');
+                            categoryItem.className = 'form-check category-item mb-1';
+                            
+                            const checkbox = document.createElement('input');
+                            checkbox.type = 'checkbox';
+                            checkbox.className = 'form-check-input category-checkbox';
+                            checkbox.id = `category-${category.replace(/\s+/g, '-')}`;
+                            // Use index+1 as the value (numeric ID) instead of the category name string
+                            checkbox.value = index + 1;
+                            checkbox.setAttribute('data-name', category);
+                            
+                            const label = document.createElement('label');
+                            label.className = 'form-check-label';
+                            label.htmlFor = `category-${category.replace(/\s+/g, '-')}`;
+                            label.textContent = category;
+                            
+                            categoryItem.appendChild(checkbox);
+                            categoryItem.appendChild(label);
+                            categoryCheckboxList.appendChild(categoryItem);
+                        });
+                    } else {
+                        categoryCheckboxList.innerHTML = '<div class="text-center py-2">No business categories found</div>';
+                    }
+                }
+                
+                // Add search functionality
+                const categorySearch = document.getElementById('categorySearch');
+                if (categorySearch) {
+                    categorySearch.addEventListener('input', function() {
+                        const searchTerm = this.value.toLowerCase();
+                        document.querySelectorAll('.category-item').forEach(item => {
+                            const categoryName = item.querySelector('label').textContent.toLowerCase();
+                            if (categoryName.includes(searchTerm)) {
+                                item.style.display = '';
+                            } else {
+                                item.style.display = 'none';
+                            }
+                        });
+                    });
+                }
+            }
+
+            function initializeBusinessOwners() {
+                // Initial population of all business owners
+                updateBusinessOwnersList();
+                
+                // Add search functionality
+                const businessOwnerSearch = document.getElementById('businessOwnerSearch');
+                if (businessOwnerSearch) {
+                    businessOwnerSearch.addEventListener('input', function() {
+                        const searchTerm = this.value.toLowerCase();
+                        document.querySelectorAll('.business-owner-item').forEach(item => {
+                            const ownerName = item.querySelector('label').textContent.toLowerCase();
+                            if (ownerName.includes(searchTerm)) {
+                                item.style.display = '';
+                            } else {
+                                item.style.display = 'none';
+                            }
+                        });
+                    });
+                }
+            }
+
+            function updateBusinessOwnersList() {
+                console.log('Updating business owners list based on selected categories');
+                
+                // Get selected categories
+                const selectedCategories = [];
+                document.querySelectorAll('#categoryCheckboxList input[type="checkbox"]:checked').forEach(checkbox => {
+                    selectedCategories.push(checkbox.getAttribute('data-name'));
+                });
+                
+                console.log('Selected categories:', selectedCategories);
+                
+                // Clear existing business owner list
+                const businessOwnerCheckboxList = document.getElementById('businessOwnerCheckboxList');
+                if (businessOwnerCheckboxList) {
+                    businessOwnerCheckboxList.innerHTML = '';
+                    
+                    // Always show all business owners regardless of selected categories
+                    if (businessOwners && businessOwners.length > 0) {
+                        // Generate checkboxes for each business owner
+                        businessOwners.forEach(owner => {
+                            const ownerItem = document.createElement('div');
+                            ownerItem.className = 'form-check business-owner-item mb-1';
+                            
+                            const checkbox = document.createElement('input');
+                            checkbox.type = 'checkbox';
+                            checkbox.className = 'form-check-input business-owner-checkbox';
+                            checkbox.id = `owner-${owner.id}`;
+                            checkbox.value = owner.id;
+                            checkbox.setAttribute('data-name', owner.name);
+                            checkbox.setAttribute('data-category', owner.category);
+                            
+                            const label = document.createElement('label');
+                            label.className = 'form-check-label';
+                            label.htmlFor = `owner-${owner.id}`;
+                            
+                            // Create styled spans for business name and owner's personal name
+                            const businessNameSpan = document.createElement('span');
+                            businessNameSpan.className = 'business-owner-name';
+                            businessNameSpan.textContent = owner.name;
+                            
+                            const personalNameSpan = document.createElement('span');
+                            personalNameSpan.className = 'business-owner-personal';
+                            personalNameSpan.textContent = ` (${owner.firstName || ''} ${owner.lastName || ''})`.trim();
+                            
+                            // Highlight owners from selected categories
+                            if (selectedCategories.length > 0 && selectedCategories.includes(owner.category)) {
+                                // Add a visual indicator for owners in selected categories
+                                businessNameSpan.innerHTML = `<i class="fas fa-check-circle text-success me-1"></i>${owner.name}`;
+                                businessNameSpan.style.fontWeight = 'bold';
+                                ownerItem.style.backgroundColor = '#f8fff8';
+                            }
+                            
+                            // Add both spans to the label
+                            label.appendChild(businessNameSpan);
+                            label.appendChild(personalNameSpan);
+                            
+                            // Add category badge if any categories are selected
+                            if (selectedCategories.length > 0) {
+                                const categoryBadge = document.createElement('span');
+                                categoryBadge.className = 'badge bg-light text-secondary ms-1 small';
+                                categoryBadge.textContent = owner.category;
+                                label.appendChild(categoryBadge);
+                            }
+                            
+                            ownerItem.appendChild(checkbox);
+                            ownerItem.appendChild(label);
+                            businessOwnerCheckboxList.appendChild(ownerItem);
+                        });
+                    } else {
+                        businessOwnerCheckboxList.innerHTML = '<div class="text-center py-2">No business owners found</div>';
+                    }
+                }
+            }
+
+            function initializeStaffMembers() {
+                console.log('Initializing staff members from ViewBag data');
+                
+                // Clear existing staff list
+                const staffCheckboxList = document.getElementById('staffCheckboxList');
+                if (staffCheckboxList) {
+                    staffCheckboxList.innerHTML = '';
+                    
+                    if (staffMembers && staffMembers.length > 0) {
+                        // Generate checkboxes for each staff member
+                        staffMembers.forEach(staff => {
+                            const staffItem = document.createElement('div');
+                            staffItem.className = 'form-check staff-item mb-1';
+                            
+                            const checkbox = document.createElement('input');
+                            checkbox.type = 'checkbox';
+                            checkbox.className = 'form-check-input staff-checkbox';
+                            checkbox.id = `staff-${staff.id}`;
+                            checkbox.value = staff.id;
+                            checkbox.setAttribute('data-name', staff.name);
+                            
+                            const label = document.createElement('label');
+                            label.className = 'form-check-label';
+                            label.htmlFor = `staff-${staff.id}`;
+                            label.textContent = staff.name;
+                            
+                            staffItem.appendChild(checkbox);
+                            staffItem.appendChild(label);
+                            staffCheckboxList.appendChild(staffItem);
+                        });
+                    } else {
+                        staffCheckboxList.innerHTML = '<div class="text-center py-2">No staff members found</div>';
+                    }
+                }
+                
+                // Add search functionality
+                const staffSearch = document.getElementById('staffSearch');
+                if (staffSearch) {
+                    staffSearch.addEventListener('input', function() {
+                        const searchTerm = this.value.toLowerCase();
+                        document.querySelectorAll('.staff-item').forEach(item => {
+                            const staffName = item.querySelector('label').textContent.toLowerCase();
+                            if (staffName.includes(searchTerm)) {
+                                item.style.display = '';
+                            } else {
+                                item.style.display = 'none';
+                            }
+                        });
+                    });
+                }
+            }
 
             var calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
@@ -326,15 +818,22 @@
                 selectable: false,
                 events: [], // Will be populated after loading tasks
                 eventClick: function(info) {
+                    // This allows all users (including staff) to view task details
                     showTaskDetails(info.event);
                 },
                 eventContent: function(arg) {
                     // Custom event content with priority indicator
                     let priorityDot = '';
-                    if (arg.event.extendedProps.priority === 'High') {
+                    
+                    // Convert priority enum to string if needed
+                    const priorityString = getPriorityString(arg.event.extendedProps.priority);
+                    
+                    if (priorityString === 'High') {
                         priorityDot = '<i class="fas fa-circle text-danger" style="font-size: 0.5rem; margin-right: 3px;"></i>';
-                    } else if (arg.event.extendedProps.priority === 'Medium') {
+                    } else if (priorityString === 'Medium') {
                         priorityDot = '<i class="fas fa-circle text-warning" style="font-size: 0.5rem; margin-right: 3px;"></i>';
+                    } else if (priorityString === 'Low') {
+                        priorityDot = '<i class="fas fa-circle text-success" style="font-size: 0.5rem; margin-right: 3px;"></i>';
                     }
 
                     return {
@@ -354,25 +853,57 @@
             
             // Set up the event handlers for modal buttons
             document.getElementById('openAddTaskModal').addEventListener('click', function() {
+                console.log("openAddTaskModal is clicked!");
                 resetTaskForm();
-                document.getElementById('taskModalTitle').textContent = 'Add New Task';
+                document.getElementById('taskModalTitle').textContent = 'Add New Appointment';
                 document.getElementById('saveTask').setAttribute('data-mode', 'add');
-                document.getElementById('completionStatusContainer').style.display = 'none';
+                
+                // Clear all staff checkboxes when opening a new task form
+                document.querySelectorAll('#staffCheckboxList input[type="checkbox"]').forEach(checkbox => {
+                    checkbox.checked = false;
+                });
+                
                 taskModal.show();
             });
             
             document.getElementById('saveTask').addEventListener('click', function() {
+                // Prevent double-clicking by disabling the button
+                const saveBtn = this;
+                saveBtn.disabled = true;
+                
+                // Show loading state
+                const originalText = saveBtn.innerHTML;
+                saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
+                
                 var mode = this.getAttribute('data-mode');
                 if (mode === 'add') {
-                    addTask();
+                    addTask(saveBtn, originalText);
                 } else {
-                    updateTask(parseInt(document.getElementById('taskId').value));
+                    updateTask(parseInt(document.getElementById('taskId').value), saveBtn, originalText);
                 }
             });
 
             // Event handler for Edit button in details modal
             document.getElementById('editTaskBtn').addEventListener('click', function() {
                 var taskId = parseInt(this.getAttribute('data-task-id'));
+                
+                // Get the task to check permission
+                const task = tasks.find(t => t.id === taskId);
+                if (!task) {
+                    console.error('Task not found');
+                    return;
+                }
+                
+                // Check if user has permission to edit
+                if (!canEditTask(task)) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Permission Denied',
+                        text: 'You do not have permission to edit this appointment.'
+                    });
+                    return;
+                }
+                
                 loadTaskForEditing(taskId);
                 taskDetailsModal.hide();
             });
@@ -382,6 +913,23 @@
                 var taskId = this.getAttribute('data-task-id');
                 console.log('Delete button clicked with taskId:', taskId); // Debug log
                 if (taskId) {
+                    // Get the task to check permission
+                    const task = tasks.find(t => t.id === parseInt(taskId));
+                    if (!task) {
+                        console.error('Task not found');
+                        return;
+                    }
+                    
+                    // Check if user has permission to delete
+                    if (!canEditTask(task)) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Permission Denied',
+                            text: 'You do not have permission to delete this appointment.'
+                        });
+                        return;
+                    }
+                    
                     deleteTask(parseInt(taskId));
                     taskDetailsModal.hide();
                 } else {
@@ -395,43 +943,122 @@
             });
 
             function loadTasks() {
+                console.log('Starting to load tasks from server...');
                 fetch('/Calendar/GetTasks')
-                    .then(response => {
+                    .then(async response => {
+                        console.log('Response received from server, status:', response.status);
                         if (!response.ok) {
-                            throw new Error('Network response was not ok');
+                            const errorData = await response.json().catch(() => null);
+                            throw new Error(errorData?.message || `HTTP error! status: ${response.status}`);
                         }
                         return response.json();
                     })
                     .then(data => {
-                        tasks = data;
+                        console.log('Tasks data received from server:', data);
+                        // Ensure all task priorities are properly converted from string to number
+                        tasks = data.map(task => {
+                            if (typeof task.priority === 'string' && !isNaN(task.priority)) {
+                                task.priority = parseInt(task.priority);
+                            }
+                            return task;
+                        });
+                        console.log('Tasks loaded from server, count:', tasks.length);
+                        
+                        // Log the first task if available to see its structure
+                        if (tasks.length > 0) {
+                            console.log('Sample task object structure:', tasks[0]);
+                            console.log('Task properties:', Object.keys(tasks[0]).join(', '));
+                        } else {
+                            console.log('No tasks returned from server');
+                        }
                         
                         // Clear existing events
-                        calendar.getEvents().forEach(event => event.remove());
+                        const existingEvents = calendar.getEvents();
+                        console.log('Clearing', existingEvents.length, 'existing events from calendar');
+                        existingEvents.forEach(event => event.remove());
                         
-                        // Add events to calendar
+                        // Current date for determining past events
+                        const now = new Date();
+                        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                        
+                        // Add events to calendar - show ALL events (both past and future)
                         tasks.forEach(task => {
-                            calendar.addEvent({
+                            console.log('Adding task to calendar:', task.id, task.title, task.date, task.time);
+                            
+                            // Determine if the task is in the past
+                            const taskDate = new Date(task.date);
+                            let isPast = taskDate < today;
+                            
+                            // For tasks today, check if the time has passed
+                            if (!isPast && taskDate.getTime() === today.getTime() && task.time) {
+                                const [hours, minutes] = formatTime(task.time).split(':').map(Number);
+                                const taskTime = new Date();
+                                taskTime.setHours(hours, minutes, 0, 0);
+                                isPast = taskTime < now;
+                            }
+                            
+                            // Get the string representation of priority for display
+                            const priorityString = getPriorityString(task.priority);
+                            
+                            // Determine appropriate class based on past status
+                            let eventClassNames = [];
+                            if (isPast) {
+                                eventClassNames.push('past-event');
+                            }
+                            
+                            // Format start date/time
+                            let eventStart;
+                            if (task.time) {
+                                eventStart = `${task.date}T${formatTime(task.time)}`;
+                            } else {
+                                eventStart = task.date;
+                            }
+                            
+                            console.log('Creating event with start:', eventStart);
+                            
+                            const calendarEvent = {
                                 id: task.id.toString(), // Ensure consistent ID format as string
                                 title: task.title,
-                                start: task.time ? `${task.date}T${formatTime(task.time)}:00` : task.date,
+                                start: eventStart,
                                 allDay: !task.time,
                                 extendedProps: {
                                     taskId: task.id,
-                                    completed: task.isCompleted,
                                     priority: task.priority,
-                                    notes: task.notes
+                                    priorityString: priorityString,
+                                    notes: task.notes || '',
+                                    isPast: isPast,
+                                    // Add sharing properties to extendedProps
+                                    isAll: task.isAll,
+                                    boViewers: task.boViewers,
+                                    adminViewers1: task.adminViewers1,
+                                    adminViewers2: task.adminViewers2,
+                                    userId: task.userId,
+                                    user: task.user,
+                                    whoSetAppointment: task.whoSetAppointment
                                 },
                                 color: getPriorityColor(task.priority),
-                                classNames: task.isCompleted ? ['completed-event'] : []
-                            });
+                                classNames: eventClassNames
+                            };
+                            
+                            console.log('Adding event to calendar:', calendarEvent);
+                            calendar.addEvent(calendarEvent);
                         });
+                        
+                        // Refresh calendar to ensure events are rendered
+                        console.log('Refreshing calendar');
+                        calendar.refetchEvents();
                         
                         // Show today's tasks
                         showTodaysTasks();
                     })
                     .catch(error => {
                         console.error('Error loading tasks:', error);
-                        showAlert('Failed to load tasks', 'danger');
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error Loading Appointments',
+                            text: error.message || 'Failed to load appointments. Please try refreshing the page.',
+                            confirmButtonText: 'OK'
+                        });
                     });
             }
 
@@ -467,236 +1094,355 @@
                 document.getElementById('filterAll').classList.add('btn-outline-secondary');
             });
 
-            function addTask() {
-                var title = document.getElementById('taskTitle').value.trim();
-                var date = document.getElementById('taskDate').value;
-                var time = document.getElementById('taskTime').value;
-                var prioritySelect = document.getElementById('taskPriority');
-                var priorityValue = prioritySelect.value;
-                var notes = document.getElementById('taskNotes').value.trim();
-
-                if (!validateTaskForm()) return;
-
-                // Create task object
-                var task = {
-                    title: title,
-                    date: date,
-                    time: time || null,
-                    priority: priorityValue.charAt(0).toUpperCase() + priorityValue.slice(1), // Capitalize first letter
-                    notes: notes,
-                    isCompleted: false
-                };
-
-                // Send task to server
-                fetch('/Calendar/AddTask', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(task)
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
+            // Toggle sharing options when IsAll is checked
+            $('#isAllCheckbox').change(function() {
+                if ($(this).is(':checked')) {
+                    $('#adminSharingOptions, #boSharingOptions').slideUp();
+                    // Clear selections when hiding
+                    if (role === 'Admin') {
+                        // Clear all category checkboxes
+                        document.querySelectorAll('#categoryCheckboxList input[type="checkbox"]').forEach(checkbox => {
+                            checkbox.checked = false;
+                        });
+                        // Clear all business owner checkboxes
+                        document.querySelectorAll('#businessOwnerCheckboxList input[type="checkbox"]').forEach(checkbox => {
+                            checkbox.checked = false;
+                        });
+                    } else if (role === 'BusinessOwner') {
+                        // Clear all staff checkboxes
+                        document.querySelectorAll('#staffCheckboxList input[type="checkbox"]').forEach(checkbox => {
+                            checkbox.checked = false;
+                        });
                     }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.success) {
-                        // Add the new task to our local array
-                        tasks.push(data.task);
+                } else {
+                    if (role === 'Admin') {
+                        $('#adminSharingOptions').slideDown();
+                    } else if (role === 'BusinessOwner') {
+                        $('#boSharingOptions').slideDown();
+                    }
+                }
+            });
+
+            function loadStaffMembers() {
+                fetch('/Calendar/GetStaff')
+                    .then(response => response.json())
+                    .then(data => {
+                        $('#staffMembers').empty();
+                        data.forEach(staff => {
+                            $('#staffMembers').append(new Option(staff.Name, staff.Id));
+                        });
+                        $('#staffMembers').trigger('change');
+                    })
+                    .catch(error => {
+                        console.error('Error loading staff members:', error);
+                        showAlert('Failed to load staff members', 'danger');
+                    });
+            }
+
+            // Update the addTask function to use FormData instead of JSON for sending the data to the server
+            function addTask(saveBtn, originalText) {
+                try {
+                    // Validate required fields first
+                    if (!validateTaskForm()) {
+                        // Restore button on validation failure
+                        saveBtn.disabled = false;
+                        saveBtn.innerHTML = originalText;
+                        return;
+                    }
+                    
+                    // Create a FormData object
+                    const formData = new FormData();
+                    formData.append('__RequestVerificationToken', $('input[name="__RequestVerificationToken"]').val());
+                    
+                    // Map form fields directly to CalendarTaskDTO properties
+                    formData.append('Title', $('#taskTitle').val().trim());
+                    formData.append('Date', $('#taskDate').val());
+                    formData.append('Time', $('#taskTime').val() || null);
+                    formData.append('Priority', $('#taskPriority').val());
+                    formData.append('Notes', $('#taskNotes').val().trim());
+                    formData.append('IsAll', $('#isAllCheckbox').is(':checked'));
+
+                    // Debug log
+                    console.log('Form validation passed. Preparing to send data:');
+                    console.log('Title:', $('#taskTitle').val().trim());
+                    console.log('IsAll:', $('#isAllCheckbox').is(':checked'));
+
+                    const role = '@role';
+                    const canAdd = '@canAccess' === 'True'
+                    
+                    // Handle sharing options based on role
+                    if (role === 'Admin' && !$('#isAllCheckbox').is(':checked')) {
+                        // Get selected categories from checkboxes
+                        const selectedCategories = [];
+                        document.querySelectorAll('#categoryCheckboxList input[type="checkbox"]:checked').forEach(checkbox => {
+                            selectedCategories.push(checkbox.value);
+                            formData.append('SelectedBusinessCategories', checkbox.value);
+                        });
+                        console.log('Selected categories:', selectedCategories);
                         
+                        // Get selected business owners from checkboxes
+                        const selectedOwners = [];
+                        document.querySelectorAll('#businessOwnerCheckboxList input[type="checkbox"]:checked').forEach(checkbox => {
+                            selectedOwners.push(checkbox.value);
+                            formData.append('SelectedBusinessOwners', checkbox.value);
+                        });
+                        console.log('Selected owners:', selectedOwners);
+                    } else if ((role === 'BusinessOwner' || (role === 'Staff' && canAdd)) && !$('#isAllCheckbox').is(':checked')) {
+                        // Get selected staff from checkboxes
+                        const selectedStaff = [];
+                        document.querySelectorAll('#staffCheckboxList input[type="checkbox"]:checked').forEach(checkbox => {
+                            selectedStaff.push(checkbox.value);
+                            formData.append('SelectedStaff', checkbox.value);
+                        });
+                        console.log('Selected staff:', selectedStaff);
+                    }
+                    
+                    // Log what we're sending
+                    console.log('Sending task data via JSON');
+                    
+                    // For admin users, show a loading message about sending emails
+                    if (role === 'Admin' && !$('#isAllCheckbox').is(':checked')) {
+                        // Count selected business owners
+                        const selectedOwnerCount = document.querySelectorAll('#businessOwnerCheckboxList input[type=\'checkbox\']:checked').length;
+                        const selectedCategoryCount = document.querySelectorAll('#categoryCheckboxList input[type=\'checkbox\']:checked').length;
+                        
+                        if (selectedOwnerCount > 0 || selectedCategoryCount > 0) {
+                            // Show loading message
+                            Swal.fire({
+                                title: 'Sending Notifications',
+                                html: `<p>Please wait while we send email notifications to the selected business owners.</p>
+                                      <p>This may take a moment depending on your internet connection and the number of recipients.</p>`,
+                                icon: 'info',
+                                allowOutsideClick: false,
+                                allowEscapeKey: false,
+                                showConfirmButton: false,
+                                willOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+                        }
+                    }
+                    
+                    // Send task to server
+                    fetch('/Calendar/CreateTask', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                        },
+                        body: JSON.stringify({
+                            Title: $('#taskTitle').val().trim(),
+                            Description: $('#taskNotes').val().trim(),
+                            Date: $('#taskDate').val(),
+                            Time: $('#taskTime').val() || '',
+                            Priority: parseInt($('#taskPriority').val()), // Parse as integer to match enum
+                            SendReminder: $('#isAllCheckbox').is(':checked') // Using SendReminder field to store IsAll value
+                        })
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            // Try to get error details from response
+                            return response.text().then(text => {
+                                console.error('Server response:', text);
+                                try {
+                                    // Try to parse as JSON
+                                    const jsonResponse = JSON.parse(text);
+                                    throw new Error(`Server returned ${response.status}: ${jsonResponse.message || text}`);
+                                } catch (e) {
+                                    // If parsing fails, return the text
+                                throw new Error(`Server returned ${response.status}: ${text}`);
+                                }
+                            });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                        // Add the new task to our local array
+                        // Ensure priority is properly converted from string to number if needed
+                        if (typeof data.task.priority === 'string' && !isNaN(data.task.priority)) {
+                            data.task.priority = parseInt(data.task.priority);
+                        }
+                            
+                            // Log the task data to debug
+                            console.log('Task data received from server:', data.task);
+                            
+                            // Make sure we have a valid task object with required fields
+                            if (!data.task) {
+                                console.error('No task data returned from server');
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: 'No task data returned from server'
+                                });
+                                
+                                // Restore button state
+                                saveBtn.disabled = false;
+                                saveBtn.innerHTML = originalText;
+                                return;
+                            }
+                            
+                            // Make sure task has an ID
+                            if (!data.task.id) {
+                                console.error('Task data missing ID:', data.task);
+                                data.task.id = Date.now(); // Generate a temporary ID if needed
+                            }
+                            
+                        tasks.push(data.task);
+                        console.log('Added task priority:', data.task.priority, 'as type:', typeof data.task.priority);
+                            console.log('Tasks array now has', tasks.length, 'tasks');
+                        
+                        // Debug log
+                        console.log('Task added, server response:', data.task);
+                        console.log('Date format:', data.task.date);
+                        console.log('Time format:', data.task.time);
+
+                            // Make sure the task has a valid date format
+                            let eventDate = data.task.date;
+                            if (!eventDate) {
+                                console.warn('Task missing date, using today');
+                                eventDate = new Date().toISOString().split('T')[0];
+                            }
+
+                            // Format the start datetime
+                            let eventStart;
+                            if (data.task.time) {
+                                eventStart = `${eventDate}T${data.task.time}`;
+                            } else {
+                                eventStart = eventDate;
+                            }
+                            
+                            console.log('Creating calendar event with start:', eventStart);
+
                         // Add to calendar
-                        calendar.addEvent({
+                            const newEvent = {
                             id: data.task.id.toString(), // Ensure consistent ID format as string
                             title: data.task.title,
-                            start: data.task.time ? `${data.task.date}T${formatTime(data.task.time)}:00` : data.task.date,
+                                start: eventStart,
                             allDay: !data.task.time,
                             extendedProps: {
                                 taskId: data.task.id,
-                                completed: data.task.isCompleted,
+                                    completed: data.task.isCompleted || false,
                                 priority: data.task.priority,
-                                notes: data.task.notes
+                                priorityString: getPriorityString(data.task.priority),
+                                    notes: data.task.notes || '',
+                                    isPast: data.task.isPast || false,
+                                // Add sharing properties to extendedProps
+                                isAll: data.task.isAll,
+                                boViewers: data.task.boViewers,
+                                adminViewers1: data.task.adminViewers1,
+                                adminViewers2: data.task.adminViewers2,
+                                userId: data.task.userId,
+                                user: data.task.user,
+                                    whoSetAppointment: data.task.whoSetAppointment || 0,
+                                staffNameWhoCompleted: data.task.staffNameWhoCompleted
                             },
                             color: getPriorityColor(data.task.priority)
-                        });
+                            };
+                            
+                            console.log('Adding event to calendar:', newEvent);
+                            calendar.addEvent(newEvent);
+                            
+                            // Refresh calendar to ensure events are rendered
+                            calendar.refetchEvents();
 
                         // Close the modal
                         taskModal.hide();
-                        
+
                         // Refresh today's tasks list
                         showTodaysTasks();
 
-                        // Show success message
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Success!',
-                            text: 'Task added successfully',
-                            timer: 2000,
-                            showConfirmButton: false
-                        });
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: 'Failed to add task'
-                        });
-                    }
-                })
-                .catch(error => {
-                    console.error('Error adding task:', error);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'Failed to add task: ' + error.message
-                    });
-                });
-            }
-            
-            function validateTaskForm() {
-                var title = document.getElementById('taskTitle').value.trim();
-                var date = document.getElementById('taskDate').value;
-                
-                if (!title) {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Required Field',
-                        text: 'Please enter a task title'
-                    });
-                    document.getElementById('taskTitle').focus();
-                    return false;
-                }
+                            // Restore button state
+                            saveBtn.disabled = false;
+                            saveBtn.innerHTML = originalText;
 
-                if (!date) {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Required Field',
-                        text: 'Please select a date'
-                    });
-                    document.getElementById('taskDate').focus();
-                    return false;
-                }
-                
-                return true;
-            }
-
-            function loadTaskForEditing(taskId) {
-                const task = tasks.find(t => t.id === taskId);
-                if (!task) return;
-                
-                // Set form title to Edit mode
-                document.getElementById('taskModalTitle').textContent = 'Edit Task';
-                document.getElementById('saveTask').setAttribute('data-mode', 'edit');
-                
-                // Fill the form with task details
-                document.getElementById('taskId').value = task.id;
-                document.getElementById('taskTitle').value = task.title;
-                document.getElementById('taskDate').value = new Date(task.date).toISOString().split('T')[0];
-                document.getElementById('taskTime').value = task.time ? formatTime(task.time) : '';
-                document.getElementById('taskPriority').value = task.priority.toLowerCase();
-                document.getElementById('taskNotes').value = task.notes || '';
-                
-                // Show and set completion status
-                document.getElementById('completionStatusContainer').style.display = 'block';
-                document.getElementById('taskCompletionStatus').checked = task.isCompleted;
-                
-                // Open the modal
-                taskModal.show();
-            }
-
-            function updateTask(taskId) {
-                var title = document.getElementById('taskTitle').value.trim();
-                var date = document.getElementById('taskDate').value;
-                var time = document.getElementById('taskTime').value;
-                var prioritySelect = document.getElementById('taskPriority');
-                var priorityValue = prioritySelect.value;
-                var notes = document.getElementById('taskNotes').value.trim();
-                var isCompleted = document.getElementById('taskCompletionStatus').checked;
-
-                if (!validateTaskForm()) return;
-
-                // Create updated task object
-                var updatedTask = {
-                    id: taskId,
-                    title: title,
-                    date: date,
-                    time: time || null,
-                    priority: priorityValue.charAt(0).toUpperCase() + priorityValue.slice(1),
-                    notes: notes,
-                    isCompleted: isCompleted
-                };
-
-                // Send updated task to server
-                fetch('/Calendar/UpdateTask', {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(updatedTask)
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.success) {
-                        // Update the task in our local array
-                        const taskIndex = tasks.findIndex(t => t.id === taskId);
-                        if (taskIndex !== -1) {
-                            tasks[taskIndex] = data.task;
+                            // Add back the success messages
+                        // Show success message with sharing information for admins
+                        if (role === 'Admin') {
+                            let sharingMessage = '';
+                            let emailSentMessage = '';
+                            
+                            if ($('#isAllCheckbox').is(':checked')) {
+                                sharingMessage = 'This appointment has been shared with all business owners.';
+                            } else {
+                                const selectedCategories = [];
+                                document.querySelectorAll('#categoryCheckboxList input[type=\'checkbox\']:checked').forEach(checkbox => {
+                                    selectedCategories.push(checkbox.getAttribute('data-name'));
+                                });
+                                
+                                const selectedOwners = [];
+                                document.querySelectorAll('#businessOwnerCheckboxList input[type=\'checkbox\']:checked').forEach(checkbox => {
+                                    selectedOwners.push(checkbox.getAttribute('data-name'));
+                                });
+                                
+                                if (selectedCategories.length > 0 || selectedOwners.length > 0) {
+                                    sharingMessage = 'This appointment has been shared with the selected business ';
+                                    
+                                    if (selectedCategories.length > 0) {
+                                        sharingMessage += 'categories' + (selectedOwners.length > 0 ? ' and ' : '.');
+                                    }
+                                    
+                                    if (selectedOwners.length > 0) {
+                                        sharingMessage += 'owners.';
+                                    }
+                                    
+                                    // Add email notification message
+                                    const recipientCount = selectedOwners.length + (selectedCategories.length * 2); // Estimate 2 owners per category on average
+                                    emailSentMessage = `<p class="mt-2"><i class="fas fa-envelope text-success me-2"></i>Email notifications have been sent to ${recipientCount} business owner(s).</p>`;
+                                } else {
+                                    sharingMessage = 'This appointment is only visible to you.';
+                                }
+                            }
+                            
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Appointment Added Successfully',
+                                html: `<p>${sharingMessage}</p>${emailSentMessage}`,
+                                showConfirmButton: true,
+                                confirmButtonText: 'OK'
+                            });
+                        } else {
+                            // Standard success message for non-admin users
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success!',
+                                text: 'Appointment added successfully',
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
                         }
-
-                        // Remove all instances of this task from the calendar
-                        cleanupTaskEvents(taskId);
-
-                        // Add the updated task to calendar
-                        calendar.addEvent({
-                            id: data.task.id.toString(), // Ensure consistent ID format as string
-                            title: data.task.title,
-                            start: data.task.time ? `${data.task.date}T${formatTime(data.task.time)}:00` : data.task.date,
-                            allDay: !data.task.time,
-                            extendedProps: {
-                                taskId: data.task.id,
-                                completed: data.task.isCompleted,
-                                priority: data.task.priority,
-                                notes: data.task.notes
-                            },
-                            color: getPriorityColor(data.task.priority),
-                            classNames: data.task.isCompleted ? ['completed-event'] : []
-                        });
-
-                        // Close the modal
-                        taskModal.hide();
-
-                        // Refresh today's tasks list
-                        showTodaysTasks();
-
-                        // Show success message
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Success!',
-                            text: 'Task updated successfully',
-                            timer: 2000,
-                            showConfirmButton: false
-                        });
-                    } else {
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: data.message || 'Failed to update task'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error updating task:', error);
                         Swal.fire({
                             icon: 'error',
-                            title: 'Error',
-                            text: 'Failed to update task'
+                            title: 'Error Adding Appointment',
+                            text: error.message || 'An unexpected error occurred'
                         });
-                    }
-                })
-                .catch(error => {
-                    console.error('Error updating task:', error);
+                        
+                        // Restore button state
+                        saveBtn.disabled = false;
+                        saveBtn.innerHTML = originalText;
+                    });
+                } catch (error) {
+                    console.error('Exception in addTask function:', error);
                     Swal.fire({
                         icon: 'error',
                         title: 'Error',
-                        text: 'Failed to update task: ' + error.message
+                        text: 'An unexpected error occurred: ' + error.message
                     });
-                });
+                    
+                    // Restore button state
+                    saveBtn.disabled = false;
+                    saveBtn.innerHTML = originalText;
+                }
             }
 
             function deleteTask(taskId) {
@@ -807,6 +1553,7 @@
             }
 
             function showTodaysTasks(filter = 'all') {
+                const role = '@role';
                 var todayTasksEl = document.getElementById('todayTasks');
                 todayTasksEl.innerHTML = '';
 
@@ -817,32 +1564,56 @@
                 });
 
                 if (filter === 'pending') {
-                    todaysTasks = todaysTasks.filter(task => !task.isCompleted);
+                    const now = new Date();
+                    todaysTasks = todaysTasks.filter(task => {
+                        // For pending filter, exclude completed tasks
+                        if (task.isCompleted) return false;
+                        
+                        // Also exclude past tasks (those with time in the past)
+                        if (task.time) {
+                            const [hours, minutes] = formatTime(task.time).split(':').map(Number);
+                            const taskTime = new Date();
+                            taskTime.setHours(hours, minutes, 0, 0);
+                            if (taskTime < now) return false; // exclude past tasks
+                        }
+                        
+                        return true;
+                    });
                 }
 
                 // Update task count badge
                 document.getElementById('taskCount').textContent =
-                    `${todaysTasks.length} ${todaysTasks.length === 1 ? 'task' : 'tasks'}`;
+                    `${todaysTasks.length} ${todaysTasks.length === 1 ? 'appointment' : 'appointments'}`;
 
                 if (todaysTasks.length === 0) {
                     todayTasksEl.innerHTML = `
                         <div class="text-center py-4 text-muted">
                             <i class="fas fa-clipboard-list fa-2x mb-2"></i>
-                            <p>No tasks found</p>
+                            <p>No appointments found</p>
                         </div>
                     `;
                     return;
                 }
 
+                // Current time for determining past tasks
+                const now = new Date();
+
                 // Sort tasks by priority and time
                 todaysTasks.sort((a, b) => {
+                    // Convert enum to numeric value for comparison if needed
+                    const getPriorityValue = (p) => {
+                        if (typeof p === 'number') return p; // Already numeric
+                        if (p === 'High') return 2;
+                        if (p === 'Low') return 0;
+                        return 1; // Medium or default
+                    };
+                    
                     // High priority first
-                    if (a.priority === 'High' && b.priority !== 'High') return -1;
-                    if (b.priority === 'High' && a.priority !== 'High') return 1;
-
-                    // Medium priority next
-                    if (a.priority === 'Medium' && b.priority === 'Low') return -1;
-                    if (b.priority === 'Medium' && a.priority === 'Low') return 1;
+                    const priorityA = getPriorityValue(a.priority);
+                    const priorityB = getPriorityValue(b.priority);
+                    
+                    if (priorityA > priorityB) return -1;
+                    if (priorityB > priorityA) return 1;
 
                     // Then by time (tasks with time come first, then sorted by time)
                     if (a.time && b.time) return a.time.localeCompare(b.time);
@@ -854,41 +1625,63 @@
                 });
 
                 todaysTasks.forEach(task => {
+                    // Check if task is in the past
+                    let isPast = false;
+                    if (task.time) {
+                        const [hours, minutes] = formatTime(task.time).split(':').map(Number);
+                        const taskTime = new Date();
+                        taskTime.setHours(hours, minutes, 0, 0);
+                        isPast = taskTime < now;
+                    }
+                    
+                    // Ensure priority is numeric first
+                    if (typeof task.priority === 'string' && !isNaN(task.priority)) {
+                        task.priority = parseInt(task.priority);
+                    }
+                    
+                    // Convert priority enum to string
+                    const priorityString = getPriorityString(task.priority);
+                    console.log(`Today's task ${task.id} (${task.title}) has priority: ${task.priority} (${priorityString})`);
+
                     var taskEl = document.createElement('div');
-                    taskEl.className = `task-item ${task.isCompleted ? 'completed' : ''} priority-${task.priority.toLowerCase()}`;
+                    taskEl.className = `task-item ${task.isCompleted ? 'completed' : ''} ${isPast ? 'past' : ''} priority-${priorityString.toLowerCase()}`;
                     taskEl.style.cursor = 'pointer';
                     
-                    // Make the entire task item clickable to view details
                     taskEl.addEventListener('click', function(e) {
-                        // Only if not clicking on checkbox or action buttons
                         if (!e.target.closest('.form-check-input') && !e.target.closest('.task-actions')) {
-                            // Find the task by ID and show details
                             const taskToShow = tasks.find(t => t.id === task.id);
                             if (taskToShow) {
-                                // Create a fake event object for the showTaskDetails function
                                 showTaskDetails({
                                     extendedProps: {
-                                        taskId: task.id
+                                        taskId: task.id,
+                                        isPast: isPast
                                     }
                                 });
                             }
                         }
                     });
 
-                    // Checkbox
-                    var checkbox = document.createElement('input');
-                    checkbox.type = 'checkbox';
-                    checkbox.className = 'form-check-input me-2';
-                    checkbox.checked = task.isCompleted;
-                    checkbox.onclick = function(e) {
-                        e.stopPropagation(); // Prevent task item click
-                        updateTaskStatus(task.id, !task.isCompleted);
-                    };
-
                     // Task title
                     var taskTitle = document.createElement('span');
                     taskTitle.className = 'task-title';
-                    taskTitle.textContent = task.title;
+                    
+                    // Add priority badge before title
+                    let priorityBadge = '';
+                    switch(priorityString) {
+                        case 'High': 
+                            priorityBadge = '<span class="badge bg-danger me-2">High</span>';
+                            break;
+                        case 'Medium': 
+                            priorityBadge = '<span class="badge bg-warning text-dark me-2">Medium</span>';
+                            break;
+                        case 'Low': 
+                            priorityBadge = '<span class="badge bg-success me-2">Low</span>';
+                            break;
+                        default:
+                            priorityBadge = '<span class="badge bg-warning text-dark me-2">Medium</span>';
+                    }
+                    
+                    taskTitle.innerHTML = priorityBadge + task.title;
 
                     // Task time
                     var taskTime = document.createElement('span');
@@ -901,34 +1694,78 @@
                         intHours = intHours % 12;
                         intHours = intHours ? intHours : 12; // Convert 0 to 12
                         taskTime.textContent = `${intHours}:${minutes} ${ampm}`;
+                        
+                        // Add a visual indicator for past tasks
+                        if (isPast) {
+                            taskTime.innerHTML += ' <span class="badge bg-secondary">Past</span>';
+                        }
                     }
 
                     // Task actions
                     var taskActions = document.createElement('div');
                     taskActions.className = 'task-actions';
 
-                    // Edit button
-                    var editBtn = document.createElement('button');
-                    editBtn.className = 'btn btn-sm btn-outline-primary';
-                    editBtn.innerHTML = '<i class="fas fa-edit"></i>';
-                    editBtn.onclick = function(e) {
-                        e.stopPropagation(); // Prevent task item click
-                        loadTaskForEditing(task.id);
-                    };
+                    // Only show edit and delete buttons for non-staff users
+                    if (role !== 'Staff') {
+                        // Check if the current user can edit this task
+                        const canEdit = canEditTask(task);
+                        
+                        // Edit button
+                        var editBtn = document.createElement('button');
+                        editBtn.className = 'btn btn-sm btn-outline-primary';
+                        editBtn.innerHTML = '<i class="fas fa-edit"></i>';
+                        
+                        if (!canEdit) {
+                            // Disable the button if user can't edit (e.g., business owner viewing admin-created appointment)
+                            editBtn.disabled = true;
+                            editBtn.classList.add('opacity-50');
+                            editBtn.title = 'Admin-created appointments cannot be modified';
+                            
+                            editBtn.onclick = function(e) {
+                                e.stopPropagation(); // Prevent task item click
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Permission Denied',
+                                    text: 'You do not have permission to edit this appointment.'
+                                });
+                            };
+                        } else {
+                            editBtn.onclick = function(e) {
+                                e.stopPropagation(); // Prevent task item click
+                                loadTaskForEditing(task.id);
+                            };
+                        }
 
-                    // Delete button
-                    var deleteBtn = document.createElement('button');
-                    deleteBtn.className = 'btn btn-sm btn-outline-danger';
-                    deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
-                    deleteBtn.onclick = function(e) {
-                        e.stopPropagation(); // Prevent task item click
-                        deleteTask(task.id);
-                    };
+                        // Delete button
+                        var deleteBtn = document.createElement('button');
+                        deleteBtn.className = 'btn btn-sm btn-outline-danger';
+                        deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
+                        
+                        if (!canEdit) {
+                            // Disable the button if user can't delete (e.g., business owner viewing admin-created appointment)
+                            deleteBtn.disabled = true;
+                            deleteBtn.classList.add('opacity-50');
+                            deleteBtn.title = 'Admin-created appointments cannot be deleted';
+                            
+                            deleteBtn.onclick = function(e) {
+                                e.stopPropagation(); // Prevent task item click
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Permission Denied',
+                                    text: 'You do not have permission to delete this appointment.'
+                                });
+                            };
+                        } else {
+                            deleteBtn.onclick = function(e) {
+                                e.stopPropagation(); // Prevent task item click
+                                deleteTask(task.id);
+                            };
+                        }
+                        
+                        taskActions.appendChild(editBtn);
+                        taskActions.appendChild(deleteBtn);
+                    }
 
-                    taskActions.appendChild(editBtn);
-                    taskActions.appendChild(deleteBtn);
-
-                    taskEl.appendChild(checkbox);
                     taskEl.appendChild(taskTitle);
                     taskEl.appendChild(taskTime);
                     taskEl.appendChild(taskActions);
@@ -968,13 +1805,24 @@
                             calendar.addEvent({
                                 id: task.id.toString(),
                                 title: task.title,
-                                start: task.time ? `${task.date}T${formatTime(task.time)}:00` : task.date,
+                                start: task.time ? `${task.date}T${task.time}` : task.date,
                                 allDay: !task.time,
                                 extendedProps: {
                                     taskId: task.id,
                                     completed: isCompleted,
                                     priority: task.priority,
-                                    notes: task.notes
+                                    priorityString: getPriorityString(task.priority),
+                                    notes: task.notes,
+                                    isPast: task.isPast,
+                                    // Include sharing properties
+                                    isAll: task.isAll,
+                                    boViewers: task.boViewers,
+                                    adminViewers1: task.adminViewers1,
+                                    adminViewers2: task.adminViewers2,
+                                    userId: task.userId,
+                                    user: task.user,
+                                    whoSetAppointment: task.whoSetAppointment,
+                                    staffNameWhoCompleted: task.staffNameWhoCompleted
                                 },
                                 color: getPriorityColor(task.priority),
                                 classNames: isCompleted ? ['completed-event'] : []
@@ -998,7 +1846,7 @@
                 document.getElementById('taskTitle').value = task.title;
                 document.getElementById('taskDate').value = new Date(task.date).toISOString().split('T')[0];
                 document.getElementById('taskTime').value = task.time ? formatTime(task.time) : '';
-                document.getElementById('taskPriority').value = task.priority.toLowerCase();
+                document.getElementById('taskPriority').value = String(task.priority).toLowerCase();
                 document.getElementById('taskNotes').value = task.notes || '';
 
                 // Remove all instances of the task from the calendar
@@ -1032,12 +1880,36 @@
             }
 
             function getPriorityColor(priority) {
-                switch(priority) {
-                    case 'High': return '#f72585';
-                    case 'Medium': return '#ff9f1c';
-                    case 'Low': return '#2ec4b6';
-                    default: return '#4361ee';
+                // Handle priority as either string or number (enum)
+                if (typeof priority === 'number') {
+                    switch(priority) {
+                        case 2: return '#f72585'; // High
+                        case 1: return '#ff9f1c'; // Medium
+                        case 0: return '#2ec4b6'; // Low
+                        default: return '#4361ee';
+                    }
+                } else {
+                    switch(priority) {
+                        case 'High': return '#f72585';
+                        case 'Medium': return '#ff9f1c';
+                        case 'Low': return '#2ec4b6';
+                        default: return '#4361ee';
+                    }
                 }
+            }
+
+            // Convert priority enum to string
+            function getPriorityString(priorityValue) {
+                // Handle both string and number formats
+                if (typeof priorityValue === 'number') {
+                    switch(priorityValue) {
+                        case 2: return 'High';
+                        case 1: return 'Medium';
+                        case 0: return 'Low';
+                        default: return 'Medium';
+                    }
+                }
+                return priorityValue || 'Medium';
             }
 
             function showAlert(message, type) {
@@ -1060,7 +1932,8 @@
                 setTimeout(() => {
                     var alert = document.querySelector('.alert');
                     if (alert) {
-                        bootstrap.Alert.getInstance(alert).close();
+                        var bsAlert = new bootstrap.Alert(alert);
+                        bsAlert.close();
                     }
                 }, 3000);
             }
@@ -1070,23 +1943,152 @@
                 document.getElementById('taskTitle').value = '';
                 document.getElementById('taskDate').value = new Date().toISOString().split('T')[0];
                 document.getElementById('taskTime').value = '';
-                document.getElementById('taskPriority').value = 'medium';
+                document.getElementById('taskPriority').value = '1'; // Medium (use string value)
                 document.getElementById('taskNotes').value = '';
-                document.getElementById('taskCompletionStatus').checked = false;
+
+                // Clear all staff checkboxes
+                document.querySelectorAll('#staffCheckboxList input[type="checkbox"]').forEach(checkbox => {
+                    checkbox.checked = false;
+                });
+
+                // Reset the "Make visible to all" checkbox
+                const isAllCheckbox = document.getElementById('isAllCheckbox');
+                if (isAllCheckbox) {
+                    isAllCheckbox.checked = false;
+                }
+
+                // Show sharing options
+                if (role === 'Admin') {
+                    $('#adminSharingOptions').slideDown();
+                } else if (role === 'BusinessOwner') {
+                    $('#boSharingOptions').slideDown();
+                }
             }
 
+            // Add this function to check if the current user can edit a task
+            function canEditTask(task) {
+                const role = '@User.FindFirstValue(ClaimTypes.Role)';
+                const userId = '@User.FindFirstValue(ClaimTypes.NameIdentifier)';
+                const staffCanEdit = '@canAccess' === 'True';
+
+                // Admins can edit any task
+                if (role === 'Admin') {
+                    return true;
+                }
+                
+                // Check if this is an admin-created appointment
+                const isAdminCreated = task.whoSetAppointment == 1; // 1 = Admin in WhoSetAppointment enum
+                
+                // No one except admins can edit admin-created appointments
+                if (isAdminCreated && role !== 'Admin') {
+                    return false;
+                }
+                
+                // Business owners can only edit their own tasks
+                if (role === 'BusinessOwner') {
+                    return task.userId == userId;
+                }
+
+                // Staff with calendar access can edit appointments they created
+                // or appointments shared with them by their business owner
+                if (role === 'Staff' && staffCanEdit === true) {
+                    // Staff can edit their own appointments
+                    if (task.userId == userId) {
+                        return true;
+                    }
+                    
+                    // Staff can also edit appointments shared with them specifically
+                    // or appointments marked as visible to all staff by their business owner
+                    // Check if the appointment is shared with all staff
+                    if (task.isAll === true) {
+                        return true;
+                    }
+                    
+                    // Check if the appointment is shared specifically with this staff member
+                    if (task.boViewers && task.boViewers.split(',').includes(userId)) {
+                        return true;
+                    }
+                    
+                    // For all other cases, staff cannot edit
+                    return false;
+                }
+                
+                // Default: no edit permission
+                return false;
+            }
+
+            // Add this near showTaskDetails function
             function showTaskDetails(event) {
                 var taskId = event.extendedProps.taskId;
                 console.log('Showing details for taskId:', taskId); // Debug log
                 var task = tasks.find(t => t.id === taskId);
+                
+                // If task not found in tasks array, try to use extendedProps
                 if (!task) {
-                    console.error('Task not found in tasks array:', taskId);
-                    return;
+                    console.log('Task not found in tasks array, using event.extendedProps');
+                    // Create a task object from the extendedProps
+                    task = {
+                        id: taskId,
+                        title: event.title,
+                        date: event.start.toISOString().split('T')[0],
+                        priority: event.extendedProps.priority,
+                        notes: event.extendedProps.notes,
+                        isAll: event.extendedProps.isAll,
+                        boViewers: event.extendedProps.boViewers,
+                        adminViewers1: event.extendedProps.adminViewers1,
+                        adminViewers2: event.extendedProps.adminViewers2,
+                        userId: event.extendedProps.userId,
+                        user: event.extendedProps.user,
+                        isPast: event.extendedProps.isPast,
+                        whoSetAppointment: event.extendedProps.whoSetAppointment
+                    };
+                    
+                    if (event.start && !event.allDay) {
+                        task.time = event.start.toISOString().split('T')[1].substring(0, 5);
+                    }
+                } else {
+                    // Determine if task is in the past
+                    const now = new Date();
+                    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                    const taskDate = new Date(task.date);
+                    
+                    let isPast = taskDate < today;
+                    
+                    // For tasks today, check if the time has passed
+                    if (!isPast && taskDate.getTime() === today.getTime() && task.time) {
+                        const [hours, minutes] = formatTime(task.time).split(':').map(Number);
+                        const taskTime = new Date();
+                        taskTime.setHours(hours, minutes, 0, 0);
+                        isPast = taskTime < now;
+                    }
+                    
+                    task.isPast = isPast;
                 }
+                
+                console.log('Task details:', task);
+
+                // Determine if current user can edit this task    
+                const canEdit = canEditTask(task);      
+                // Show/hide admin appointment message 
+                const adminAppointmentMessage = document.getElementById('adminAppointmentMessage'); 
+                if (adminAppointmentMessage) {        
+                    // Show message only for business owners viewing admin-created appointments
+                    const isAdminCreated = task.whoSetAppointment == 1;
+                    // 0 = Admin in WhoSetAppointment enum        
+                    const role = '@User.FindFirstValue(ClaimTypes.Role)';    
+                    adminAppointmentMessage.style.display = (isAdminCreated && role === 'BusinessOwner') ? 'block' : 'none';
+                }        
+                // Convert priority enum to string
+
+                // Ensure priority is numeric first
+                if (typeof task.priority === 'string' && !isNaN(task.priority)) {
+                    task.priority = parseInt(task.priority);
+                }
+                const priorityString = getPriorityString(task.priority);
 
                 var priorityText = '';
                 var priorityClass = '';
-                switch(task.priority) {
+                switch(priorityString) {
                     case 'High':
                         priorityText = 'High Priority';
                         priorityClass = 'text-danger';
@@ -1111,10 +2113,204 @@
                     intHours = intHours ? intHours : 12; // Convert 0 to 12
                     timeText = `${intHours}:${minutes} ${ampm}`;
                 }
+                
+                // Add past status badge if needed
+                const pastBadge = task.isPast 
+                    ? '<span class="badge bg-secondary ms-2">Past</span>' 
+                    : '';
+                
+                // Get sharing information
+                const role = '@User.FindFirstValue(ClaimTypes.Role)';
+                let sharingInfo = '';
+                
+                // Get creator info
+                let creatorInfo = '';
+                const creatorType = task.whoSetAppointment;
+                if (creatorType !== undefined && creatorType !== null) {
+                    let creatorLabel = '';
+                    switch(creatorType) {
+                        case 0: // BusinessOwner
+                            creatorLabel = 'Created by Business Owner';
+                            break;
+                        case 1: // Admin
+                            creatorLabel = 'Created by Admin';
+                            break;
+                        case 2: // Staff
+                            creatorLabel = 'Created by Staff';
+                            break;
+                    }
+                    
+                    if (creatorLabel) {
+                        creatorInfo = `<div class="mb-3 text-muted small">
+                            <i class="fas fa-user-edit me-1"></i>${creatorLabel}
+                        </div>`;
+                    }
+                }
+                
+                // Debug log task properties
+                console.log('Task sharing properties:', {
+                    isAll: task.isAll,
+                    boViewers: task.boViewers,
+                    adminViewers1: task.adminViewers1,
+                    adminViewers2: task.adminViewers2
+                });
+                
+                // Sharing information based on role and task properties
+                if (role === 'Admin') {
+                    if (task.isAll) {
+                        sharingInfo = `<div class="mt-3 mb-3">
+                            <p class="mb-1"><strong>Sharing:</strong></p>
+                            <p><i class="fas fa-users me-2"></i>Visible to all business owners</p>
+                        </div>`;
+                    } else {
+                        let categorySharing = '';
+                        let boSharing = '';
+
+                        const categories = (task.adminViewers1 || '').split(',').map(c => c.trim()).filter(c => c);
+                        if (categories.length > 0) {
+                            categorySharing = `<div class="mt-2">
+                                <p class="mb-1"><strong>Shared with business categories:</strong></p>
+                                <ul class="mb-0 ps-3">
+                                    ${categories.map(c => `<li>${c}</li>`).join('')}
+                                </ul>
+                            </div>`;
+                        }
+
+                        const businessOwners = (task.adminViewers2 || '').split(',').map(c => c.trim()).filter(c => c);
+                        if (businessOwners.length > 0) {
+                            boSharing = `<div class="mt-2">
+                                <p class="mb-1"><strong>Shared with business owners:</strong></p>
+                                <ul class="mb-0 ps-3">
+                                    ${businessOwners.map(bo => `<li>${bo}</li>`).join('')}
+                                </ul>
+                            </div>`;
+                        }
+
+                        if (categorySharing || boSharing) {
+                            sharingInfo = `<div class="mt-3 mb-3">
+                                <p class="mb-1"><strong>Sharing:</strong></p>
+                                ${categorySharing}
+                                ${boSharing}
+                            </div>`;
+                        } else {
+                            sharingInfo = `<div class="mt-3 mb-3">
+                                <p class="mb-1"><strong>Sharing:</strong></p>
+                                <p><i class="fas fa-user me-2"></i>Only visible to you</p>
+                            </div>`;
+                        }
+                    }
+                } else if (role === 'BusinessOwner' || role === 'Staff') {
+                    // Check if this is an admin-created appointment
+                    const isAdminCreated = task.whoSetAppointment == 1; // 1 = Admin in WhoSetAppointment enum
+                    const userId = '@User.FindFirstValue(ClaimTypes.NameIdentifier)';
+                    const userCategory = '@User.FindFirstValue("CategoryOfBusiness")';
+                    
+                    if ((isAdminCreated && role === 'BusinessOwner') || (isAdminCreated && role === 'Staff' && '@canAccess' === 'True')) {
+                        // For business owners or staff with calendar access viewing admin-created appointments
+                        let sharingDetails = [];
+                        
+                        // Check if the appointment is shared with all business owners/staff
+                        if (task.isAll) {
+                            if (role === 'BusinessOwner') {
+                                sharingInfo = `<div class="mt-3 mb-3">
+                                    <p class="mb-1"><strong>Shared with:</strong></p>
+                                    <p><i class="fas fa-users me-2"></i>All business owners</p>
+                                </div>`;
+                            } else { // Staff with access
+                                sharingInfo = `<div class="mt-3 mb-3">
+                                    <p class="mb-1"><strong>Shared with:</strong></p>
+                                    <p><i class="fas fa-users me-2"></i>All business owners (including yours)</p>
+                                </div>`;
+                            }
+                        } else {
+                            if (role === 'BusinessOwner') {
+                                // Check if the appointment is shared with the business owner's category
+                                const categories = (task.adminViewers1 || '').split(',').map(c => c.trim()).filter(c => c);
+                                if (categories.length > 0 && categories.includes(userCategory)) {
+                                    sharingDetails.push(`<p><i class="fas fa-tag me-2"></i>Your business category: ${userCategory}</p>`);
+                                }
+                                
+                                // Check if the appointment is shared specifically with this business owner
+                                const businessOwners = (task.adminViewers2 || '').split(',').map(id => id.trim()).filter(id => id);
+                                if (businessOwners.length > 0 && businessOwners.includes(userId)) {
+                                    sharingDetails.push(`<p><i class="fas fa-user me-2"></i>You specifically</p>`);
+                                }
+                                
+                                // Display all selected categories assigned by admin
+                                if (categories.length > 0) {
+                                    sharingDetails.push(`<div class="mt-2">
+                                        <p class="mb-1"><strong>All targeted business categories:</strong></p>
+                                        <ul class="mb-0 ps-3">
+                                            ${categories.map(c => `<li>${c}</li>`).join('')}
+                                        </ul>
+                                    </div>`);
+                                }
+                            } else { // Staff with access
+                                // Get staff's business owner info
+                                const staffBOId = '@User.FindFirstValue("BOId")';
+                                const staffBOCategory = '@User.FindFirstValue("BOCategory")';
+                                
+                                // Check if the appointment is shared with the staff's business owner category
+                                const categories = (task.adminViewers1 || '').split(',').map(c => c.trim()).filter(c => c);
+                                if (categories.length > 0 && categories.includes(staffBOCategory)) {
+                                    sharingDetails.push(`<p><i class="fas fa-tag me-2"></i>Your business owner's category: ${staffBOCategory}</p>`);
+                                }
+                                
+                                // Check if the appointment is shared specifically with this staff's business owner
+                                const businessOwners = (task.adminViewers2 || '').split(',').map(id => id.trim()).filter(id => id);
+                                if (businessOwners.length > 0 && businessOwners.includes(staffBOId)) {
+                                    sharingDetails.push(`<p><i class="fas fa-user me-2"></i>Your business owner specifically</p>`);
+                                }
+                                
+                                // Display all selected categories assigned by admin
+                                if (categories.length > 0) {
+                                    sharingDetails.push(`<div class="mt-2">
+                                        <p class="mb-1"><strong>All targeted business categories:</strong></p>
+                                        <ul class="mb-0 ps-3">
+                                            ${categories.map(c => `<li>${c}</li>`).join('')}
+                                        </ul>
+                                    </div>`);
+                                }
+                            }
+                            
+                            if (sharingDetails.length > 0) {
+                                sharingInfo = `<div class="mt-3 mb-3">
+                                    <p class="mb-1"><strong>Shared with:</strong></p>
+                                    ${sharingDetails.join('')}
+                                </div>`;
+                            }
+                        }
+                    } else if (task.isAll) {
+                        sharingInfo = `<div class="mt-3 mb-3">
+                            <p class="mb-1"><strong>Sharing:</strong></p>
+                            <p><i class="fas fa-users me-2"></i>Visible to all your staff</p>
+                        </div>`;
+                    } else if ((task.boViewers && task.boViewers !== null) || role === 'BusinessOwner' || '@canAccess' === 'True') {
+                        const staffIds = (task.boViewers || '').split(',').map(id => id.trim()).filter(id => id);
+                        const staffNames = staffIds.map(id => {
+                            const staff = staffMembers.find(s => s.id.toString() === id);
+                            return staff ? staff.name : `Staff ${id}`;
+                        });
+                        
+                        sharingInfo = `<div class="mt-3 mb-3">
+                            <p class="mb-1"><strong>Shared with staff:</strong></p>
+                            <ul class="mb-0 ps-3">
+                                ${staffNames.map(name => `<li>${name}</li>`).join('')}
+                            </ul>
+                        </div>`;
+                    } else {
+                        sharingInfo = `<div class="mt-3 mb-3">
+                            <p class="mb-1"><strong>Sharing:</strong></p>
+                            <p><i class="fas fa-user me-2"></i>Only visible to you</p>
+                        </div>`;
+                    }
+                }
+
 
                 // Set the content of the task details modal
                 var detailsContent = `
-                    <h4>${task.title}</h4>
+                    <h4>${task.title} ${pastBadge}</h4>
+                        ${creatorInfo}
                     <div class="d-flex flex-wrap justify-content-between mt-3">
                         <div class="mb-3">
                             <p class="mb-1"><strong>Date:</strong></p>
@@ -1131,37 +2327,465 @@
                             <p class="${priorityClass}">${priorityText}</p>
                         </div>
                     </div>
+                    ${sharingInfo}
                     ${task.notes ? `
                     <div class="mt-3">
                         <p class="mb-1"><strong>Notes:</strong></p>
                         <p>${task.notes}</p>
                     </div>
                     ` : ''}
-                    <div class="form-check mt-3">
-                        <input class="form-check-input" type="checkbox" id="completeTaskDetailCheck" ${task.isCompleted ? 'checked' : ''}>
-                        <label class="form-check-label" for="completeTaskDetailCheck">
-                            Mark as completed
-                        </label>
+                    ${task.isPast ? `
+                    <div class="alert alert-secondary mt-3">
+                        <i class="fas fa-clock me-2"></i>
+                        This appointment is in the past.
                     </div>
+                    ` : ''}
                 `;
                 
                 document.getElementById('taskDetailsContent').innerHTML = detailsContent;
                 
-                // Set task ID for the edit and delete buttons
-                document.getElementById('editTaskBtn').setAttribute('data-task-id', task.id);
-                document.getElementById('deleteTaskBtn').setAttribute('data-task-id', task.id);
+                // Set task ID for the edit and delete buttons if they exist
+                const editButton = document.getElementById('editTaskBtn');
+                const deleteButton = document.getElementById('deleteTaskBtn');
+                
+                if (editButton) {
+                    editButton.setAttribute('data-task-id', task.id);
+                    // Hide edit button if user can't edit this task
+                    editButton.style.display = canEdit ? '' : 'none';
+                }
+                
+                if (deleteButton) {
+                    deleteButton.setAttribute('data-task-id', task.id);
+                    // Hide delete button if user can't edit this task
+                    deleteButton.style.display = canEdit ? '' : 'none';
+                }
+                
                 console.log('Set data-task-id on buttons:', task.id); // Debug log
                 
                 // Show the modal
                 taskDetailsModal.show();
-                
-                // Handle checkbox change
-                document.getElementById('completeTaskDetailCheck').onchange = function() {
-                    var isCompleted = this.checked;
-                    updateTaskStatus(task.id, isCompleted);
-                    taskDetailsModal.hide();
-                };
             }
+
+            // Function to get staff name by ID
+            async function getStaffNameById(staffId) {
+                // First check if we already have it in the cache
+                if (staffCache[staffId]) {
+                    return staffCache[staffId];
+                }
+                
+                // Next check if it's in the staffMembers array
+                const staffMember = staffMembers.find(s => s.id.toString() === staffId.toString());
+                if (staffMember) {
+                    staffCache[staffId] = staffMember.name;
+                    return staffMember.name;
+                }
+                
+                // If not found locally, fetch from server
+                try {
+                    const response = await fetch(`/Calendar/GetStaffName?id=${staffId}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data && data.name) {
+                            staffCache[staffId] = data.name;
+                            return data.name;
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error fetching staff name:', error);
+                }
+                
+                // Default fallback
+                return `Staff ${staffId}`;
+            }
+            
+            // Function to load task for editing
+            function loadTaskForEditing(taskId) {
+                console.log('Loading task for editing:', taskId);
+                
+                // Find the task in our local array
+                const task = tasks.find(t => t.id === taskId);
+                if (!task) {
+                    console.error('Task not found with ID:', taskId);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Task not found'
+                    });
+                    return;
+                }
+                
+                // Reset the form first
+                resetTaskForm();
+                
+                // Set modal title
+                document.getElementById('taskModalTitle').textContent = 'Edit Appointment';
+                
+                // Set mode for save button
+                document.getElementById('saveTask').setAttribute('data-mode', 'edit');
+                
+                // Populate form fields
+                document.getElementById('taskId').value = task.id;
+                document.getElementById('taskTitle').value = task.title;
+                
+                // Format date to YYYY-MM-DD for the date input
+                const taskDate = new Date(task.date);
+                const formattedDate = taskDate.toISOString().split('T')[0];
+                document.getElementById('taskDate').value = formattedDate;
+                
+                // Set time if available
+                if (task.time) {
+                    document.getElementById('taskTime').value = formatTime(task.time);
+                }
+                
+                // Set priority
+                // Convert priority to number if it's a string
+                let priorityValue = task.priority;
+                if (typeof priorityValue === 'string' && !isNaN(priorityValue)) {
+                    priorityValue = parseInt(priorityValue);
+                }
+                document.getElementById('taskPriority').value = priorityValue;
+                
+                // Set notes
+                document.getElementById('taskNotes').value = task.notes || '';
+                
+                // Set "Make visible to all" checkbox
+                const isAllCheckbox = document.getElementById('isAllCheckbox');
+                if (isAllCheckbox) {
+                    isAllCheckbox.checked = task.isAll;
+                    
+                    // Toggle visibility of sharing options based on isAll
+                    if (task.isAll) {
+                        $('#adminSharingOptions, #boSharingOptions').slideUp();
+                    } else {
+                        if (role === 'Admin') {
+                            $('#adminSharingOptions').slideDown();
+                            
+                            // Set selected business categories if any
+                            if (task.adminViewers1) {
+                                const categories = task.adminViewers1.split(',');
+                                categories.forEach(category => {
+                                    const checkbox = document.getElementById(`category-${category.replace(/\s+/g, '-')}`);
+                                    if (checkbox) {
+                                        checkbox.checked = true;
+                                    }
+                                });
+                                
+                                // Update business owners list based on selected categories
+                                updateBusinessOwnersList();
+                                
+                                // Set selected business owners if any
+                                setTimeout(() => {
+                                    if (task.adminViewers2) {
+                                        const owners = task.adminViewers2.split(',');
+                                        owners.forEach(ownerId => {
+                                            const checkbox = document.getElementById(`owner-${ownerId}`);
+                                            if (checkbox) {
+                                                checkbox.checked = true;
+                                            }
+                                        });
+                                    }
+                                }, 300); // Small delay to let the list populate first
+                            }
+                        } else if (role === 'BusinessOwner') {
+                            $('#boSharingOptions').slideDown();
+                            
+                            // Set selected staff members if any
+                            if (task.boViewers) {
+                                const staffIds = task.boViewers.split(',');
+                                staffIds.forEach(staffId => {
+                                    const checkbox = document.getElementById(`staff-${staffId}`);
+                                    if (checkbox) {
+                                        checkbox.checked = true;
+                                    }
+                                });
+                            }
+                        }
+                    }
+                }
+                
+                // Show the modal
+                taskModal.show();
+            }
+
+            function validateTaskForm() {
+                // Check required fields
+                const title = document.getElementById('taskTitle').value.trim();
+                const date = document.getElementById('taskDate').value;
+                
+                if (!title) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Missing Information',
+                        text: 'Please enter a task title'
+                    });
+                    return false;
+                }
+                
+                if (!date) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Missing Information',
+                        text: 'Please select a date'
+                    });
+                    return false;
+                }
+                
+                return true;
+            }
+
+            function updateTask(taskId, saveBtn, originalText) {
+                try {
+                    // Validate required fields first
+                    if (!validateTaskForm()) {
+                        return;
+                    }
+                    
+                    // Create a FormData object
+                    const formData = new FormData();
+                    formData.append('__RequestVerificationToken', $('input[name="__RequestVerificationToken"]').val());
+                    
+                    // Add the task ID
+                    formData.append('Id', taskId);
+                    
+                    // Map form fields directly to CalendarTaskDTO properties
+                    formData.append('Title', $('#taskTitle').val().trim());
+                    formData.append('Date', $('#taskDate').val());
+                    formData.append('Time', $('#taskTime').val() || null);
+                    formData.append('Priority', $('#taskPriority').val());
+                    formData.append('Notes', $('#taskNotes').val().trim());
+                    formData.append('IsAll', $('#isAllCheckbox').is(':checked'));
+                    
+                    // Debug log
+                    console.log('Updating appointment ID:', taskId);
+                    console.log('Title:', $('#taskTitle').val().trim());
+                    console.log('IsAll:', $('#isAllCheckbox').is(':checked'));
+
+                    const role = '@role';
+                    
+                    // Handle sharing options based on role
+                    if (role === 'Admin' && !$('#isAllCheckbox').is(':checked')) {
+                        // Get selected categories from checkboxes
+                        const selectedCategories = [];
+                        document.querySelectorAll('#categoryCheckboxList input[type="checkbox"]:checked').forEach(checkbox => {
+                            selectedCategories.push(checkbox.value);
+                            formData.append('SelectedBusinessCategories', checkbox.value);
+                        });
+                        console.log('Selected categories:', selectedCategories);
+                        
+                        // Get selected business owners from checkboxes
+                        const selectedOwners = [];
+                        document.querySelectorAll('#businessOwnerCheckboxList input[type="checkbox"]:checked').forEach(checkbox => {
+                            selectedOwners.push(checkbox.value);
+                            formData.append('SelectedBusinessOwners', checkbox.value);
+                        });
+                        console.log('Selected owners:', selectedOwners);
+                    } else if (role === 'BusinessOwner' && !$('#isAllCheckbox').is(':checked')) {
+                        // Get selected staff from checkboxes
+                        const selectedStaff = [];
+                        document.querySelectorAll('#staffCheckboxList input[type="checkbox"]:checked').forEach(checkbox => {
+                            selectedStaff.push(checkbox.value);
+                            formData.append('SelectedStaff', checkbox.value);
+                        });
+                        console.log('Selected staff:', selectedStaff);
+                    }
+                    
+                    console.log('Sending update for task ID:', taskId);
+                    
+                    // Send updated task to server
+                    fetch('/Calendar/UpdateTask', {
+                        method: 'PUT',
+                        body: formData
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            // Try to get error details from response
+                            return response.text().then(text => {
+                                console.error('Server response:', text);
+                                try {
+                                    // Try to parse as JSON
+                                    const jsonResponse = JSON.parse(text);
+                                    throw new Error(`Server returned ${response.status}: ${jsonResponse.message || text}`);
+                                } catch (e) {
+                                    // If parsing fails, return the text
+                                    throw new Error(`Server returned ${response.status}: ${text}`);
+                                }
+                            });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            // Update task in local array
+                            const taskIndex = tasks.findIndex(t => t.id === taskId);
+                            if (taskIndex !== -1) {
+                                // Ensure priority is properly converted from string to number if needed
+                                if (typeof data.task.priority === 'string' && !isNaN(data.task.priority)) {
+                                    data.task.priority = parseInt(data.task.priority);
+                                }
+                                tasks[taskIndex] = data.task;
+                            } else {
+                                console.warn('Task not found in local array, adding it instead');
+                                tasks.push(data.task);
+                            }
+                            
+                            console.log('Updated task in local array:', data.task);
+                            
+                            // Remove all instances of this task from the calendar
+                            cleanupTaskEvents(taskId);
+                            
+                            // Format the start datetime
+                            let eventDate = data.task.date;
+                            if (!eventDate) {
+                                console.warn('Task missing date, using today');
+                                eventDate = new Date().toISOString().split('T')[0];
+                            }
+
+                            let eventStart;
+                            if (data.task.time) {
+                                eventStart = `${eventDate}T${data.task.time}`;
+                            } else {
+                                eventStart = eventDate;
+                            }
+                            
+                            console.log('Creating updated calendar event with start:', eventStart);
+                            
+                            // Add updated task to calendar
+                            const updatedEvent = {
+                                id: data.task.id.toString(),
+                                title: data.task.title,
+                                start: eventStart,
+                                allDay: !data.task.time,
+                                extendedProps: {
+                                    taskId: data.task.id,
+                                    completed: data.task.isCompleted || false,
+                                    priority: data.task.priority,
+                                    priorityString: getPriorityString(data.task.priority),
+                                    notes: data.task.notes || '',
+                                    isPast: data.task.isPast || false,
+                                    // Add sharing properties to extendedProps
+                                    isAll: data.task.isAll,
+                                    boViewers: data.task.boViewers,
+                                    adminViewers1: data.task.adminViewers1,
+                                    adminViewers2: data.task.adminViewers2,
+                                    userId: data.task.userId,
+                                    whoSetAppointment: data.task.whoSetAppointment || 0,
+                                    staffNameWhoCompleted: data.task.staffNameWhoCompleted
+                                },
+                                color: getPriorityColor(data.task.priority),
+                                classNames: data.task.isCompleted ? ['completed-event'] : []
+                            };
+                            
+                            console.log('Adding updated event to calendar:', updatedEvent);
+                            calendar.addEvent(updatedEvent);
+                            
+                            // Refresh calendar to ensure events are rendered
+                            calendar.refetchEvents();
+                            
+                            // Close the modal
+                            taskModal.hide();
+                            
+                            // Refresh today's tasks list
+                            showTodaysTasks();
+                            
+                            // Restore button state
+                            saveBtn.disabled = false;
+                            saveBtn.innerHTML = originalText;
+                            
+                            // Show success message
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success!',
+                                text: 'Appointment updated successfully',
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: data.message || 'Failed to update appointment'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error updating appointment:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error Updating Appointment',
+                            text: error.message || 'An unexpected error occurred'
+                        });
+                        
+                        // Restore button state
+                        saveBtn.disabled = false;
+                        saveBtn.innerHTML = originalText;
+                    });
+                } catch (error) {
+                    console.error('Exception in updateTask function:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'An unexpected error occurred: ' + error.message
+                    });
+                    
+                    // Restore button state
+                    saveBtn.disabled = false;
+                    saveBtn.innerHTML = originalText;
+                }
+            }
+        });
+
+        // Add click handler for the Check Today's Events button
+        $('#checkTodayEvents').on('click', function() {
+            $(this).prop('disabled', true);
+            $(this).html('<i class="fas fa-spinner fa-spin me-2"></i> Checking...');
+            
+            $.ajax({
+                url: '/Calendar/GetTodayEvents',
+                type: 'GET',
+                success: function(response) {
+                    if (response.success) {
+                        if (response.events.length > 0) {
+                            Swal.fire({
+                                title: 'Today\'s Events',
+                                html: `<p>You have ${response.events.length} event(s) scheduled for today.</p>
+                                      <p>A notification has been sent to your email with details.</p>`,
+                                icon: 'info',
+                                confirmButtonText: 'OK'
+                            });
+                        } else {
+                            Swal.fire({
+                                title: 'No Events Today',
+                                text: 'You have no events scheduled for today.',
+                                icon: 'info',
+                                confirmButtonText: 'OK'
+                            });
+                        }
+                    } else {
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'Failed to retrieve today\'s events.',
+                            icon: 'error',
+                            confirmButtonText: 'OK'
+                        });
+                    }
+                    
+                    $('#checkTodayEvents').prop('disabled', false);
+                    $('#checkTodayEvents').html('<i class="fas fa-calendar-day me-2"></i> Check Today\'s Events');
+                },
+                error: function(error) {
+                    console.error('Error checking today\'s events:', error);
+                    
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'Failed to retrieve today\'s events.',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                    
+                    $('#checkTodayEvents').prop('disabled', false);
+                    $('#checkTodayEvents').html('<i class="fas fa-calendar-day me-2"></i> Check Today\'s Events');
+                }
+            });
         });
     </script>
 }

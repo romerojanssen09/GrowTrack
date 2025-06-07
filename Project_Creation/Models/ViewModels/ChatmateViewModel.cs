@@ -12,6 +12,7 @@
         public bool IsRead { get; set; }
         public int UnreadCount { get; set; }
         public int CurrentUser { get; set; }
+        public bool IsEdited { get; set; }
         public DateTime CreatedAt { get; set; } = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Singapore"));
     }
 }

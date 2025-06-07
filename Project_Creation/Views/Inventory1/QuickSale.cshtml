@@ -4,85 +4,307 @@
     ViewData["Title"] = "Quick Sale";
 }
 
-<div class="container mt-4">
-    <h2>Quick Sale</h2>
-
-    @if (!ViewData.ModelState.IsValid)
-    {
-        <div class="alert alert-danger">
-            <ul>
-                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
-                {
-                    <li>@error.ErrorMessage</li>
-                }
-            </ul>
-        </div>
+<style>
+    .points-info-btn .btn-text {
+        display: inline-block;
+        max-width: 0;
+        opacity: 0;
+        overflow: hidden;
+        white-space: nowrap;
+        vertical-align: middle;
+        transition: max-width 0.5s ease-in-out, opacity 0.3s ease-in-out;
+    }
+    
+    .points-info-btn:hover .btn-text {
+        max-width: 200px; /* Enough space for the text */
+        opacity: 1;
+        margin-left: 8px;
     }
 
-    <form asp-action="QuickSale" method="post" id="quickSaleForm">
-        <div class="mb-3">
-            <label asp-for="CustomerName" class="form-label">Customer Name</label>
-            <input asp-for="CustomerName" class="form-control" placeholder="Walk-in Customer" />
-            <span asp-validation-for="CustomerName" class="text-danger"></span>
-        </div>
+    .points-info-btn {
+        transition: all 0.3s ease-in-out;
+        overflow: hidden;
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+    }
 
-        <div id="items-container">
-            <!-- Initial item -->
-            <div class="item-row mb-3 row">
-                <div class="col-md-5">
-                    <label class="form-label">Product</label>
-                    <select name="Items[0].ProductId" class="form-select product-select" required>
-                        <option value="">Select a product</option>
-                        @if (ViewBag.Products != null)
-                        {
-                            @foreach (var product in ViewBag.Products)
-                            {
-                                <option value="@product.Id" data-price="@product.SellingPrice" data-stock="@product.QuantityInStock">
-                                    @product.ProductName (@product.QuantityInStock in stock) - @product.SellingPrice.ToString("C")
-                                </option>
-                            }
-                        }
-                        else
-                        {
-                            <option value="">No products available</option>
-                        }
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Quantity</label>
-                    <input type="number" name="Items[0].Quantity" class="form-control quantity-input" min="1" value="1" required />
-                    <small class="form-text text-muted available-stock">Max available: 0</small>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">Price</label>
-                    <div class="input-group">
-                        <span class="input-group-text">Php</span>
-                        <input type="text" name="Items[0].Price" class="form-control item-price" readonly />
-                    </div>
-                </div>
-                <div class="col-md-2 d-flex align-items-end">
-                    <button type="button" class="btn btn-danger remove-item" style="display:none">Remove</button>
-                </div>
+    .points-info-btn:hover {
+        padding-right: 15px;
+    }
+</style>   
+
+<div class="container mt-4">
+    <div class="card shadow-sm mb-4">
+        <div class="card-header  d-flex justify-content-between align-items-center">
+            <h4 class="mb-0 text-accent">Quick Sale</h4>
+            <div class="d-flex align-items-center gap-2">
+                <!-- Purchase Points System Info Button -->
+                <button class="btn btn-info points-info-btn" type="button" data-bs-toggle="collapse" data-bs-target="#pointsSystemInfo" aria-expanded="true" aria-controls="pointsSystemInfo" title="Purchase Points System">
+                    <i class="fas fa-info-circle"></i>
+                    <span class="btn-text">Purchase Points System</span>
+                </button>
+                <a asp-action="Index" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-1"></i>
+                    Back to Inventory
+                </a>
             </div>
         </div>
+        <div class="card-body">
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="alert alert-danger">
+                    <ul>
+                        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                        {
+                            <li>@error.ErrorMessage</li>
+                        }
+                    </ul>
+                </div>
+            }
+            
+            @if (TempData["LeadMatched"] != null)
+            {
+                <div class="alert alert-info">
+                    <i class="fas fa-user-check me-2"></i> @TempData["LeadMatched"]
+                </div>
+            }
 
-        <div class="mb-3">
-            <button type="button" id="add-item" class="btn btn-secondary">Add Another Item</button>
-        </div>
+            <form asp-action="QuickSale" method="post" id="quickSaleForm">
+                <div class="row mb-3">
+                    <div class="col-12 mb-3">
+                        <div class="collapse" id="pointsSystemInfo">
+                            <div class="card card-body mt-2">
+                                <h6 class="fw-bold mb-2">Points System Breakdown:</h6>
+                                <ul class="mb-2">
+                                    <li><strong>Transaction Value Points:</strong> +1 point per ₱1,000 of total transaction value</li>
+                                    <li><strong>Product Variety Points:</strong>
+                                        <ul>
+                                            <li>+2 points for each new product not purchased in the last 30 days</li>
+                                            <li>+1 point for each product previously purchased in the last 30 days</li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                                <p class="mb-0"><strong>Lead Status Based on Points:</strong> <br/>
+                                15+ points = Warm, <br/>
+                                30+ points = Hot, <br/>
+                                &lt;5 points = Cold, <br/>
+                                No purchase in 30 days = Lost</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-12">
+                        <div class="row p-3 bg-white mb-4">
+                            <div class="col-md-12 mb-3">
+                                <div class="d-flex">
+                                    <div class="form-check me-4">
+                                        <input class="form-check-input" type="radio" name="SelectedOptions" id="newCustomer" value="new" checked>
+                                        <label class="form-check-label fw-bold" for="newCustomer">
+                                            New Customer
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="SelectedOptions" id="anonymousCustomer" value="anonymous">
+                                        <label class="form-check-label fw-bold" for="anonymousCustomer">
+                                            Anonymous Buyer
+                                        </label>
+                                    </div>
+                                </div>
+                                <span asp-validation-for="SelectedOptions" class="text-danger"></span>
+                            </div>
+                            
+                            <!-- New Customer Section -->
+                            <div id="newCustomerSection" class="col-md-12">
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label asp-for="CustomerName" class="form-label">Customer Name</label>
+                                        <input asp-for="CustomerName" class="form-control" placeholder="Enter customer name" />
+                                        <span asp-validation-for="CustomerName" class="text-danger"></span>
+                                    </div>
+                                    
+                                    <div class="col-md-4 mb-3">
+                                        <label for="CustomerEmail" class="form-label">Customer Email</label>
+                                        <input type="email" id="CustomerEmail" name="CustomerEmail" class="form-control" placeholder="Enter email address" />
+                                    </div>
+                                    
+                                    <div class="col-md-4 mb-3">
+                                        <label for="CustomerPhone" class="form-label">Customer Phone</label>
+                                        <input type="tel" id="CustomerPhone" name="CustomerPhone" class="form-control" placeholder="Enter phone number" />
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-check mb-3">
+                                            <input class="form-check-input" type="checkbox" id="createLead" name="CreateLead" value="true" checked>
+                                            <label class="form-check-label" for="createLead">
+                                                Create a lead from this customer
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Anonymous Buyer Section -->
+                        <div id="anonymousCustomerSection" style="display:none;">
+                            <div class="alert alert-info">
+                                <i class="fas fa-user-secret me-2"></i>
+                                This sale will be recorded as an anonymous purchase. No customer information will be stored.
+                            </div>
+                            <input type="hidden" id="anonymousCustomerName" name="CustomerName" value="Anonymous Buyer" />
+                            <input type="hidden" id="anonymousCreateLead" name="CreateLead" value="false" />
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <!-- Removed existing customer section -->
+                    </div>
+                </div>
 
-        <div class="mb-3">
-            <h4>Total: <span id="total-amount">$0.00</span></h4>
-        </div>
+                <h5 class="border-bottom pb-2 mb-3">Products</h5>
+                <div id="items-container">
+                    <!-- Initial item -->
+                    <div class="item-row mb-3 row">
+                        <div class="col-md-5">
+                            <label class="form-label">Product</label>
+                            <select name="Items[0].ProductId" class="form-select product-select" required>
+                                <option value="">Select a product</option>
+                                @if (ViewBag.Products != null)
+                                {
+                                    @foreach (var product in ViewBag.Products)
+                                    {
+                                        <option value="@product.Id" data-price="@product.SellingPrice" data-stock="@product.QuantityInStock">
+                                            @product.ProductName (@product.QuantityInStock in stock) - @product.SellingPrice.ToString("C")
+                                        </option>
+                                    }
+                                }
+                                else
+                                {
+                                    <option value="">No products available</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Quantity</label>
+                            <input type="number" name="Items[0].Quantity" class="form-control quantity-input" min="1" value="1" required />
+                            <small class="form-text text-muted available-stock">Max available: 0</small>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Price</label>
+                            <div class="input-group">
+                                <span class="input-group-text">Php</span>
+                                <input type="text" name="Items[0].Price" class="form-control item-price" readonly />
+                            </div>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="button" class="btn btn-danger remove-item" style="display:none">Remove</button>
+                        </div>
+                    </div>
+                </div>
 
-        <div class="mb-3">
-            <button type="submit" class="btn btn-primary">Complete Sale</button>
+                <div class="mb-3">
+                    <button type="button" id="add-item" class="btn btn-secondary">Add Another Item</button>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4>Total: <span id="total-amount">$0.00</span></h4>
+                    <button type="submit" id="complete-sale-btn" class="btn btn-primary">
+                        <span class="spinner-border spinner-border-sm me-1 d-none" id="submit-spinner" role="status" aria-hidden="true"></span>
+                        Complete Sale
+                    </button>
+                </div>
+            </form>
         </div>
-    </form>
+    </div>
 </div>
 
 @section Scripts {
     <script>
         $(document).ready(function() {
+            // Check for SweetAlert success message
+            @if (TempData["SwalSuccess"] != null)
+            {
+                <text>
+                Swal.fire({
+                    title: 'Sale Completed',
+                    html: '@Html.Raw(TempData["SwalSuccess"])',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                });
+                </text>
+            }
+            
+            // Set up a click handler for the submit button instead of a form submit handler
+            $('#complete-sale-btn').on('click', function() {
+                // Clear any previous validation errors
+                $('.validation-error').remove();
+                
+                // Basic validation
+                var valid = true;
+                var errorMessages = [];
+                
+                // Check if any customer type is selected
+                if (!$('input[name="SelectedOptions"]:checked').length) {
+                    valid = false;
+                    errorMessages.push("Please select a customer type");
+                }
+                
+                // If creating a lead, check for customer name
+                if ($('#newCustomer').is(':checked') && $('#createLead').is(':checked') && !$('#CustomerName').val()) {
+                    valid = false;
+                    errorMessages.push("Customer name is required when creating a lead");
+                }
+                
+                // Check if any products are added with valid selections
+                var hasValidProducts = false;
+                $('.product-select').each(function() {
+                    if ($(this).val()) {
+                        hasValidProducts = true;
+                    }
+                });
+                
+                if (!hasValidProducts) {
+                    valid = false;
+                    errorMessages.push("Please select at least one product");
+                }
+                
+                if (!valid) {
+                    // Show errors in SweetAlert and don't submit
+                    Swal.fire({
+                        title: 'Validation Error',
+                        html: errorMessages.join('<br>'),
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                    return false;
+                }
+                
+                // All validation passed, disable button and show spinner
+                $(this).prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...');
+                
+                // Submit the form
+                $('#quickSaleForm').submit();
+            });
+            
+            // Toggle between customer options
+            $('input[name="SelectedOptions"]').change(function() {
+                if ($(this).val() === 'new') {
+                    $('#newCustomerSection').show();
+                    $('#anonymousCustomerSection').hide();
+                    // Enable/disable form fields
+                    $('#CustomerName, #CustomerEmail, #CustomerPhone, #createLead').prop('disabled', false);
+                    $('#anonymousCustomerName, #anonymousCreateLead').prop('disabled', true);
+                } else if ($(this).val() === 'anonymous') {
+                    $('#newCustomerSection').hide();
+                    $('#anonymousCustomerSection').show();
+                    // Enable/disable form fields
+                    $('#CustomerName, #CustomerEmail, #CustomerPhone, #createLead').prop('disabled', true);
+                    $('#anonymousCustomerName, #anonymousCreateLead').prop('disabled', false);
+                }
+            });
+
             if ($('#quickSalesTable').length) {
                 $('#quickSalesTable').DataTable({
                     "paging": true,
@@ -158,19 +380,19 @@
                             <label class="form-label">Product</label>
                             <select name="Items[${itemCount}].ProductId" class="form-select product-select" required>
                                 <option value="">Select a product</option>
-        @if (ViewBag.Products != null)
-        {
-            @foreach (var product in ViewBag.Products)
-            {
-                                                        <option value="@product.Id" data-price="@product.SellingPrice" data-stock="@product.QuantityInStock">
-                    @product.ProductName (@product.QuantityInStock in stock) - @product.SellingPrice.ToString("C")
-                                                        </option>
-            }
-        }
-        else
-        {
-                                            <option value="">No products available</option>
-        }
+                                @if (ViewBag.Products != null)
+                                {
+                                    @foreach (var product in ViewBag.Products)
+                                    {
+                                        <option value="@product.Id" data-price="@product.SellingPrice" data-stock="@product.QuantityInStock">
+                                            @product.ProductName (@product.QuantityInStock in stock) - @product.SellingPrice.ToString("C")
+                                        </option>
+                                    }
+                                }
+                                else
+                                {
+                                    <option value="">No products available</option>
+                                }
                             </select>
                         </div>
                         <div class="col-md-3">
@@ -255,47 +477,6 @@
 
                 $('#total-amount').text('P' + total.toFixed(2));
             }
-
-            // Form validation before submit
-            $('#quickSaleForm').on('submit', function(e) {
-                let isValid = true;
-                let errorMessage = '';
-
-                // Check at least one item is added
-                const hasItems = $('.product-select').filter(function() {
-                    return $(this).val() !== '';
-                }).length > 0;
-
-                if (!hasItems) {
-                    isValid = false;
-                    errorMessage = 'Please add at least one item to the sale';
-                }
-
-                // Check all quantities are valid
-                $('.item-row').each(function() {
-                    const select = $(this).find('.product-select');
-                    const quantityInput = $(this).find('.quantity-input');
-
-                    if (select.val()) {
-                        const max = parseInt(select.find('option:selected').data('stock')) || 0;
-                        const quantity = parseInt(quantityInput.val()) || 0;
-
-                        if (quantity > max) {
-                            isValid = false;
-                            errorMessage = `Quantity for ${select.find('option:selected').text()} exceeds available stock (${max})`;
-                            return false; // break out of each loop
-                        }
-                    }
-                });
-
-                if (!isValid) {
-                    e.preventDefault();
-                    alert(errorMessage);
-                    return false;
-                }
-
-                return true;
-            });
         });
     </script>
-}   
+}
