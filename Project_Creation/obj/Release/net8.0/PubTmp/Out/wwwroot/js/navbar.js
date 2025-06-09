@@ -20,14 +20,28 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize navigation state
     function initNavigation() {
-        const isCollapsed = localStorage.getItem('sidenavCollapsed') === 'true';
-        if (isCollapsed) {
-            body.classList.add('collapsed-nav');
+        // On mobile, always use expanded view
+        if (window.innerWidth <= 991.98) {
+            body.classList.remove('collapsed-nav');
+            localStorage.setItem('sidenavCollapsed', 'false');
+            
             if (toggleBtn) {
                 const icon = toggleBtn.querySelector('i');
                 const text = toggleBtn.querySelector('.control-text');
-                if (icon) icon.className = 'fas fa-chevron-right';
-                if (text) text.textContent = 'Expand Menu';
+                if (icon) icon.className = 'fas fa-chevron-left';
+                if (text) text.textContent = 'Collapse Menu';
+            }
+        } else {
+            // For desktop, respect saved state
+            const isCollapsed = localStorage.getItem('sidenavCollapsed') === 'true';
+            if (isCollapsed) {
+                body.classList.add('collapsed-nav');
+                if (toggleBtn) {
+                    const icon = toggleBtn.querySelector('i');
+                    const text = toggleBtn.querySelector('.control-text');
+                    if (icon) icon.className = 'fas fa-chevron-right';
+                    if (text) text.textContent = 'Expand Menu';
+                }
             }
         }
 
@@ -126,6 +140,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Toggle sidenav collapse state
     function toggleNav() {
+        // Don't allow toggling on mobile devices
+        if (window.innerWidth <= 991.98) {
+            return;
+        }
+        
         body.classList.toggle('collapsed-nav');
         const isCollapsed = body.classList.contains('collapsed-nav');
         localStorage.setItem('sidenavCollapsed', isCollapsed);
@@ -136,6 +155,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const main = document.querySelector('#wrapper');
         if (icon) {
             icon.className = isCollapsed ? 'fas fa-chevron-right' : 'fas fa-chevron-left';
+        }
+        if (text) {
             text.textContent = isCollapsed ? 'Expand Menu' : 'Collapse Menu';
         }
         // Update top nav position
@@ -205,10 +226,45 @@ document.addEventListener('DOMContentLoaded', function() {
     // Handle window resize
     function handleResize() {
         if (window.innerWidth > 991.98) {
+            // Switching to desktop view
             if (sideNav.classList.contains('show')) {
                 sideNav.classList.remove('show');
                 overlay.classList.remove('show');
                 body.style.overflow = '';
+            }
+            
+            // Apply saved collapse state
+            const savedIsCollapsed = localStorage.getItem('sidenavCollapsed') === 'true';
+            if (savedIsCollapsed && !body.classList.contains('collapsed-nav')) {
+                body.classList.add('collapsed-nav');
+                if (toggleBtn) {
+                    const icon = toggleBtn.querySelector('i');
+                    const text = toggleBtn.querySelector('.control-text');
+                    if (icon) icon.className = 'fas fa-chevron-right';
+                    if (text) text.textContent = 'Expand Menu';
+                }
+            }
+            
+            // Update top nav position based on current state
+            if (topNav) {
+                const isCollapsed = body.classList.contains('collapsed-nav');
+                topNav.style.left = isCollapsed ? `${70}px` : `${280}px`;
+            }
+        } else {
+            // Switching to mobile view - always use expanded nav
+            body.classList.remove('collapsed-nav');
+            
+            // Show the toggle button text appropriately
+            if (toggleBtn) {
+                const icon = toggleBtn.querySelector('i');
+                const text = toggleBtn.querySelector('.control-text');
+                if (icon) icon.className = 'fas fa-chevron-left';
+                if (text) text.textContent = 'Collapse Menu';
+            }
+            
+            // Reset top nav position for mobile
+            if (topNav) {
+                topNav.style.left = '0';
             }
         }
     }
@@ -404,6 +460,29 @@ document.addEventListener('DOMContentLoaded', function() {
 
         sideNav.addEventListener('mouseleave', function() {
             body.classList.remove('nav-hover');
+        });
+    }
+
+    // Add hover functionality for the toggle button
+    if (toggleBtn) {
+        toggleBtn.addEventListener('mouseenter', function() {
+            if (body.classList.contains('collapsed-nav') && window.innerWidth > 991.98) {
+                const text = toggleBtn.querySelector('.control-text');
+                if (text) {
+                    text.style.opacity = '1';
+                    text.style.visibility = 'visible';
+                }
+            }
+        });
+        
+        toggleBtn.addEventListener('mouseleave', function() {
+            if (body.classList.contains('collapsed-nav') && window.innerWidth > 991.98) {
+                const text = toggleBtn.querySelector('.control-text');
+                if (text && !body.classList.contains('nav-hover')) {
+                    text.style.opacity = '';
+                    text.style.visibility = '';
+                }
+            }
         });
     }
 

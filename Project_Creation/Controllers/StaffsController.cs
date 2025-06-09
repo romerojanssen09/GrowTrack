@@ -7,6 +7,7 @@ using System.Text.Json;
 using static Project_Creation.Models.Entities.Users;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.Authorization;
+using BCrypt.Net;
 
 namespace Project_Creation.Controllers
 {
@@ -63,6 +64,8 @@ namespace Project_Creation.Controllers
         }
 
         // GET: Staffs/Details/5
+        [HttpGet]
+        [Route("Staffs/Details/{id:int}")]
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -153,28 +156,85 @@ namespace Project_Creation.Controllers
                 }
 
                 // Set staff properties
-                staff.IsActive = AccountStatus.Pending;
+                staff.IsActive = AccountStatus.Active; // Set to Active since password is already set
                 staff.CreatedAt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Singapore Standard Time"));
                 staff.BOId = GetCurrentUserId(); // Set the business owner ID
                 staff.Role = "Staff";
                 staff.AllowEmailNotifications = true;
+                staff.IsSetPassword = true; // Password is set by business owner
 
-                // Add staff to database first to get the ID
+                // Hash the password using BCrypt
+                if (!string.IsNullOrEmpty(staff.Password))
+                {
+                    staff.Password = BCrypt.Net.BCrypt.HashPassword(staff.Password);
+                }
+
+                // Add staff to database
                 _context.Add(staff);
                 await _context.SaveChangesAsync();
 
-                // Generate a unique token for password creation after we have the ID
-                staff.Link = $"{Request.Scheme}://{Request.Host}/Register/StaffRegistration?userId={staff.Id}";
-
                 _logger.LogInformation($"Creating staff with properties: Name={staff.StaffName}, Email={staff.StaffSEmail}, AccessLevel={staff.StaffAccessLevel}");
 
-                // Send email after staff is created
+                // Get business owner details for email
+                var businessOwner = await _context.Users.FirstOrDefaultAsync(u => u.Id == staff.BOId);
+                string businessName = businessOwner?.BusinessName ?? "Your Business";
+                string businessOwnerEmail = businessOwner?.Email ?? "noreply@growtrack.com";
+
+                // Create email content with access level information
+                var accessLevelNames = GetAccessLevelNames(staff.StaffAccessLevel);
+                string accessLevelHtml = accessLevelNames.Count > 0
+                    ? string.Join("", accessLevelNames.Select(level => $@"<div class=""access-item"">• {level}</div>"))
+                    : @"<div class=""access-item"">• None</div>";
+
+                string emailContent = $@"
+                    <html>
+                    <head>
+                        <style>
+                            body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                            .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                            h2 {{ color: #2c3e50; }}
+                            .access-list {{ background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 15px 0; }}
+                            .access-list h3 {{ margin-top: 0; color: #3498db; }}
+                            .access-item {{ padding: 5px 0; }}
+                            .login-info {{ background-color: #e8f4fd; padding: 15px; border-radius: 5px; margin: 15px 0; border-left: 4px solid #3498db; }}
+                            .footer {{ margin-top: 30px; font-size: 12px; color: #7f8c8d; }}
+                        </style>
+                    </head>
+                    <body>
+                        <div class=""container"">
+                            <h2>Welcome to {businessName}!</h2>
+                            <p>Dear {staff.StaffName},</p>
+                            <p>A supervisor account has been created for you by {businessName}. You can now log in to the system using the credentials below.</p>
+
+                            <div class=""login-info"">
+                                <h3>Your Login Information</h3>
+                                <p><strong>Email:</strong> {staff.StaffSEmail}</p>
+                                <p><strong>Password:</strong> An initial password has been set for your account. Please change it after your first login for security reasons.</p>
+                                <p><strong>Login URL:</strong> <a href='{Request.Scheme}://{Request.Host}/Login/login'>{Request.Scheme}://{Request.Host}/Login/login</a></p>
+                            </div>
+
+                            <div class=""access-list"">
+                                <h3>Your Access Permissions</h3>
+                                <p>You have been granted access to the following features:</p>
+                                {accessLevelHtml}
+                            </div>
+
+                            <p>If you have any questions about your account or need assistance, please contact your business owner.</p>
+
+                            <div class=""footer"">
+                                <p>This is an automated message. Please do not reply to this email.</p>
+                            </div>
+                        </div>
+                    </body>
+                    </html>";
+
+                // Send email with account information
                 await _emailService.SendEmail2(
-                    GetUserDataById(GetCurrentUserId(), "Email"),
-                    GetUserDataById(GetCurrentUserId(), "BusinessName"),
+                    businessOwnerEmail,
+                    businessName,
                     staff.StaffSEmail,
-                    "Staff Account Created",
-                    $"Your account has been created. Click this link to create your password: {staff.Link}",
+                    "Your Supervisor Account Has Been Created",
+                    emailContent,
                     true);
 
                 return Ok(new { message = "Staff created successfully" });
@@ -290,6 +350,10 @@ namespace Project_Creation.Controllers
                 var currentAccessLevel = existingStaff.StaffAccessLevel;
                 var newAccessLevel = staff.StaffAccessLevel;
 
+                // Check if status has changed
+                var statusChanged = existingStaff.IsActive != staff.IsActive;
+                var previousStatus = existingStaff.IsActive;
+
                 // Calculate added and removed access levels
                 var addedAccessLevels = newAccessLevel & ~currentAccessLevel;
                 var removedAccessLevels = currentAccessLevel & ~newAccessLevel;
@@ -311,6 +375,15 @@ namespace Project_Creation.Controllers
                 {
                     existingStaff.StaffAccessLevel = staff.StaffAccessLevel;
                 }
+                
+                // Handle password update if provided
+                string password = Request.Form["Password"].ToString();
+                if (!string.IsNullOrWhiteSpace(password))
+                {
+                    existingStaff.Password = BCrypt.Net.BCrypt.HashPassword(password);
+                    existingStaff.IsSetPassword = true;
+                }
+                
                 existingStaff.IsActive = staff.IsActive;
                 existingStaff.UpdatedAt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Singapore Standard Time"));
 
@@ -457,7 +530,137 @@ namespace Project_Creation.Controllers
                     {
                         _logger.LogError(ex, $"Error sending notifications to staff ID {id}");
                     }                
-                }               
+                }
+                
+                // Send password change notification if password was updated
+                if (!string.IsNullOrWhiteSpace(password))
+                {
+                    try
+                    {
+                        var businessOwner = await _context.Users.FirstOrDefaultAsync(u => u.Id == existingStaff.BOId);
+                        string businessName = businessOwner?.BusinessName ?? "Your Business";
+                        
+                        string passwordChangeEmailContent = $@"
+                            <html>
+                            <head>
+                                <style>
+                                    body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                                    .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                                    h2 {{ color: #2c3e50; }}
+                                    .alert-box {{ background-color: #fff3cd; padding: 15px; border-radius: 5px; margin: 15px 0; border-left: 4px solid #ffc107; }}
+                                    .footer {{ margin-top: 30px; font-size: 12px; color: #7f8c8d; }}
+                                </style>
+                            </head>
+                            <body>
+                                <div class=""container"">
+                                    <h2>Your Password Has Been Changed</h2>
+                                    <p>Dear {existingStaff.StaffName},</p>
+                                    <p>Your account password for {businessName} has been updated by the business owner.</p>
+
+                                    <div class=""alert-box"">
+                                        <h3>⚠️ Important Security Information</h3>
+                                        <p>Your password has been changed. You can use this new password to log in to your account.</p>
+                                        <p>If you did not expect this change, please contact your business owner immediately.</p>
+                                    </div>
+
+                                    <p>You can log in at: <a href=""{Request.Scheme}://{Request.Host}/Login/login"">{Request.Scheme}://{Request.Host}/Login/login</a></p>
+                                    <p>For security reasons, we recommend changing your password after logging in.</p>
+
+                                    <div class=""footer"">
+                                        <p>This is an automated message. Please do not reply to this email.</p>
+                                    </div>
+                                </div>
+                            </body>
+                            </html>";
+                        
+                        // Send the email
+                        await _emailService.SendEmail2(
+                            businessOwner?.Email ?? "noreply@growtrack.com",
+                            businessName,
+                            existingStaff.StaffSEmail,
+                            "Your Account Password Has Been Changed",
+                            passwordChangeEmailContent,
+                            true);
+                        
+                        _logger.LogInformation($"Password change notification sent to {existingStaff.StaffSEmail}");
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, $"Error sending password change notification to staff ID {id}");
+                    }
+                }
+                
+                // Send status change notification if status was changed
+                if (statusChanged)
+                {
+                    try
+                    {
+                        var businessOwner = await _context.Users.FirstOrDefaultAsync(u => u.Id == existingStaff.BOId);
+                        string businessName = businessOwner?.BusinessName ?? "Your Business";
+                        
+                        // Determine status change message and styling
+                        string statusTitle = staff.IsActive == AccountStatus.Active ? "Your Account Has Been Activated" : "Your Account Has Been Suspended";
+                        string statusColor = staff.IsActive == AccountStatus.Active ? "#27ae60" : "#e74c3c";
+                        string statusIcon = staff.IsActive == AccountStatus.Active ? "✅" : "⚠️";
+                        string statusMessage = staff.IsActive == AccountStatus.Active 
+                            ? "Your supervisor account has been activated. You now have full access to the system based on your assigned permissions."
+                            : "Your supervisor account has been suspended. You will not be able to access the system until your account is reactivated.";
+                        
+                        string statusChangeEmailContent = $@"
+                            <html>
+                            <head>
+                                <style>
+                                    body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                                    .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                                    h2 {{ color: #2c3e50; }}
+                                    .status-box {{ background-color: {(staff.IsActive == AccountStatus.Active ? "#eaffea" : "#ffecec")}; 
+                                               padding: 15px; border-radius: 5px; margin: 15px 0; 
+                                               border-left: 4px solid {statusColor}; }}
+                                    .status-box h3 {{ margin-top: 0; color: {statusColor}; }}
+                                    .footer {{ margin-top: 30px; font-size: 12px; color: #7f8c8d; }}
+                                </style>
+                            </head>
+                            <body>
+                                <div class=""container"">
+                                    <h2>{statusTitle}</h2>
+                                    <p>Dear {existingStaff.StaffName},</p>
+                                    <p>Your account status in {businessName} has been changed by the business owner.</p>
+
+                                    <div class=""status-box"">
+                                        <h3>{statusIcon} Account Status: {staff.IsActive}</h3>
+                                        <p>{statusMessage}</p>
+                                    </div>
+
+                                    {(staff.IsActive == AccountStatus.Active ? $@"
+                                    <p>You can log in at: <a href=""{Request.Scheme}://{Request.Host}/Login/login"">{Request.Scheme}://{Request.Host}/Login/login</a></p>
+                                    " : "")}
+
+                                    <p>If you have any questions about your account status, please contact your business owner.</p>
+
+                                    <div class=""footer"">
+                                        <p>This is an automated message. Please do not reply to this email.</p>
+                                    </div>
+                                </div>
+                            </body>
+                            </html>";
+                        
+                        // Send the email
+                        await _emailService.SendEmail2(
+                            businessOwner?.Email ?? "noreply@growtrack.com",
+                            businessName,
+                            existingStaff.StaffSEmail,
+                            statusTitle,
+                            statusChangeEmailContent,
+                            true);
+                        
+                        _logger.LogInformation($"Status change notification sent to {existingStaff.StaffSEmail}");
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, $"Error sending status change notification to staff ID {id}");
+                    }
+                }
+                
                 return Ok();
             }
             catch (DbUpdateConcurrencyException)
@@ -474,8 +677,8 @@ namespace Project_Creation.Controllers
         }
 
         // POST: Staffs/Delete/5
-        [HttpPost, ActionName("Delete")]
-        //[ValidateAntiForgeryToken]
+        [HttpPost]
+        [Route("Staffs/Delete/{id:int}")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var staff = await _context.Staff.FindAsync(id);

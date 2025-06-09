@@ -98,7 +98,15 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
                 return Task.CompletedTask;
             },
             OnRedirectToLogin = context => {
-                context.Response.Redirect(context.RedirectUri);
+                // Check if request is for admin area
+                if (context.Request.Path.StartsWithSegments("/Admin"))
+                {
+                    context.Response.Redirect("/Login/AdminLogin");
+                }
+                else
+                {
+                    context.Response.Redirect(context.RedirectUri);
+                }
                 return Task.CompletedTask;
             },
             // Add detailed error logging for cookie validation failures

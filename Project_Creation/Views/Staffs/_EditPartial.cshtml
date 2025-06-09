@@ -32,10 +32,24 @@
     <span asp-validation-for="StaffPhone" class="text-danger"></span>
 </div>
 
+<!-- Password -->
+<div class="mb-3">
+    <label for="Password" class="form-label">Password</label>
+    <div class="input-group">
+        <input name="Password" id="editStaffPassword" type="password" class="form-control" placeholder="Leave blank to keep current password" />
+        <button class="btn btn-outline-secondary" type="button" id="toggleEditPassword">
+            <i class="fas fa-eye"></i>
+        </button>
+    </div>
+    <div class="form-text">Only fill this field if you want to change the supervisor's password.</div>
+</div>
+
 <!-- IsActive -->
 <div class="mb-3">
     <label asp-for="IsActive" class="form-label">Status</label>
-    <select asp-for="IsActive" class="form-select" asp-items="Html.GetEnumSelectList<AccountStatus>()">
+    <select asp-for="IsActive" class="form-select">
+        <option value="@AccountStatus.Active">Active</option>
+        <option value="@AccountStatus.Suspended">Suspended</option>
     </select>
     <span asp-validation-for="IsActive" class="text-danger"></span>
 </div>

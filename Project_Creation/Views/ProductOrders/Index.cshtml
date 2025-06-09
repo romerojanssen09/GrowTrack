@@ -27,55 +27,114 @@
             <div class="card shadow-sm border-0 rounded-4">
                 <div class="card-body">
                     <h5 class="card-title mb-3 fw-bold"><i class="fas fa-chart-pie me-2 text-primary"></i>Order Status Overview</h5>
-                    <div class="d-flex flex-wrap gap-3">
-                        <a href="@Url.Action("Index", new { status = "Pending" })" class="text-decoration-none status-badge">
-                            <div class="badge bg-secondary p-2 d-flex align-items-center rounded-pill">
-                                <span class="me-1">Pending</span>
-                                <span class="badge bg-white text-secondary rounded-circle">@Model.PendingCount</span>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="mb-2 text-muted"><i class="fas fa-hourglass-half me-2"></i>Active Orders</h6>
+                            <div class="d-flex flex-wrap gap-3 mb-3">
+                                <a href="@Url.Action("Index", new { status = "Pending", search = Model.SearchQuery })" class="text-decoration-none status-badge @(Model.StatusFilter == "Pending" ? "selected-status" : "")">
+                                    <div class="badge bg-secondary p-2 d-flex align-items-center rounded-pill">
+                                        <span class="me-1">Pending</span>
+                                        <span class="badge bg-white text-secondary rounded-circle">@Model.PendingCount</span>
+                                    </div>
+                                </a>
+                                <a href="@Url.Action("Index", new { status = "Accepted", search = Model.SearchQuery })" class="text-decoration-none status-badge @(Model.StatusFilter == "Accepted" ? "selected-status" : "")">
+                                    <div class="badge bg-info p-2 d-flex align-items-center rounded-pill">
+                                        <span class="me-1">Accepted</span>
+                                        <span class="badge bg-white text-info rounded-circle">@Model.AcceptedCount</span>
+                                    </div>
+                                </a>
+                                <a href="@Url.Action("Index", new { status = "Preparing", search = Model.SearchQuery })" class="text-decoration-none status-badge @(Model.StatusFilter == "Preparing" ? "selected-status" : "")">
+                                    <div class="badge bg-primary p-2 d-flex align-items-center rounded-pill">
+                                        <span class="me-1">Preparing</span>
+                                        <span class="badge bg-white text-primary rounded-circle">@Model.PreparingCount</span>
+                                    </div>
+                                </a>
+                                <a href="@Url.Action("Index", new { status = "Shipping", search = Model.SearchQuery })" class="text-decoration-none status-badge @(Model.StatusFilter == "Shipping" ? "selected-status" : "")">
+                                    <div class="badge bg-warning p-2 d-flex align-items-center rounded-pill">
+                                        <span class="me-1">Shipping</span>
+                                        <span class="badge bg-white text-warning rounded-circle">@Model.ShippingCount</span>
+                                    </div>
+                                </a>
+                                <a href="@Url.Action("Index", new { status = "Delivered", search = Model.SearchQuery })" class="text-decoration-none status-badge @(Model.StatusFilter == "Delivered" ? "selected-status" : "")">
+                                    <div class="badge bg-success p-2 d-flex align-items-center rounded-pill">
+                                        <span class="me-1">Delivered</span>
+                                        <span class="badge bg-white text-success rounded-circle">@Model.DeliveredCount</span>
+                                    </div>
+                                </a>
                             </div>
-                        </a>
-                        <a href="@Url.Action("Index", new { status = "Accepted" })" class="text-decoration-none status-badge">
-                            <div class="badge bg-info p-2 d-flex align-items-center rounded-pill">
-                                <span class="me-1">Accepted</span>
-                                <span class="badge bg-white text-info rounded-circle">@Model.AcceptedCount</span>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h6 class="mb-2 text-muted"><i class="fas fa-check-double me-2"></i>Completed/Cancelled Orders</h6>
+                            <div class="d-flex flex-wrap gap-3">
+                                <a href="@Url.Action("Index", new { status = "Received", search = Model.SearchQuery })" class="text-decoration-none status-badge @(Model.StatusFilter == "Received" ? "selected-status" : "")">
+                                    <div class="badge bg-success p-2 d-flex align-items-center rounded-pill">
+                                        <span class="me-1">Received</span>
+                                        <span class="badge bg-white text-success rounded-circle">@Model.ReceivedCount</span>
+                                    </div>
+                                </a>
+                                <a href="@Url.Action("Index", new { status = "Cancelled", search = Model.SearchQuery })" class="text-decoration-none status-badge @(Model.StatusFilter == "Cancelled" ? "selected-status" : "")">
+                                    <div class="badge bg-danger p-2 d-flex align-items-center rounded-pill">
+                                        <span class="me-1">Cancelled</span>
+                                        <span class="badge bg-white text-danger rounded-circle">@Model.CancelledCount</span>
+                                    </div>
+                                </a>
+                                <a href="@Url.Action("Index", new { status = "Rejected", search = Model.SearchQuery })" class="text-decoration-none status-badge @(Model.StatusFilter == "Rejected" ? "selected-status" : "")">
+                                    <div class="badge bg-danger p-2 d-flex align-items-center rounded-pill">
+                                        <span class="me-1">Rejected</span>
+                                        <span class="badge bg-white text-danger rounded-circle">@Model.RejectedCount</span>
+                                    </div>
+                                </a>
                             </div>
-                        </a>
-                        <a href="@Url.Action("Index", new { status = "Preparing" })" class="text-decoration-none status-badge">
-                            <div class="badge bg-primary p-2 d-flex align-items-center rounded-pill">
-                                <span class="me-1">Preparing</span>
-                                <span class="badge bg-white text-primary rounded-circle">@Model.PreparingCount</span>
+                        </div>
+                    </div>
+                    
+                    @if (!string.IsNullOrEmpty(Model.StatusFilter))
+                    {
+                        <div class="mt-3 text-center">
+                            <a href="@Url.Action("Index", new { search = Model.SearchQuery })" class="btn btn-sm btn-outline-secondary rounded-pill clear-filter-btn">
+                                <i class="fas fa-times-circle me-1"></i> Clear Status Filter (@Model.StatusFilter)
+                            </a>
+                        </div>
+                    }
+                    
+                    <div class="mt-3 pt-3 border-top">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="d-flex align-items-center">
+                                    <div class="stat-icon bg-primary text-white rounded-circle p-2 me-2">
+                                        <i class="fas fa-shopping-cart"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0">Total Orders</h6>
+                                        <h4 class="mb-0">@(Model.PendingCount + Model.AcceptedCount + Model.PreparingCount + Model.ShippingCount + Model.DeliveredCount + Model.ReceivedCount + Model.CancelledCount + Model.RejectedCount)</h4>
+                                    </div>
+                                </div>
                             </div>
-                        </a>
-                        <a href="@Url.Action("Index", new { status = "Shipping" })" class="text-decoration-none status-badge">
-                            <div class="badge bg-warning p-2 d-flex align-items-center rounded-pill">
-                                <span class="me-1">Shipping</span>
-                                <span class="badge bg-white text-warning rounded-circle">@Model.ShippingCount</span>
+                            <div class="col-md-4">
+                                <div class="d-flex align-items-center">
+                                    <div class="stat-icon bg-success text-white rounded-circle p-2 me-2">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0">Completed Orders</h6>
+                                        <h4 class="mb-0">@(Model.ReceivedCount)</h4>
+                                    </div>
+                                </div>
                             </div>
-                        </a>
-                        <a href="@Url.Action("Index", new { status = "Delivered" })" class="text-decoration-none status-badge">
-                            <div class="badge bg-success p-2 d-flex align-items-center rounded-pill">
-                                <span class="me-1">Delivered</span>
-                                <span class="badge bg-white text-success rounded-circle">@Model.DeliveredCount</span>
+                            <div class="col-md-4">
+                                <div class="d-flex align-items-center">
+                                    <div class="stat-icon bg-warning text-white rounded-circle p-2 me-2">
+                                        <i class="fas fa-clock"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0">Active Orders</h6>
+                                        <h4 class="mb-0">@(Model.PendingCount + Model.AcceptedCount + Model.PreparingCount + Model.ShippingCount + Model.DeliveredCount)</h4>
+                                    </div>
+                                </div>
                             </div>
-                        </a>
-                        <a href="@Url.Action("Index", new { status = "Received" })" class="text-decoration-none status-badge">
-                            <div class="badge bg-success p-2 d-flex align-items-center rounded-pill">
-                                <span class="me-1">Received</span>
-                                <span class="badge bg-white text-success rounded-circle">@Model.ReceivedCount</span>
-                            </div>
-                        </a>
-                        <a href="@Url.Action("Index", new { status = "Cancelled" })" class="text-decoration-none status-badge">
-                            <div class="badge bg-danger p-2 d-flex align-items-center rounded-pill">
-                                <span class="me-1">Cancelled</span>
-                                <span class="badge bg-white text-danger rounded-circle">@Model.CancelledCount</span>
-                            </div>
-                        </a>
-                        <a href="@Url.Action("Index", new { status = "Rejected" })" class="text-decoration-none status-badge">
-                            <div class="badge bg-danger p-2 d-flex align-items-center rounded-pill">
-                                <span class="me-1">Rejected</span>
-                                <span class="badge bg-white text-danger rounded-circle">@Model.RejectedCount</span>
-                            </div>
-                        </a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -444,6 +503,49 @@
 
         .filter-card:hover {
             box-shadow: 0 8px 15px rgba(0,0,0,0.08) !important;
+        }
+        
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+        
+        .stat-icon:hover {
+            transform: scale(1.1);
+        }
+        
+        .clear-filter-btn {
+            animation: fadeIn 0.5s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .clear-filter-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        .selected-status {
+            position: relative;
+            transform: scale(1.1);
+            z-index: 1;
+        }
+        
+        .selected-status::after {
+            content: '';
+            position: absolute;
+            bottom: -3px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 6px;
+            height: 6px;
+            background-color: #304251;
+            border-radius: 50%;
         }
 
         .custom-tabs .nav-link.active {

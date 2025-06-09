@@ -328,6 +328,7 @@
 .nav-hover .brand-text,
 .nav-hover .side-nav-text,
 .nav-hover .user-info,
+.nav-hover .control-text,
 .nav-hover .side-nav-dropdown::after {
     opacity: 1;
     visibility: visible;
@@ -346,6 +347,7 @@
     .side-nav {
         transform: translateX(-100%);
         box-shadow: none;
+        width: var(--sidenav-width) !important; /* Force full width */
     }
 
     #wrapper {
@@ -362,9 +364,24 @@
         display: none !important;
     }
 
+    /* Force expanded view in mobile */
     .side-nav.show {
         transform: translateX(0);
         box-shadow: 0 0 50px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Ensure text is always visible in mobile */
+    .side-nav.show .brand-text,
+    .side-nav.show .side-nav-text,
+    .side-nav.show .control-text,
+    .side-nav.show .side-nav-dropdown::after {
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    /* Ensure icons are properly positioned */
+    .side-nav.show .side-nav-icon {
+        margin-right: 1rem !important;
     }
 
     #sideNavToggler {
@@ -447,6 +464,19 @@
     z-index: 1041;
 }
 
+/* Ensure control text is visible when button is hovered in collapsed state */
+.collapsed-nav #sideNavToggler:hover .control-text {
+    opacity: 1;
+    visibility: visible;
+    position: absolute;
+    left: 100%;
+    margin-left: 10px;
+    background-color: var(--sidenav-bg);
+    padding: 5px 10px;
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    white-space: nowrap;
+}
 
 /* Open state for submenu items */
 .side-nav-item.show > .side-nav-dropdown {

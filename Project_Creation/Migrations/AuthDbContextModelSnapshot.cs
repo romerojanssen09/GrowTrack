@@ -133,6 +133,12 @@ namespace Project_Creation.Migrations
                     b.Property<DateOnly>("Date")
                         .HasColumnType("date");
 
+                    b.Property<DateOnly?>("EndDate")
+                        .HasColumnType("date");
+
+                    b.Property<TimeOnly?>("EndTime")
+                        .HasColumnType("time");
+
                     b.Property<DateTime?>("FinishedAt")
                         .HasColumnType("datetime2");
 

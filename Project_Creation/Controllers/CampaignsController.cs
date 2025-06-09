@@ -156,6 +156,58 @@ namespace Project_Creation.Controllers
                     {
                         _logger.LogInformation("Template retrieved after save: Id={Id}, Name={Name}, BOId={BOId}", 
                             savedTemplate.Id, savedTemplate.Name, savedTemplate.BOId);
+                        
+                        // Get the business owner to send confirmation email
+                        var bo = await _context.Users.FindAsync(userId);
+                        if (bo != null)
+                        {
+                            try
+                            {
+                                // Send confirmation email to the business owner
+                                string subject = $"Template Created: {template.Name}";
+                                string body = $@"
+                                <!DOCTYPE html>
+                                <html>
+                                <head>
+                                    <meta charset='utf-8'>
+                                    <meta name='viewport' content='width=device-width, initial-scale=1'>
+                                    <title>Template Created</title>
+                                    <style>
+                                        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                                        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                                        .header {{ background-color: #4e73df; color: white; padding: 15px; text-align: center; }}
+                                        .content {{ padding: 20px; border: 1px solid #ddd; }}
+                                        .footer {{ text-align: center; margin-top: 20px; font-size: 12px; color: #777; }}
+                                    </style>
+                                </head>
+                                <body>
+                                    <div class='container'>
+                                        <div class='header'>
+                                            <h2>Email Template Created Successfully</h2>
+                                        </div>
+                                        <div class='content'>
+                                            <h3>Hello {bo.FirstName},</h3>
+                                            <p>Your email template <strong>{template.Name}</strong> has been created successfully.</p>
+                                            <p><strong>Subject:</strong> {template.Subject}</p>
+                                            <p>You can use this template when creating campaigns to reach out to your leads.</p>
+                                            <p>To view or edit your templates, visit the Templates section in your Campaign Manager.</p>
+                                        </div>
+                                        <div class='footer'>
+                                            <p>© {DateTime.Now.Year} GrowSphere | This is an automated message.</p>
+                                        </div>
+                                    </div>
+                                </body>
+                                </html>";
+                                
+                                await _emailService.SendEmailToBO(bo, subject, body, true);
+                                _logger.LogInformation("Template creation confirmation email sent to {Email}", bo.Email);
+                            }
+                            catch (Exception emailEx)
+                            {
+                                // Log the error but don't fail the operation if email sending fails
+                                _logger.LogError(emailEx, "Error sending template creation confirmation email to {Email}", bo.Email);
+                            }
+                        }
                     }
                     else
                     {
@@ -262,6 +314,59 @@ namespace Project_Creation.Controllers
                     _context.Update(existingTemplate);
                     await _context.SaveChangesAsync();
                     
+                    // Get the business owner to send confirmation email
+                    var userId = GetCurrentUserId();
+                    var bo = await _context.Users.FindAsync(userId);
+                    if (bo != null)
+                    {
+                        try
+                        {
+                            // Send confirmation email to the business owner
+                            string subject = $"Template Updated: {template.Name}";
+                            string body = $@"
+                            <!DOCTYPE html>
+                            <html>
+                            <head>
+                                <meta charset='utf-8'>
+                                <meta name='viewport' content='width=device-width, initial-scale=1'>
+                                <title>Template Updated</title>
+                                <style>
+                                    body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                                    .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                                    .header {{ background-color: #4e73df; color: white; padding: 15px; text-align: center; }}
+                                    .content {{ padding: 20px; border: 1px solid #ddd; }}
+                                    .footer {{ text-align: center; margin-top: 20px; font-size: 12px; color: #777; }}
+                                </style>
+                            </head>
+                            <body>
+                                <div class='container'>
+                                    <div class='header'>
+                                        <h2>Email Template Updated Successfully</h2>
+                                    </div>
+                                    <div class='content'>
+                                        <h3>Hello {bo.FirstName},</h3>
+                                        <p>Your email template <strong>{template.Name}</strong> has been updated successfully.</p>
+                                        <p><strong>Subject:</strong> {template.Subject}</p>
+                                        <p>You can use this template when creating campaigns to reach out to your leads.</p>
+                                        <p>To view or edit your templates, visit the Templates section in your Campaign Manager.</p>
+                                    </div>
+                                    <div class='footer'>
+                                        <p>© {DateTime.Now.Year} GrowSphere | This is an automated message.</p>
+                                    </div>
+                                </div>
+                            </body>
+                            </html>";
+                            
+                            await _emailService.SendEmailToBO(bo, subject, body, true);
+                            _logger.LogInformation("Template update confirmation email sent to {Email}", bo.Email);
+                        }
+                        catch (Exception emailEx)
+                        {
+                            // Log the error but don't fail the operation if email sending fails
+                            _logger.LogError(emailEx, "Error sending template update confirmation email to {Email}", bo.Email);
+                        }
+                    }
+                    
                     TempData["SuccessMessage"] = "Template updated successfully!";
                     return RedirectToAction(nameof(Templates));
                 }
@@ -305,17 +410,21 @@ namespace Project_Creation.Controllers
         [HttpGet]
         public async Task<IActionResult> GetTemplate(int id)
         {
+            var userId = GetCurrentUserId();
             var template = await _context.MessageTemplates
-                .FirstOrDefaultAsync(t => t.Id == id && t.BOId == GetCurrentUserId());
+                .FirstOrDefaultAsync(t => t.Id == id && t.BOId == userId);
                 
             if (template == null)
             {
-                return NotFound();
+                return Json(new { success = false, message = "Template not found" });
             }
             
             return Json(new { 
-                subject = template.Subject, 
-                content = template.Content 
+                success = true,
+                id = template.Id,
+                name = template.Name,
+                subject = template.Subject,
+                content = template.Content
             });
         }
         
@@ -393,7 +502,7 @@ namespace Project_Creation.Controllers
         public IActionResult GetProducts()
         {
             var products = _context.Products2
-                .Where(u => u.BOId == GetCurrentUserId())
+                .Where(u => u.BOId == GetCurrentUserId() && u.IsDeleted == false)
                 .Select(p => new {
                     id = p.Id,
                     name = p.ProductName
@@ -624,6 +733,53 @@ namespace Project_Creation.Controllers
                         
                         _context.MessageTemplates.Add(template);
                         await _context.SaveChangesAsync();
+                        
+                        // Send template creation notification
+                        try
+                        {
+                            string templateSubject = $"New Template Created: {TemplateName}";
+                            string templateBody = $@"
+                            <!DOCTYPE html>
+                            <html>
+                            <head>
+                                <meta charset='utf-8'>
+                                <meta name='viewport' content='width=device-width, initial-scale=1'>
+                                <title>Template Created</title>
+                                <style>
+                                    body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                                    .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                                    .header {{ background-color: #4e73df; color: white; padding: 15px; text-align: center; }}
+                                    .content {{ padding: 20px; border: 1px solid #ddd; }}
+                                    .footer {{ text-align: center; margin-top: 20px; font-size: 12px; color: #777; }}
+                                </style>
+                            </head>
+                            <body>
+                                <div class='container'>
+                                    <div class='header'>
+                                        <h2>Email Template Created During Campaign</h2>
+                                    </div>
+                                    <div class='content'>
+                                        <h3>Hello {bo.FirstName},</h3>
+                                        <p>Your email template <strong>{TemplateName}</strong> has been created successfully while creating the campaign <strong>{campaign.CampaignName}</strong>.</p>
+                                        <p><strong>Subject:</strong> {Subject ?? campaign.CampaignName}</p>
+                                        <p>You can use this template for future campaigns to reach out to your leads.</p>
+                                        <p>To view or edit your templates, visit the Templates section in your Campaign Manager.</p>
+                                    </div>
+                                    <div class='footer'>
+                                        <p>© {DateTime.Now.Year} GrowSphere | This is an automated message.</p>
+                                    </div>
+                                </div>
+                            </body>
+                            </html>";
+                            
+                            await _emailService.SendEmailToBO(bo, templateSubject, templateBody, true);
+                            _logger.LogInformation("Template creation notification sent to {Email}", bo.Email);
+                        }
+                        catch (Exception emailEx)
+                        {
+                            // Log but don't fail the operation
+                            _logger.LogError(emailEx, "Error sending template creation notification to {Email}", bo.Email);
+                        }
                     }
 
                     // Get recipient emails
@@ -757,6 +913,77 @@ namespace Project_Creation.Controllers
 
                         campaign.IsSent = true;
                         await _context.SaveChangesAsync();
+                    }
+
+                    // Send campaign creation confirmation email to business owner
+                    try
+                    {
+                        // Get template information if a template was used
+                        string templateInfo = "";
+                        if (Request.Form.ContainsKey("SelectedTemplateId") && !string.IsNullOrEmpty(Request.Form["SelectedTemplateId"]))
+                        {
+                            if (int.TryParse(Request.Form["SelectedTemplateId"], out int templateId))
+                            {
+                                var usedTemplate = await _context.MessageTemplates.FindAsync(templateId);
+                                if (usedTemplate != null)
+                                {
+                                    templateInfo = $"<p>Based on template: <strong>{usedTemplate.Name}</strong></p>";
+                                }
+                            }
+                        }
+                        
+                        string campaignSubject = $"Campaign Created: {campaign.CampaignName}";
+                        string campaignBody = $@"
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                            <meta charset='utf-8'>
+                            <meta name='viewport' content='width=device-width, initial-scale=1'>
+                            <title>Campaign Created</title>
+                            <style>
+                                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                                .header {{ background-color: #4e73df; color: white; padding: 15px; text-align: center; }}
+                                .content {{ padding: 20px; border: 1px solid #ddd; }}
+                                .stats {{ background-color: #f8f9fc; padding: 15px; margin: 15px 0; border-radius: 5px; }}
+                                .footer {{ text-align: center; margin-top: 20px; font-size: 12px; color: #777; }}
+                            </style>
+                        </head>
+                        <body>
+                            <div class='container'>
+                                <div class='header'>
+                                    <h2>Campaign Created Successfully</h2>
+                                </div>
+                                <div class='content'>
+                                    <h3>Hello {bo.FirstName},</h3>
+                                    <p>Your campaign <strong>{campaign.CampaignName}</strong> has been created and sent successfully.</p>
+                                    <p><strong>Subject:</strong> {campaign.Subject ?? campaign.CampaignName}</p>
+                                    {templateInfo}
+                                    
+                                    <div class='stats'>
+                                        <h4>Campaign Statistics:</h4>
+                                        <p><strong>Total Recipients:</strong> {recipientEmails.Count}</p>
+                                        <p><strong>Successfully Sent:</strong> {sentCount}</p>
+                                        <p><strong>Failed:</strong> {failedCount}</p>
+                                        <p><strong>Duplicate Emails Removed:</strong> {duplicateEmails.Count}</p>
+                                    </div>
+                                    
+                                    <p>You can track the performance of your campaign in the Campaign Manager.</p>
+                                </div>
+                                <div class='footer'>
+                                    <p>© {DateTime.Now.Year} GrowSphere | This is an automated message.</p>
+                                </div>
+                            </div>
+                        </body>
+                        </html>";
+                        
+                        await _emailService.SendEmailToBO(bo, campaignSubject, campaignBody, true);
+                        _logger.LogInformation("Campaign creation confirmation email sent to {Email}", bo.Email);
+                    }
+                    catch (Exception emailEx)
+                    {
+                        // Log but don't fail the operation
+                        _logger.LogError(emailEx, "Error sending campaign creation confirmation to {Email}", bo.Email);
                     }
 
                     return Json(new { 
@@ -1244,6 +1471,176 @@ namespace Project_Creation.Controllers
             {
                 _logger.LogError(ex, "Error retrieving templates");
                 return Json(new { success = false, error = ex.Message });
+            }
+        }
+
+        // GET: Campaigns/GetTemplateImages
+        [HttpGet]
+        public IActionResult GetTemplateImages()
+        {
+            try
+            {
+                var userId = GetCurrentUserId();
+                
+                // In a real implementation, you would fetch images from a database or storage service
+                // For this demo, we'll return mock data
+                var images = new List<object>
+                {
+                    new { id = 1, name = "Header Image", url = "/images/templates/header.jpg" },
+                    new { id = 2, name = "Product Banner", url = "/images/templates/product.jpg" },
+                    new { id = 3, name = "Logo", url = "/images/templates/logo.png" },
+                    new { id = 4, name = "Background Pattern", url = "/images/templates/pattern.jpg" }
+                };
+                
+                return Json(images);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting template images");
+                return Json(new List<object>());
+            }
+        }
+
+        // POST: Campaigns/UploadTemplateImage
+        [HttpPost]
+        public async Task<IActionResult> UploadTemplateImage()
+        {
+            try
+            {
+                var userId = GetCurrentUserId();
+                var file = Request.Form.Files["image"];
+                
+                if (file == null || file.Length == 0)
+                {
+                    return Json(new { success = false, message = "No file uploaded" });
+                }
+                
+                // In a real implementation, you would:
+                // 1. Validate the file (size, type, etc.)
+                // 2. Generate a unique filename
+                // 3. Save the file to disk or cloud storage
+                // 4. Save metadata to database
+                
+                // For this demo, we'll simulate a successful upload
+                // In a real app, you would save the file and return the actual URL
+                
+                // Create a mock response
+                var image = new 
+                { 
+                    id = new Random().Next(100, 999), // Random ID for demo purposes
+                    name = Path.GetFileName(file.FileName),
+                    url = $"/images/templates/uploaded_{Path.GetFileName(file.FileName)}"
+                };
+                
+                return Json(new { success = true, image });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error uploading template image");
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        // GET: Campaigns/CreateSampleTemplate
+        public async Task<IActionResult> CreateSampleTemplate()
+        {
+            try
+            {
+                var userId = GetCurrentUserId();
+                
+                // Check if the user already has a welcome template
+                var existingTemplate = await _context.MessageTemplates
+                    .FirstOrDefaultAsync(t => t.BOId == userId && t.Name.Contains("Welcome"));
+                    
+                if (existingTemplate != null)
+                {
+                    TempData["WarningMessage"] = "You already have a welcome template. Check your templates list.";
+                    return RedirectToAction(nameof(Templates));
+                }
+                
+                // Create a sample welcome template
+                var template = new MessageTemplate
+                {
+                    Name = "Welcome to Our Business",
+                    Subject = "Welcome to {{BusinessName}} – Let's Build Together!",
+                    BOId = userId,
+                    CreatedAt = DateTime.UtcNow,
+                    Content = @"<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <title>Welcome to {{BusinessName}}</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #4e73df; color: white; padding: 20px; text-align: center; }
+        .content { padding: 20px; background-color: #ffffff; }
+        .footer { text-align: center; padding: 20px; font-size: 12px; color: #777; }
+        .button { display: inline-block; background-color: #4e73df; color: white; text-decoration: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; }
+        .social-links { text-align: center; margin: 20px 0; }
+        .social-links a { display: inline-block; margin: 0 10px; text-decoration: none; }
+        .social-links img { border: none; width: 32px; height: 32px; }
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <div class='header'>
+            <h1>Welcome to {{BusinessName}}</h1>
+        </div>
+        <div class='content'>
+            <h2>Hello {{LeadName}},</h2>
+            
+            <p>Thank you for your interest in our services. We're excited to help you grow your business and achieve your goals.</p>
+            
+            <p>Our team will contact you shortly at {{LeadEmail}} to discuss how we can best meet your needs.</p>
+            
+            <div style='text-align: center; margin: 30px 0;'>
+                <a href='#' class='button'>Schedule a Consultation</a>
+            </div>
+            
+            <p>If you have any questions, feel free to reply to this email or call us directly.</p>
+            
+            <p>Best regards,<br>
+            {{BusinessOwnerName}}<br>
+            {{BusinessName}}</p>
+        </div>
+        
+        <div class='social-links'>
+            <a href='#' target='_blank'>
+                <img src='https://cdn4.iconfinder.com/data/icons/social-media-logos-6/512/83-facebook-512.png' alt='Facebook' width='32' height='32'>
+            </a>
+            <a href='#' target='_blank'>
+                <img src='https://cdn4.iconfinder.com/data/icons/social-media-logos-6/512/36-twitter_social-512.png' alt='Twitter' width='32' height='32'>
+            </a>
+            <a href='#' target='_blank'>
+                <img src='https://cdn4.iconfinder.com/data/icons/social-media-logos-6/512/56-linkedin-512.png' alt='LinkedIn' width='32' height='32'>
+            </a>
+            <a href='#' target='_blank'>
+                <img src='https://cdn4.iconfinder.com/data/icons/social-media-logos-6/512/64-instagram-512.png' alt='Instagram' width='32' height='32'>
+            </a>
+        </div>
+        
+        <div class='footer'>
+            <p>© {{BusinessName}} | {{CurrentDate}}</p>
+            <p><a href='#'>Unsubscribe</a> | <a href='#'>Privacy Policy</a></p>
+        </div>
+    </div>
+</body>
+</html>"
+                };
+                
+                _context.MessageTemplates.Add(template);
+                await _context.SaveChangesAsync();
+                
+                TempData["SuccessMessage"] = "Sample welcome template created successfully! You can now edit it to match your business needs.";
+                return RedirectToAction(nameof(EditTemplate), new { id = template.Id });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating sample template");
+                TempData["ErrorMessage"] = "Error creating sample template: " + ex.Message;
+                return RedirectToAction(nameof(Templates));
             }
         }
     }

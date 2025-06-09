@@ -1,6 +1,5 @@
 C:\Users\chell\source\repos\New folder\Project_Creation\Project_Creation\obj\Release\net8.0\PubTmp\Out\Project_Creation.exe
 C:\Users\chell\source\repos\New folder\Project_Creation\Project_Creation\obj\Release\net8.0\PubTmp\Out\web.config
-C:\Users\chell\source\repos\New folder\Project_Creation\Project_Creation\obj\Release\net8.0\PubTmp\Out\appsettings.Development.json
 C:\Users\chell\source\repos\New folder\Project_Creation\Project_Creation\obj\Release\net8.0\PubTmp\Out\appsettings.json
 C:\Users\chell\source\repos\New folder\Project_Creation\Project_Creation\obj\Release\net8.0\PubTmp\Out\Project_Creation.dll
 C:\Users\chell\source\repos\New folder\Project_Creation\Project_Creation\obj\Release\net8.0\PubTmp\Out\Project_Creation.runtimeconfig.json

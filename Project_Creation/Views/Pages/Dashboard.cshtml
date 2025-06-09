@@ -14,7 +14,7 @@
     
     <!-- Header Row with Enhanced Welcome Banner -->
     <div class="welcome-banner mb-4">
-        <div class="d-flex justify-content-between align-items-center">
+        <div class="d-flex justify-content-between align-items-center flex-sm-row flex-column gap-4">
             <div class="welcome-content">
                 <h1 class="h3 mb-1 fw-bold">Business Dashboard</h1>
                 <p class="mb-0 welcome-message">Welcome back, <span class="user-name">@User.Identity.Name!</span></p>
@@ -22,13 +22,13 @@
             </div>
             @if (userRole == "BusinessOwner" || staffAccessLevel.HasFlag(StaffAccessLevel.Inventory))
             {
-                <div class="btn-group action-buttons">
-                    <a asp-controller="Inventory1" asp-action="Create" class="btn btn-primary">
+                <div class="btn-group action-buttons d-flex flex-sm-row flex-column gap-2">
+                    <a asp-controller="Inventory1" asp-action="Create" class="btn btn-primary rounded">
                         <i class="fas fa-plus-circle me-2"></i>Add Product
                     </a>
                     @if (userRole == "BusinessOwner" || staffAccessLevel.HasFlag(StaffAccessLevel.QuickSales))
                     {
-                        <a asp-controller="Inventory1" asp-action="QuickSale" class="btn btn-success">
+                        <a asp-controller="Inventory1" asp-action="QuickSale" class="btn btn-success rounded">
                             <i class="fas fa-cash-register me-2"></i>
                             Quick Sale
                         </a>

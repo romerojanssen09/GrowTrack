@@ -42,40 +42,46 @@
                 </div>
 
                 <div class="row">
-                    <!-- Combined Category Selection -->
+                    <!-- Custom Category Selection -->
                     <div class="col-md-6 mb-3">
                         <label class="control-label">Category *</label>
-                        <!-- Category Dropdown (select only) -->
-                        <select id="categorySelect" class="form-control select2-with-tags" name="Category2">
-                            <option value="">-- Select or Type New Category --</option>
+                        
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary dropdown-toggle w-100 text-start d-flex justify-content-between align-items-center" type="button" id="categoryDropdown">
+                                <span id="selectedCategory">-- Select Category --</span>
+                            </button>
+                            <div class="dropdown-menu w-100 p-2" id="categoryList">
+                                <!-- Add new category input -->
+                                <div class="px-2 pb-2 d-flex">
+                                    <input type="text" id="newCategoryInput" class="form-control" placeholder="Type to add new category">
+                                    <button type="button" id="addCategoryBtn" class="btn btn-sm btn-primary ms-2">Add</button>
+                                </div>
+                                <div class="dropdown-divider"></div>
+                                
+                                <!-- Category options -->
+                                @foreach (var category in Model.Category)
+                                {
+                                    <a class="dropdown-item d-flex justify-content-between align-items-center category-item" href="#" data-value="@category.CategoryName">
+                                        <span>@category.CategoryName</span>
+                                        <i class="fas fa-times text-danger delete-category" data-id="@category.Id"></i>
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                        
+                        <!-- Hidden select for form submission -->
+                        <select id="categorySelect" name="Category2" class="d-none">
+                            <option value="">-- Select Category --</option>
                             @foreach (var category in Model.Category)
                             {
                                 <option value="@category.CategoryName">@category.CategoryName</option>
                             }
                         </select>
-                        <small class="form-text text-muted">Select an existing category or type a new one</small>
-
-                        @* <!-- Delete Buttons for each category --> *@
-                        @* <div class="mt-2"> *@
-                        @*     <strong>Delete Existing Categories:</strong> *@
-                        @*     <ul class="list-group"> *@
-                        @*         @foreach (var category in Model.Category) *@
-                        @*         { *@
-                        @*             <li class="list-group-item d-flex justify-content-between align-items-center"> *@
-                        @*                 @category.CategoryName *@
-                        @*                 <button type="button" class="btn btn-sm btn-danger delete-category-btn" data-id="@category.Id" data-category-name2="@category.CategoryName"> *@
-                        @*                     <i class="bi bi-trash3"></i> Delete *@
-                        @*                 </button> *@
-                        @*             </li> *@
-                        @*         } *@
-                        @*     </ul> *@
-                        @* </div> *@
                         
-                        <!-- Hidden field for new category value -->
-                        <input type="hidden" asp-for="NewCategoryName" id="newCategoryInput" />
+                        <input type="hidden" asp-for="NewCategoryName" id="newCategoryHiddenInput" />
                         <span asp-validation-for="Category2" class="text-danger"></span>
                     </div>
-                    <div class="col-md-6 mb-3 d-flex gap-2">
+                    <div class="col-md-6 mb-3 d-flex flex-column flex-sm-row gap-2">
                         <div class="col-md-6">
                             <label asp-for="SKU" class="form-label">Stock Keeping Unit (SKU)</label>
                             <input asp-for="SKU" class="form-control" id="skuField" readonly />
@@ -142,69 +148,163 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
-    <!-- Add Select2 CSS and JS files -->
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+    
+    <style>
+        /* Custom dropdown styles */
+        .dropdown {
+            position: relative;
+        }
+        
+        .dropdown-menu.show {
+            display: block !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            z-index: 1000;
+            width: 100%;
+            background-color: white;
+            border: 1px solid rgba(0,0,0,.15);
+            border-radius: 0.25rem;
+        }
+        
+        .dropdown-menu {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .delete-category {
+            cursor: pointer;
+        }
+        
+        .delete-category:hover {
+            color: #dc3545 !important;
+        }
+    </style>
     
     <script>
         $(document).ready(function () {
-            // Initialize Select2 for categories with tags
-            $('.select2-with-tags').select2({
-                tags: true,
-                placeholder: "Select or type a new category",
-                allowClear: true,
-                createTag: function(params) {
-                    // Check if the term matches any existing option
-                    var term = $.trim(params.term);
-                    if (term === '') {
-                        return null;
-                    }
-                    
-                    // Check if it exists as an option already
-                    var exists = false;
-                    $('option', $('#categorySelect')).each(function() {
-                        if ($(this).val().toLowerCase() === term.toLowerCase()) {
-                            exists = true;
-                            return false; // break the loop
-                        }
-                    });
-                    
-                    // Create a new option if it doesn't exist
-                    if (!exists) {
-                        return {
-                            id: term,
-                            text: term + ' (new)',
-                            isNew: true
-                        };
-                    }
-                    
-                    return null;
-                }
-            }).on('select2:select', function(e) {
-                var selectedValue = e.params.data.id;
-                var isNewValue = e.params.data.isNew;
-                
-                if (isNewValue) {
-                    // It's a new category, set the NewCategoryName
-                    $('#newCategoryInput').val(selectedValue);
-                } else {
-                    // It's an existing category, clear NewCategoryName
-                    $('#newCategoryInput').val('');
-                }
-                
-                // Update SKU and barcode when category changes
-                generateSKUAndBarcode();
+            // Make sure dropdown works properly
+            $('#categoryDropdown').on('click', function(e) {
+                e.preventDefault();
+                $('#categoryList').toggleClass('show');
             });
-
-            // Handle category delete with confirmation
-            $(document).on('click', '.delete-category-btn', function () {
+            
+            // Close dropdown when clicking outside
+            $(document).on('click', function(e) {
+                if (!$(e.target).closest('.dropdown').length) {
+                    $('#categoryList').removeClass('show');
+                }
+            });
+            
+            // Handle category selection
+            $(document).on('click', '.category-item', function(e) {
+                // Ignore clicks on the delete button
+                if ($(e.target).hasClass('delete-category') || $(e.target).closest('.delete-category').length) {
+                    return;
+                }
+                
+                var categoryName = $(this).data('value');
+                selectCategory(categoryName);
+            });
+            
+            // Handle new category input
+            $('#newCategoryInput').on('keypress', function(e) {
+                if (e.which === 13) { // Enter key
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    addNewCategory();
+                }
+            });
+            
+            // Add button for mobile users
+            $('#addCategoryBtn').on('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                addNewCategory();
+            });
+            
+            // Handle delete category
+            $(document).on('click', '.delete-category', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
                 var id = $(this).data('id');
-                var categoryName = $(this).data('category-name2');
-
+                var name = $(this).closest('.category-item').data('value');
+                
+                deleteCategory(id, name);
+            });
+            
+            function addNewCategory() {
+                var categoryName = $('#newCategoryInput').val().trim();
+                
+                if (!categoryName) return;
+                
+                // Check if category already exists
+                var exists = false;
+                $('#categorySelect option').each(function() {
+                    if ($(this).val().toLowerCase() === categoryName.toLowerCase()) {
+                        exists = true;
+                        return false;
+                    }
+                });
+                
+                if (exists) {
+                    alert('This category already exists!');
+                    return;
+                }
+                
+                // Add to hidden select
+                $('#categorySelect').append(`<option value="${categoryName}">${categoryName}</option>`);
+                
+                // Add to dropdown list
+                var newItem = `
+                    <a class="dropdown-item d-flex justify-content-between align-items-center category-item" href="#" data-value="${categoryName}">
+                        <span>${categoryName}</span>
+                    </a>
+                `;
+                $(newItem).insertAfter('.dropdown-divider');
+                
+                // Select the new category
+                selectCategory(categoryName, true);
+                
+                // Clear input
+                $('#newCategoryInput').val('');
+                
+                // Keep dropdown open
+                $('#categoryList').addClass('show');
+            }
+            
+            function selectCategory(name, isNew = false) {
+                // Update selected text
+                $('#selectedCategory').text(name);
+                
+                // Update hidden select
+                $('#categorySelect').val(name);
+                
+                // Update new category input if needed
+                if (isNew) {
+                    $('#newCategoryHiddenInput').val(name);
+                } else {
+                    $('#newCategoryHiddenInput').val('');
+                }
+                
+                // Close dropdown
+                $('#categoryList').removeClass('show');
+                
+                // Update SKU and barcode
+                generateSKUAndBarcode();
+            }
+            
+            function deleteCategory(id, name) {
                 Swal.fire({
-                    title: 'Are you sure?',
-                    text: `You are about to delete the category: "${categoryName}"`,
+                    title: 'Delete Category?',
+                    text: `Are you sure you want to delete "${name}"?`,
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#d33',
@@ -216,20 +316,30 @@
                             url: '/Inventory1/DeleteCategory',
                             type: 'POST',
                             data: { id: parseInt(id) },
-                            success: function (response) {
+                            success: function(response) {
                                 Swal.fire('Deleted!', 'Category has been deleted.', 'success').then(() => {
-                                    location.reload(); // reload to reflect changes
+                                    // Remove from dropdown list
+                                    $(`.category-item[data-value="${name}"]`).remove();
+                                    
+                                    // Remove from hidden select
+                                    $(`#categorySelect option[value="${name}"]`).remove();
+                                    
+                                    // Reset selection if needed
+                                    if ($('#selectedCategory').text() === name) {
+                                        $('#selectedCategory').text('-- Select Category --');
+                                        $('#categorySelect').val('');
+                                    }
                                 });
                             },
-                            error: function () {
+                            error: function() {
                                 Swal.fire('Error', 'Failed to delete category.', 'error');
                             }
                         });
                     }
                 });
-            });
+            }
 
-            // Generate SKU and barcode when product name or category changes
+            // Generate SKU and barcode when product name changes
             $('#productName').on('input', function() {
                 generateSKUAndBarcode();
             });
@@ -253,7 +363,7 @@
 
         function generateSKUAndBarcode() {
             const name = $('#productName').val().trim();
-            const category = $('#categorySelect').val().trim();
+            const category = $('#categorySelect').val();
 
             if (name && category) {
                 // Generate SKU

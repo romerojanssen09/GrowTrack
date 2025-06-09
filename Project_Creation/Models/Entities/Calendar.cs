@@ -6,6 +6,8 @@
         public required string Title { get; set; }
         public required DateOnly Date { get; set; }
         public TimeOnly? Time { get; set; }
+        public DateOnly? EndDate { get; set; }
+        public TimeOnly? EndTime { get; set; }
         public required Priority Priority { get; set; }
         public string? Notes { get; set; }
         public DateTime CreatedAt { get; set; } = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Singapore"));

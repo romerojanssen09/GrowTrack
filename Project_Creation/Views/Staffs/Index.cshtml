@@ -12,9 +12,9 @@
 }
 
 <div class="staff-container">
-    <div class="d-flex align-items-center justify-content-between">
-        <h2 class="text-accent">Staff Management</h2>
-        <div class="d-block d-md-flex align-items-center gap-3">
+    <div class="d-flex align-items-center justify-content-between flex-sm-row flex-column gap-2">
+        <h2 class="text-accent">Supervisor Management</h2>
+        <div class="d-flex flex-column flex-sm-row gap-2 mb-2 align-items-center">
             <div class="staff-limit-info d-flex align-items-center">
                 <span class="badge @(limitReached ? "bg-danger" : "bg-success") p-2 me-2">
                     <i class="fas @(limitReached ? "fa-exclamation-triangle" : "fa-info-circle") me-1"></i>
@@ -27,7 +27,7 @@
             </div>
             <button type="button" class="btn btn-primary @(limitReached ? "disabled" : "")" 
                 data-bs-toggle="modal" data-bs-target="@(limitReached ? "#staffLimitModal" : "#createStaffModal")">
-                <i class="fas fa-plus me-2"></i>Add New Staff
+                <i class="fas fa-plus me-2"></i>Add New Supervisor
             </button>
         </div>
     </div>
@@ -37,7 +37,7 @@
                 <table id="staffTable" class="table table-striped table-hover table-fit">
                     <thead class="table-dark">
                         <tr>
-                            <th>Staff Name</th>
+                            <th>Supervisor Name</th>
                             <th>Email</th>
                             <th>Phone</th>
                             <th>Status</th>
@@ -120,17 +120,23 @@
                         <span class="text-danger" data-valmsg-for="StaffPhone"></span>
                     </div>
                     <div class="mb-3">
+                        <label class="form-label">Initial Password</label>
+                        <div class="input-group">
+                            <input name="Password" type="password" class="form-control" id="staffPassword" required />
+                            <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <div class="form-text">Set an initial password for the supervisor. They can change it later.</div>
+                        <span class="text-danger" data-valmsg-for="Password"></span>
+                    </div>
+                    <div class="mb-3">
                         <label class="form-label">Access Permissions</label>
                         <div class="row g-3">
                             @foreach (var accessLevel in Enum.GetValues(typeof(StaffAccessLevel)))
                             {
                                 if ((int)accessLevel > 0)
                                 {
-                                    @* if (accessLevel.ToString() == "PublishedProducts" && ViewBag.MarketplaceStatus.ToString().ToLower() == "true") *@
-                                    @* { *@
-                                    @*     continue; *@
-                                    @* } *@
-
                                     <div class="col-md-6">
                                         <div class="form-check form-switch d-flex gap-2">
                                             <input class="form-check-input access-checkbox" type="checkbox"
@@ -213,7 +219,7 @@
                 <h5 class="modal-title">Edit Staff Member</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id="editStaffForm" asp-action="Edit">
+            <form id="editStaffForm" method="post">
             @Html.AntiForgeryToken()
                 <div class="modal-body" id="editContent">
                     <!-- Content will be loaded here via AJAX -->
@@ -309,4 +315,323 @@
             50% { opacity: 0.7; }
         }
     </style>
+}
+
+@section Scripts {
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        $(document).ready(function() {
+            // Toggle password visibility
+            $('#togglePassword').click(function() {
+                const passwordField = $('#staffPassword');
+                const passwordFieldType = passwordField.attr('type');
+                const toggleIcon = $(this).find('i');
+                
+                if (passwordFieldType === 'password') {
+                    passwordField.attr('type', 'text');
+                    toggleIcon.removeClass('fa-eye').addClass('fa-eye-slash');
+                } else {
+                    passwordField.attr('type', 'password');
+                    toggleIcon.removeClass('fa-eye-slash').addClass('fa-eye');
+                }
+            });
+            
+            // Toggle edit password visibility
+            $('#toggleEditPassword').click(function() {
+                const passwordField = $('#editStaffPassword');
+                const passwordFieldType = passwordField.attr('type');
+                const toggleIcon = $(this).find('i');
+                
+                if (passwordFieldType === 'password') {
+                    passwordField.attr('type', 'text');
+                    toggleIcon.removeClass('fa-eye').addClass('fa-eye-slash');
+                } else {
+                    passwordField.attr('type', 'password');
+                    toggleIcon.removeClass('fa-eye-slash').addClass('fa-eye');
+                }
+            });
+            
+            // Handle staff creation form submission
+            $('#createStaffForm').on('submit', function(e) {
+                e.preventDefault();
+                
+                // Show loading state
+                $('#createSubmitBtn').prop('disabled', true);
+                $('#createSubmitText').addClass('d-none');
+                $('#createSpinner').removeClass('d-none');
+                
+                // Get form data
+                const staffData = {
+                    StaffName: $('input[name="StaffName"]').val(),
+                    StaffSEmail: $('input[name="StaffSEmail"]').val(),
+                    StaffPhone: $('input[name="StaffPhone"]').val(),
+                    Password: $('input[name="Password"]').val(),
+                    StaffAccessLevel: 0,
+                    Role: 'Staff'
+                };
+                
+                // Calculate access level from checkboxes
+                $('input[name="StaffAccessLevel"]:checked').each(function() {
+                    staffData.StaffAccessLevel += parseInt($(this).val());
+                });
+                
+                // Send AJAX request
+                $.ajax({
+                    url: '@Url.Action("Create", "Staffs")',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(staffData),
+                    success: function(response) {
+                        // Reset form and close modal
+                        $('#createStaffForm')[0].reset();
+                        $('#createStaffModal').modal('hide');
+                        
+                        // Show success message
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            text: 'Supervisor account created successfully!'
+                        }).then(() => {
+                            // Reload the page to show the new staff member
+                            location.reload();
+                        });
+                    },
+                    error: function(xhr) {
+                        // Show error message
+                        let errorMessage = 'An error occurred while creating the supervisor account.';
+                        
+                        if (xhr.responseJSON) {
+                            if (xhr.responseJSON.message) {
+                                errorMessage = xhr.responseJSON.message;
+                            } else {
+                                // Handle validation errors
+                                const errors = [];
+                                for (const key in xhr.responseJSON) {
+                                    if (xhr.responseJSON.hasOwnProperty(key)) {
+                                        errors.push(xhr.responseJSON[key]);
+                                    }
+                                }
+                                if (errors.length > 0) {
+                                    errorMessage = errors.join('<br>');
+                                }
+                            }
+                        }
+                        
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            html: errorMessage
+                        });
+                    },
+                    complete: function() {
+                        // Reset button state
+                        $('#createSubmitBtn').prop('disabled', false);
+                        $('#createSubmitText').removeClass('d-none');
+                        $('#createSpinner').addClass('d-none');
+                    }
+                });
+            });
+            
+            // Handle details button click
+            $('.details-btn').on('click', function() {
+                const staffId = $(this).data('id');
+                
+                $.ajax({
+                    url: '/Staffs/Details/' + staffId,
+                    type: 'GET',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    success: function(data) {
+                        $('#detailsContent').html(data);
+                        $('#detailsModal').modal('show');
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Details request error:', error);
+                        console.error('Status:', status);
+                        console.error('Response:', xhr.responseText);
+                        
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Failed to load staff details'
+                        });
+                    }
+                });
+            });
+            
+            // Handle edit button click
+            $('.edit-btn').on('click', function() {
+                const staffId = $(this).data('id');
+                
+                $.ajax({
+                    url: '/Staffs/Edit/' + staffId,
+                    type: 'GET',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    success: function(data) {
+                        $('#editContent').html(data);
+                        $('#editModal').modal('show');
+                        
+                        // Initialize toggle password button for edit form
+                        $('#toggleEditPassword').on('click', function() {
+                            const passwordField = $('#editStaffPassword');
+                            const passwordFieldType = passwordField.attr('type');
+                            const toggleIcon = $(this).find('i');
+                            
+                            if (passwordFieldType === 'password') {
+                                passwordField.attr('type', 'text');
+                                toggleIcon.removeClass('fa-eye').addClass('fa-eye-slash');
+                            } else {
+                                passwordField.attr('type', 'password');
+                                toggleIcon.removeClass('fa-eye-slash').addClass('fa-eye');
+                            }
+                        });
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Edit request error:', error);
+                        console.error('Status:', status);
+                        console.error('Response:', xhr.responseText);
+                        
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Failed to load staff edit form'
+                        });
+                    }
+                });
+            });
+            
+            // Handle edit form submission
+            $('#editStaffForm').on('submit', function(e) {
+                e.preventDefault();
+                
+                // Show loading state
+                $('#editSubmitBtn').prop('disabled', true);
+                $('#editSubmitText').addClass('d-none');
+                $('#editSpinner').removeClass('d-none');
+                
+                // Calculate access level from checkboxes
+                let accessLevel = 0;
+                $('#editContent .access-checkbox:checked').each(function() {
+                    accessLevel += parseInt($(this).val());
+                });
+                
+                // Set the hidden input value
+                $('#StaffAccessLevel').val(accessLevel);
+                
+                // Get form data
+                const formData = new FormData(this);
+                
+                // Get staff ID from the form data or hidden field
+                const staffId = $('#editContent input[type="hidden"][name="Id"]').val();
+                
+                // Send AJAX request
+                $.ajax({
+                    url: '/Staffs/Edit/' + staffId,
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function() {
+                        // Close modal
+                        $('#editModal').modal('hide');
+                        
+                        // Show success message
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            text: 'Supervisor account updated successfully!'
+                        }).then(() => {
+                            // Reload the page to show the updated staff member
+                            location.reload();
+                        });
+                    },
+                    error: function(xhr, status, error) {
+                        // Log error details
+                        console.error('Edit submission error:', error);
+                        console.error('Status:', status);
+                        console.error('Response:', xhr.responseText);
+                        
+                        // Show error message
+                        let errorMessage = 'An error occurred while updating the supervisor account.';
+                        
+                        if (xhr.responseJSON) {
+                            const errors = [];
+                            for (const key in xhr.responseJSON) {
+                                if (xhr.responseJSON.hasOwnProperty(key)) {
+                                    errors.push(xhr.responseJSON[key]);
+                                }
+                            }
+                            if (errors.length > 0) {
+                                errorMessage = errors.join('<br>');
+                            }
+                        }
+                        
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            html: errorMessage
+                        });
+                    },
+                    complete: function() {
+                        // Reset button state
+                        $('#editSubmitBtn').prop('disabled', false);
+                        $('#editSubmitText').removeClass('d-none');
+                        $('#editSpinner').addClass('d-none');
+                    }
+                });
+            });
+            
+            // Handle delete button click
+            $('.delete-btn').on('click', function() {
+                const staffId = $(this).data('id');
+                const staffRow = $(this).closest('tr');
+                
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "This will permanently delete this supervisor account. This action cannot be undone.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#dc3545',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: '/Staffs/Delete/' + staffId,
+                            type: 'POST',
+                            success: function() {
+                                // Remove the row from the table
+                                staffRow.fadeOut(400, function() {
+                                    $(this).remove();
+                                });
+                                
+                                // Show success message
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Deleted!',
+                                    text: 'The supervisor account has been deleted.',
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                });
+                            },
+                            error: function(xhr, status, error) {
+                                console.error('Delete request error:', error);
+                                console.error('Status:', status);
+                                console.error('Response:', xhr.responseText);
+                                
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: 'Failed to delete the supervisor account'
+                                });
+                            }
+                        });
+                    }
+                });
+            });
+        });
+    </script>
 }

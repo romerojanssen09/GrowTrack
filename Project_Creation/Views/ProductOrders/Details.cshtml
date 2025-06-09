@@ -100,6 +100,37 @@
                             <p class="mb-0">@Model.Message</p>
                         </div>
                     }
+                    
+                    <!-- Order Status Badge -->
+                    <div class="mt-4 pt-3 border-top">
+                        <h6 class="mb-3">Order Status:</h6>
+                        <div class="d-flex flex-wrap gap-2">
+                            <div class="status-badge @(Model.Status == ProductOrderStatus.Pending ? "active" : "")">
+                                <span class="badge bg-secondary">Pending</span>
+                            </div>
+                            <div class="status-badge @(Model.Status == ProductOrderStatus.Accepted ? "active" : "")">
+                                <span class="badge bg-info">Accepted</span>
+                            </div>
+                            <div class="status-badge @(Model.Status == ProductOrderStatus.Preparing ? "active" : "")">
+                                <span class="badge bg-primary">Preparing</span>
+                            </div>
+                            <div class="status-badge @(Model.Status == ProductOrderStatus.Shipping ? "active" : "")">
+                                <span class="badge bg-warning">Shipping</span>
+                            </div>
+                            <div class="status-badge @(Model.Status == ProductOrderStatus.Delivered ? "active" : "")">
+                                <span class="badge bg-success">Delivered</span>
+                            </div>
+                            <div class="status-badge @(Model.Status == ProductOrderStatus.Received ? "active" : "")">
+                                <span class="badge bg-teal">Received</span>
+                            </div>
+                            <div class="status-badge @(Model.Status == ProductOrderStatus.Cancelled ? "active" : "")">
+                                <span class="badge bg-danger">Cancelled</span>
+                            </div>
+                            <div class="status-badge @(Model.Status == ProductOrderStatus.Rejected ? "active" : "")">
+                                <span class="badge bg-danger">Rejected</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="card-footer">
@@ -445,5 +476,33 @@
     .timeline-content p {
         margin-bottom: 0;
         font-size: 0.85rem;
+    }
+    
+    /* Status badge styling */
+    .status-badge {
+        position: relative;
+        padding: 0.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .status-badge.active {
+        transform: scale(1.1);
+    }
+    
+    .status-badge.active::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background-color: #304251;
+    }
+    
+    .bg-teal {
+        background-color: #20c997 !important;
+        color: white;
     }
 </style> 

@@ -100,7 +100,7 @@
 						</div>
 
 						<!-- Change Password Form -->
-						<form id="settingsForm" method="post">
+						<form id="settingsForm" method="post" asp-action="ChangePassword" asp-controller="Profile">
 							@Html.AntiForgeryToken()
 							<div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 

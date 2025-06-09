@@ -281,7 +281,7 @@ namespace Project_Creation.Controllers
                 int currentBOId = GetCurrentBusinessOwnerId();
 
                 // Filter products by business owner ID
-                var products = _context.Products2.Where(p => p.BOId == currentBOId).ToList();
+                var products = _context.Products2.Where(p => p.BOId == currentBOId && p.IsDeleted == false).ToList();
 
                 // Create select list for the products dropdown
                 ViewData["Products"] = new SelectList(products, "Id", "ProductName");
@@ -453,7 +453,7 @@ namespace Project_Creation.Controllers
                 int currentBOId = GetCurrentBusinessOwnerId();
 
                 // Filter products by business owner ID
-                var products = await _context.Products2.Where(p => p.BOId == currentBOId).ToListAsync();
+                var products = await _context.Products2.Where(p => p.BOId == currentBOId && p.IsDeleted == false).ToListAsync();
 
                 // Parse interested product IDs from comma-separated string
                 if (!string.IsNullOrEmpty(leads.InterestedProductIds))

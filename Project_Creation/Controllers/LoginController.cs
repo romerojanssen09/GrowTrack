@@ -38,10 +38,23 @@ namespace Project_Creation.Controllers
             return View();
         }
 
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult AdminLogin(string returnUrl = null)
+        {
+            if (User.Identity?.IsAuthenticated == true && User.IsInRole("Admin"))
+            {
+                return RedirectToAction("Index", "Admin");
+            }
+
+            ViewData["ReturnUrl"] = returnUrl;
+            return View();
+        }
+
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(LoginDto model, string returnUrl = null)
+        public async Task<IActionResult> AdminLogin(LoginDto model, string returnUrl = null)
         {
             ViewData["ReturnUrl"] = returnUrl;
 
@@ -52,13 +65,9 @@ namespace Project_Creation.Controllers
 
             try
             {
-                _logger.LogInformation("Starting login process for {Email}", model.Email);
+                _logger.LogInformation("Starting admin login process for {Email}", model.Email);
                 
-                var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == model.Email);
                 var admin = await _context.Admin.FirstOrDefaultAsync(a => a.Email == model.Email);
-                var staff = await _context.Staffs.FirstOrDefaultAsync(s => s.StaffSEmail == model.Email);
-
-                _logger.LogInformation("Login attempt for {Email}", model.Email);
 
                 if (admin != null && BCrypt.Net.BCrypt.Verify(model.Password, admin.Password))
                 {
@@ -76,7 +85,48 @@ namespace Project_Creation.Controllers
                     await TrackUserDevice(admin.Id, HttpContext);
                     return RedirectToAction("Index", "Admin");
                 }
-                else if (user != null && BCrypt.Net.BCrypt.Verify(model.Password, user.Password))
+
+                _logger.LogWarning("Failed admin login attempt for email: {Email}", model.Email);
+                ModelState.AddModelError(string.Empty, "Invalid admin email or password");
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Admin login error for email {Email}: {ErrorMessage}", model.Email, ex.Message);
+                
+                // Add more detailed exception logging for hosted environment
+                if (ex.InnerException != null)
+                {
+                    _logger.LogError("Inner exception: {Message}", ex.InnerException.Message);
+                }
+                
+                ModelState.AddModelError(string.Empty, "An error occurred during login");
+                return View(model);
+            }
+        }
+
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Login(LoginDto model, string returnUrl = null)
+        {
+            ViewData["ReturnUrl"] = returnUrl;
+
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            try
+            {
+                _logger.LogInformation("Starting login process for {Email}", model.Email);
+                
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == model.Email);
+                var staff = await _context.Staffs.FirstOrDefaultAsync(s => s.StaffSEmail == model.Email);
+
+                _logger.LogInformation("Login attempt for {Email}", model.Email);
+
+                if (user != null && BCrypt.Net.BCrypt.Verify(model.Password, user.Password))
                 {
                     _logger.LogInformation("User credentials verified for {Email}", model.Email);
                     
@@ -550,6 +600,14 @@ namespace Project_Creation.Controllers
                     ? RedirectToAction("Index", "Admin") 
                     : RedirectToAction("Dashboard", "Pages");
             }
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult AccessDenied()
+        {
+            _logger.LogWarning("Access denied to user {User}", User.Identity?.Name ?? "unknown");
+            return View();
         }
 
         private async Task TrackUserDevice(int userId, HttpContext httpContext)

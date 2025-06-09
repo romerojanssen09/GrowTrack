@@ -8,13 +8,15 @@
     <div class="card shadow-sm mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h4 class="mb-0 text-accent">Create Email Template</h4>
+            <div>
             <a asp-action="Templates" class="btn btn-outline-secondary">
                 <i class="fas fa-arrow-left me-1"></i> Back to Templates
             </a>
+            </div>
         </div>
         
         <div class="card-body">
-            <form asp-action="CreateTemplate" id="templateForm" method="post">
+            <form asp-action="CreateTemplate" id="templateForm" method="post" enctype="multipart/form-data">
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                 @Html.AntiForgeryToken()
                 
@@ -29,55 +31,105 @@
                     <label asp-for="Subject" class="form-label">Email Subject</label>
                     <div class="input-group">
                         <input asp-for="Subject" class="form-control" required />
-                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-tags"></i> Insert Placeholder
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item placeholder-item" data-placeholder="{{LeadName}}"><i class="fas fa-user me-2"></i> Lead Name</a></li>
-                            <li><a class="dropdown-item placeholder-item" data-placeholder="{{BusinessName}}"><i class="fas fa-building me-2"></i> Your Business Name</a></li>
-                        </ul>
                     </div>
                     <span asp-validation-for="Subject" class="text-danger"></span>
                 </div>
                 
-                <div class="mb-3">
-                    <label asp-for="Content" class="form-label">Email Content</label>
-                    <div class="d-flex align-items-center mb-2">
-                        <span class="me-2">Insert placeholder:</span>
-                        <div class="btn-group">
-                            <button type="button" class="btn btn-sm btn-outline-primary placeholder-btn" data-placeholder="{{LeadName}}" data-bs-toggle="tooltip" title="Insert Lead's Full Name">
-                                <i class="fas fa-user me-1"></i> Name
-                            </button>
-                            <button type="button" class="btn btn-sm btn-outline-primary placeholder-btn" data-placeholder="{{LeadEmail}}" data-bs-toggle="tooltip" title="Insert Lead's Email">
-                                <i class="fas fa-envelope me-1"></i> Email
-                            </button>
-                            <button type="button" class="btn btn-sm btn-outline-primary placeholder-btn" data-placeholder="{{LeadPhone}}" data-bs-toggle="tooltip" title="Insert Lead's Phone Number">
-                                <i class="fas fa-phone me-1"></i> Phone
-                            </button>
-                            <button type="button" class="btn btn-sm btn-outline-primary placeholder-btn" data-placeholder="{{BusinessName}}" data-bs-toggle="tooltip" title="Insert Your Business Name">
-                                <i class="fas fa-building me-1"></i> Business
-                            </button>
-                            <button type="button" class="btn btn-sm btn-outline-primary placeholder-btn" data-placeholder="{{LastPurchaseDate}}" data-bs-toggle="tooltip" title="Insert Lead's Last Purchase Date">
-                                <i class="fas fa-calendar me-1"></i> Last Purchase
-                            </button>
+                <!-- Template Variables Panel -->
+                <div class="card mb-3">
+                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 text-primary">
+                            <i class="fas fa-tags me-2"></i> Template Variables
+                        </h5>
+                        <span class="text-muted small">Drag and drop into your template</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex flex-wrap gap-2">
+                            <div class="template-variable badge bg-primary p-2 mb-2" draggable="true" data-variable="{{LeadName}}">
+                                <i class="fas fa-user me-1"></i> Lead Name
+                                <i class="fas fa-arrows-alt ms-1 drag-handle"></i>
+                            </div>
+                            <div class="template-variable badge bg-primary p-2 mb-2" draggable="true" data-variable="{{LeadEmail}}">
+                                <i class="fas fa-envelope me-1"></i> Lead Email
+                                <i class="fas fa-arrows-alt ms-1 drag-handle"></i>
+                            </div>
+                            <div class="template-variable badge bg-primary p-2 mb-2" draggable="true" data-variable="{{LeadPhone}}">
+                                <i class="fas fa-phone me-1"></i> Lead Phone
+                                <i class="fas fa-arrows-alt ms-1 drag-handle"></i>
+                            </div>
+                            <div class="template-variable badge bg-primary p-2 mb-2" draggable="true" data-variable="{{BusinessName}}">
+                                <i class="fas fa-building me-1"></i> Business Name
+                                <i class="fas fa-arrows-alt ms-1 drag-handle"></i>
+                            </div>
+                            <div class="template-variable badge bg-primary p-2 mb-2" draggable="true" data-variable="{{CurrentDate}}">
+                                <i class="fas fa-calendar me-1"></i> Current Date
+                                <i class="fas fa-arrows-alt ms-1 drag-handle"></i>
+                            </div>
+                        </div>
                         </div>
                     </div>
                     
-                    <!-- Product placeholders -->
-                    <div class="d-flex align-items-center mb-2">
-                        <span class="me-2">Product placeholders:</span>
-                        <div class="btn-group" id="productPlaceholders">
-                            <button type="button" class="btn btn-sm btn-outline-success" id="loadProductsBtn">
-                                <i class="fas fa-box me-1"></i> Load Products
-                            </button>
-                            <!-- Product buttons will be added here dynamically -->
+                <!-- Common Elements Panel -->
+                <div class="card mb-3">
+                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 text-success">
+                            <i class="fas fa-puzzle-piece me-2"></i> Common Elements
+                        </h5>
+                        <span class="text-muted small">Drag and drop into your template</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex flex-wrap gap-2">
+                            <div class="template-element badge bg-success p-2 mb-2" draggable="true" data-element="button">
+                                <i class="fas fa-mouse-pointer me-1"></i> Button
+                                <i class="fas fa-arrows-alt ms-1 drag-handle"></i>
+                            </div>
+                            <div class="template-element badge bg-success p-2 mb-2" draggable="true" data-element="heading">
+                                <i class="fas fa-heading me-1"></i> Heading
+                                <i class="fas fa-arrows-alt ms-1 drag-handle"></i>
+                            </div>
+                            <div class="template-element badge bg-success p-2 mb-2" draggable="true" data-element="paragraph">
+                                <i class="fas fa-paragraph me-1"></i> Paragraph
+                                <i class="fas fa-arrows-alt ms-1 drag-handle"></i>
+                            </div>
+                            <div class="template-element badge bg-success p-2 mb-2" draggable="true" data-element="divider">
+                                <i class="fas fa-minus me-1"></i> Divider
+                                <i class="fas fa-arrows-alt ms-1 drag-handle"></i>
+                            </div>
+                            <div class="template-element badge bg-success p-2 mb-2" draggable="true" data-element="spacer">
+                                <i class="fas fa-arrows-alt-v me-1"></i> Spacer
+                                <i class="fas fa-arrows-alt ms-1 drag-handle"></i>
+                            </div>
+                            <div class="template-element badge bg-success p-2 mb-2" draggable="true" data-element="social">
+                                <i class="fas fa-share-alt me-1"></i> Social Links
+                                <i class="fas fa-arrows-alt ms-1 drag-handle"></i>
+                            </div>
+                            <div class="template-element badge bg-success p-2 mb-2" draggable="true" data-element="link">
+                                <i class="fas fa-link me-1"></i> Link
+                                <i class="fas fa-arrows-alt ms-1 drag-handle"></i>
+                            </div>
+                            <div class="template-element badge bg-success p-2 mb-2" draggable="true" data-element="image">
+                                <i class="fas fa-image me-1"></i> Image
+                                <i class="fas fa-arrows-alt ms-1 drag-handle"></i>
+                            </div>
+                        </div>
                         </div>
                     </div>
                     
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="templateContent" class="form-label">Edit Template</label>
                     <textarea asp-for="Content" id="templateContent" class="form-control" rows="12" required></textarea>
-                    <span asp-validation-for="Content" class="text-danger"></span>
-                    <div class="form-text">
-                        <i class="fas fa-info-circle me-1"></i> You can use HTML tags to format your email and insert placeholders for dynamic content.
+                            <div class="invalid-feedback">
+                                Please provide template content.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">Live Preview</label>
+                            <div id="livePreview" class="border p-3 bg-white" style="height: 287px; overflow: auto;"></div>
+                        </div>
                     </div>
                 </div>
                 
@@ -101,45 +153,312 @@
                 </div>
                 <p class="mt-2">Saving template...</p>
             </div>
+            </div>
         </div>
     </div>
     
-    <!-- Template Help Card -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-header">
-            <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i> Template Tips</h5>
+<!-- Template Preview Modal -->
+<div class="modal fade" id="previewModal" tabindex="-1" aria-labelledby="previewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="previewModalLabel">Template Preview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-6">
-                    <h6>HTML Formatting Examples:</h6>
-                    <ul class="list-unstyled">
-                        <li><code>&lt;strong&gt;Bold text&lt;/strong&gt;</code> - <strong>Bold text</strong></li>
-                        <li><code>&lt;em&gt;Italic text&lt;/em&gt;</code> - <em>Italic text</em></li>
-                        <li><code>&lt;u&gt;Underlined text&lt;/u&gt;</code> - <u>Underlined text</u></li>
-                        <li><code>&lt;h3&gt;Heading&lt;/h3&gt;</code> - <h5 class="d-inline">Heading</h5></li>
-                        <li><code>&lt;a href="..."&gt;Link text&lt;/a&gt;</code> - <a href="#">Link text</a></li>
-                        <li><code>&lt;ul&gt;&lt;li&gt;List item&lt;/li&gt;&lt;/ul&gt;</code> - Bulleted list</li>
-                    </ul>
-                </div>
-                <div class="col-md-6">
-                    <h6>Using Dynamic Placeholders:</h6>
-                    <ul>
-                        <li><code>{{LeadName}}</code> - Will be replaced with the lead's full name</li>
-                        <li><code>{{LeadEmail}}</code> - Will be replaced with the lead's email address</li>
-                        <li><code>{{LeadPhone}}</code> - Will be replaced with the lead's phone number</li>
-                        <li><code>{{BusinessName}}</code> - Will be replaced with your business name</li>
-                        <li><code>{{LastPurchaseDate}}</code> - Will be replaced with the lead's last purchase date</li>
-                        <li><code>{{Product:ID}}</code> - Will be replaced with product details (replace ID with product ID)</li>
-                    </ul>
-                    <div class="alert alert-info mt-2">
-                        <i class="fas fa-info-circle me-2"></i> Example: "Hello <strong>{{LeadName}}</strong>, thank you for your interest in <strong>{{BusinessName}}</strong>!"
+            <div class="modal-body">
+                <div class="mb-3 text-center">
+                    <div class="btn-group" role="group" aria-label="Preview size options">
+                        <button type="button" class="btn btn-outline-primary preview-size-btn" data-size="desktop">
+                            <i class="fas fa-desktop me-1"></i> Desktop
+                        </button>
+                        <button type="button" class="btn btn-outline-primary preview-size-btn" data-size="tablet">
+                            <i class="fas fa-tablet-alt me-1"></i> Tablet
+                        </button>
+                        <button type="button" class="btn btn-outline-primary preview-size-btn" data-size="mobile">
+                            <i class="fas fa-mobile-alt me-1"></i> Mobile
+                        </button>
                     </div>
                 </div>
+                <div id="previewFrame" class="bg-white p-3">
+                    <div id="previewContent"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Element Input Modals -->
+<!-- Heading Modal -->
+<div class="modal fade" id="headingModal" tabindex="-1" aria-labelledby="headingModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="headingModalLabel">Add Heading</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="headingText" class="form-label">Heading Text</label>
+                    <input type="text" class="form-control" id="headingText" placeholder="Enter your heading">
+                </div>
+                <div class="mb-3">
+                    <label for="headingSize" class="form-label">Size</label>
+                    <select class="form-select" id="headingSize">
+                        <option value="h1">Large (H1)</option>
+                        <option value="h2" selected>Medium (H2)</option>
+                        <option value="h3">Small (H3)</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="headingColor" class="form-label">Color</label>
+                    <input type="color" class="form-control form-control-color" id="headingColor" value="#333333">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="insertHeadingBtn">Insert Heading</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Link Modal -->
+<div class="modal fade" id="linkModal" tabindex="-1" aria-labelledby="linkModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="linkModalLabel">Add Link</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="linkText" class="form-label">Link Text</label>
+                    <input type="text" class="form-control" id="linkText" placeholder="Click Here">
+                </div>
+                <div class="mb-3">
+                    <label for="linkUrl" class="form-label">Link URL</label>
+                    <input type="url" class="form-control" id="linkUrl" placeholder="https://example.com">
+                </div>
+                <div class="mb-3">
+                    <label for="linkColor" class="form-label">Link Color</label>
+                    <input type="color" class="form-control form-control-color" id="linkColor" value="#4e73df">
+                </div>
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="linkNewTab">
+                        <label class="form-check-label" for="linkNewTab">
+                            Open in new tab
+                        </label>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="linkUnderline" checked>
+                        <label class="form-check-label" for="linkUnderline">
+                            Underline link
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="insertLinkBtn">Insert Link</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Paragraph Modal -->
+<div class="modal fade" id="paragraphModal" tabindex="-1" aria-labelledby="paragraphModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="paragraphModalLabel">Add Paragraph</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="paragraphText" class="form-label">Paragraph Text</label>
+                    <textarea class="form-control" id="paragraphText" rows="4" placeholder="Enter your paragraph text"></textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="paragraphColor" class="form-label">Text Color</label>
+                    <input type="color" class="form-control form-control-color" id="paragraphColor" value="#333333">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="insertParagraphBtn">Insert Paragraph</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Button Modal -->
+<div class="modal fade" id="buttonModal" tabindex="-1" aria-labelledby="buttonModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="buttonModalLabel">Add Button</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="buttonText" class="form-label">Button Text</label>
+                    <input type="text" class="form-control" id="buttonText" placeholder="Click Here">
+                </div>
+                <div class="mb-3">
+                    <label for="buttonUrl" class="form-label">Button URL</label>
+                    <input type="url" class="form-control" id="buttonUrl" placeholder="https://example.com">
+                </div>
+                <div class="mb-3">
+                    <label for="buttonColor" class="form-label">Button Color</label>
+                    <input type="color" class="form-control form-control-color" id="buttonColor" value="#4e73df">
+                </div>
+                <div class="mb-3">
+                    <label for="buttonBgColor" class="form-label">Button Background Color</label>
+                    <input type="color" class="form-control form-control-color" id="buttonBgColor" value="#ffffff">
+                </div>
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="buttonNewTab">
+                        <label class="form-check-label" for="buttonNewTab">
+                            Open in new tab
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="insertButtonBtn">Insert Button</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Social Links Modal -->
+<div class="modal fade" id="socialModal" tabindex="-1" aria-labelledby="socialModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="socialModalLabel">Add Social Links</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Select Social Media Platforms</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="socialFacebook" checked>
+                        <label class="form-check-label" for="socialFacebook">
+                            <img src="https://cdn4.iconfinder.com/data/icons/social-media-logos-6/512/83-facebook-512.png" alt="Facebook" width="16" height="16" style="vertical-align: middle; margin-right: 5px;"> Facebook
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="socialTwitter" checked>
+                        <label class="form-check-label" for="socialTwitter">
+                            <img src="https://cdn4.iconfinder.com/data/icons/social-media-logos-6/512/36-twitter_social-512.png" alt="Twitter" width="16" height="16" style="vertical-align: middle; margin-right: 5px;"> Twitter
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="socialLinkedin" checked>
+                        <label class="form-check-label" for="socialLinkedin">
+                            <img src="https://cdn4.iconfinder.com/data/icons/social-media-logos-6/512/56-linkedin-512.png" alt="LinkedIn" width="16" height="16" style="vertical-align: middle; margin-right: 5px;"> LinkedIn
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="socialInstagram" checked>
+                        <label class="form-check-label" for="socialInstagram">
+                            <img src="https://cdn4.iconfinder.com/data/icons/social-media-logos-6/512/64-instagram-512.png" alt="Instagram" width="16" height="16" style="vertical-align: middle; margin-right: 5px;"> Instagram
+                        </label>
+                    </div>
+                </div>
+                <div class="mb-3" id="facebookUrlGroup">
+                    <label for="facebookUrl" class="form-label">Facebook URL</label>
+                    <input type="url" class="form-control" id="facebookUrl" placeholder="https://facebook.com/yourbusiness">
+                </div>
+                <div class="mb-3" id="twitterUrlGroup">
+                    <label for="twitterUrl" class="form-label">Twitter URL</label>
+                    <input type="url" class="form-control" id="twitterUrl" placeholder="https://twitter.com/yourbusiness">
+                </div>
+                <div class="mb-3" id="linkedinUrlGroup">
+                    <label for="linkedinUrl" class="form-label">LinkedIn URL</label>
+                    <input type="url" class="form-control" id="linkedinUrl" placeholder="https://linkedin.com/company/yourbusiness">
+                </div>
+                <div class="mb-3" id="instagramUrlGroup">
+                    <label for="instagramUrl" class="form-label">Instagram URL</label>
+                    <input type="url" class="form-control" id="instagramUrl" placeholder="https://instagram.com/yourbusiness">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="insertSocialBtn">Insert Social Links</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Image Modal -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="imageModalLabel">Add Image</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="imageUploadModal" class="form-label">Upload Image</label>
+                    <input type="file" class="form-control" id="imageUploadModal" accept="image/*">
+                    <div class="form-text">Max file size: 2MB</div>
+                </div>
+                <div class="mb-3">
+                    <label for="imageUrl" class="form-label">Or Enter Image URL</label>
+                    <input type="url" class="form-control" id="imageUrl" placeholder="https://example.com/image.jpg">
+                </div>
+                <div class="mb-3">
+                    <label for="imageAltText" class="form-label">Alt Text (for accessibility)</label>
+                    <input type="text" class="form-control" id="imageAltText" placeholder="Describe the image">
+                </div>
+                <div class="mb-3">
+                    <label for="imageWidth" class="form-label">Width</label>
+                    <select class="form-select" id="imageWidth">
+                        <option value="100%">Full width (100%)</option>
+                        <option value="75%">Large (75%)</option>
+                        <option value="50%">Medium (50%)</option>
+                        <option value="25%">Small (25%)</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="imageAlignment" class="form-label">Alignment</label>
+                    <select class="form-select" id="imageAlignment">
+                        <option value="center">Center</option>
+                        <option value="left">Left</option>
+                        <option value="right">Right</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <div class="image-preview-container border p-2 text-center" style="height: 200px; background-color: #f8f9fa; display: flex; align-items: center; justify-content: center;">
+                        <img id="imagePreviewModal" src="" alt="Preview" style="max-width: 100%; max-height: 180px; display: none; object-fit: contain;">
+                        <div id="imagePreviewPlaceholder" class="text-muted">
+                            <i class="fas fa-image fa-3x mb-2"></i>
+                            <p>Image preview will appear here</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="insertImageBtn">Insert Image</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Container for Notifications -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1050;"></div>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
@@ -159,168 +478,851 @@
                 console.log('Form submitted');
                 
                 // Show loading indicator
-                $('#saveTemplateBtn').prop('disabled', true);
-                $('#loadingIndicator').show();
+                $('#saveTemplateBtn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> Saving...');
                 
-                // Get form data
-                const formData = $(this).serialize();
-                console.log('Form data:', formData);
+                // Submit the form
+                this.submit();
+            });
+            
+            // Make template variables draggable
+            $('.template-variable').each(function() {
+                $(this).prop('draggable', true);
                 
-                // Submit form via AJAX
-                $.ajax({
-                    url: '@Url.Action("CreateTemplate")',
-                    type: 'POST',
-                    data: formData,
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    success: function(response) {
-                        console.log('AJAX success response:', response);
-                        console.log('Full response object:', JSON.stringify(response));
-                        
-                        if (response && response.success) {
-                            // Show success message
-                            alert('Template saved successfully!');
-                            
-                            // Always redirect to Templates page after successful save
-                            window.location.href = response.redirectUrl || '@Url.Action("Templates")';
-                        } else {
-                            // Hide loading indicator
-                            $('#saveTemplateBtn').prop('disabled', false);
-                            $('#loadingIndicator').hide();
-                            
-                            // Display any errors
-                            if (response && response.errors && response.errors.length > 0) {
-                                alert('Error: ' + response.errors.join('\n'));
-                            } else {
-                                alert('An unknown error occurred while saving the template.');
-                            }
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        // Hide loading indicator
-                        $('#saveTemplateBtn').prop('disabled', false);
-                        $('#loadingIndicator').hide();
-                        
-                        console.log('AJAX error:', status, error);
-                        console.log('Response text:', xhr.responseText);
-                        
-                        // Try to parse response to get validation errors
-                        try {
-                            const response = JSON.parse(xhr.responseText);
-                            console.log('Parsed error response:', response);
-                            
-                            if (response && response.errors && response.errors.length > 0) {
-                                // Display validation errors
-                                alert('Please fix the following errors:\n\n' + response.errors.join('\n'));
-                            } else {
-                                // Show generic error message
-                                alert('Error saving template: ' + error);
-                            }
-                        } catch (e) {
-                            console.log('Error parsing response:', e);
-                            // Show generic error message
-                            alert('Error saving template: ' + error);
-                        }
-                    },
-                    complete: function() {
-                        console.log('AJAX request completed');
-                    }
+                $(this).on('dragstart', function(e) {
+                    e.originalEvent.dataTransfer.setData('text/plain', $(this).data('variable'));
+                    $(this).addClass('dragging');
+                });
+                
+                $(this).on('dragend', function() {
+                    $(this).removeClass('dragging');
+                });
+                
+                // Click to insert
+                $(this).on('click', function() {
+                    insertAtCursor($('#templateContent')[0], $(this).data('variable'));
+                    showToast($(this).text() + ' inserted');
+                    updateLivePreview();
                 });
             });
             
-            // Insert placeholder into content
-            $('.placeholder-btn').click(function() {
-                const placeholder = $(this).data('placeholder');
-                const textarea = $('#templateContent');
-                const cursorPos = textarea.prop('selectionStart');
-                const textBefore = textarea.val().substring(0, cursorPos);
-                const textAfter = textarea.val().substring(cursorPos);
+            // Make template elements draggable
+            $('.template-element').each(function() {
+                $(this).prop('draggable', true);
                 
-                textarea.val(textBefore + placeholder + textAfter);
+                $(this).on('dragstart', function(e) {
+                    e.originalEvent.dataTransfer.setData('text/html', $(this).data('element'));
+                    $(this).addClass('dragging');
+                });
                 
-                // Set focus back to textarea and place cursor after inserted placeholder
-                const newCursorPos = cursorPos + placeholder.length;
-                textarea.focus();
-                textarea[0].setSelectionRange(newCursorPos, newCursorPos);
-            });
-            
-            // Insert placeholder into subject
-            $('.placeholder-item').click(function() {
-                const placeholder = $(this).data('placeholder');
-                const input = $('#Subject');
-                const cursorPos = input.prop('selectionStart');
-                const textBefore = input.val().substring(0, cursorPos);
-                const textAfter = input.val().substring(cursorPos);
+                $(this).on('dragend', function() {
+                    $(this).removeClass('dragging');
+                });
                 
-                input.val(textBefore + placeholder + textAfter);
-                
-                // Set focus back to input and place cursor after inserted placeholder
-                const newCursorPos = cursorPos + placeholder.length;
-                input.focus();
-                input[0].setSelectionRange(newCursorPos, newCursorPos);
-            });
-            
-            // Load products button click
-            $('#loadProductsBtn').click(function() {
-                // Show loading state
-                $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> Loading...');
-                
-                // Clear existing product buttons
-                $('#productPlaceholders button:not(#loadProductsBtn)').remove();
-                
-                // Get products via AJAX
-                $.ajax({
-                    url: '@Url.Action("GetProducts")',
-                    type: 'GET',
-                    success: function(products) {
-                        // Reset button state
-                        $('#loadProductsBtn').prop('disabled', false).html('<i class="fas fa-box me-1"></i> Load Products');
-                        
-                        if (products && products.length > 0) {
-                            // Add product buttons
-                            products.forEach(function(product) {
-                                const placeholder = `{{Product:${product.id}}}`;
-                                const button = $(`<button type="button" class="btn btn-sm btn-outline-success product-placeholder-btn ms-1" data-placeholder="${placeholder}" data-bs-toggle="tooltip" title="Insert ${product.name}">
-                                    <i class="fas fa-box me-1"></i> ${product.name.substring(0, 15)}${product.name.length > 15 ? '...' : ''}
-                                </button>`);
-                                
-                                // Add button to container
-                                $('#productPlaceholders').append(button);
-                                
-                                // Initialize tooltip
-                                new bootstrap.Tooltip(button[0]);
-                                
-                                // Add click handler
-                                button.click(function() {
-                                    const placeholder = $(this).data('placeholder');
-                                    const textarea = $('#templateContent');
-                                    const cursorPos = textarea.prop('selectionStart');
-                                    const textBefore = textarea.val().substring(0, cursorPos);
-                                    const textAfter = textarea.val().substring(cursorPos);
-                                    
-                                    textarea.val(textBefore + placeholder + textAfter);
-                                    
-                                    // Set focus back to textarea and place cursor after inserted placeholder
-                                    const newCursorPos = cursorPos + placeholder.length;
-                                    textarea.focus();
-                                    textarea[0].setSelectionRange(newCursorPos, newCursorPos);
-                                });
-                            });
-                        } else {
-                            // No products found
-                            $('#productPlaceholders').append('<span class="ms-2 text-muted">No products found</span>');
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        // Reset button state
-                        $('#loadProductsBtn').prop('disabled', false).html('<i class="fas fa-box me-1"></i> Load Products');
-                        
-                        // Show error message
-                        $('#productPlaceholders').append('<span class="ms-2 text-danger">Error loading products</span>');
-                    }
+                // Click to open appropriate modal
+                $(this).on('click', function() {
+                    const elementType = $(this).data('element');
+                    showElementModal(elementType);
                 });
             });
+            
+            // Show appropriate modal based on element type
+            function showElementModal(elementType) {
+                switch (elementType) {
+                    case 'heading':
+                        $('#headingText').val('Your Heading Here');
+                        $('#headingModal').modal('show');
+                        break;
+                    case 'paragraph':
+                        $('#paragraphText').val('Your paragraph text here. Replace this with your own content.');
+                        $('#paragraphModal').modal('show');
+                        break;
+                    case 'button':
+                        $('#buttonText').val('Click Here');
+                        $('#buttonUrl').val('#');
+                        $('#buttonModal').modal('show');
+                        break;
+                    case 'divider':
+                        insertElementAtCursor($('#templateContent')[0], 'divider');
+                        showToast('Divider inserted');
+                        updateLivePreview();
+                        break;
+                    case 'spacer':
+                        insertElementAtCursor($('#templateContent')[0], 'spacer');
+                        showToast('Spacer inserted');
+                        updateLivePreview();
+                        break;
+                    case 'social':
+                        $('#socialModal').modal('show');
+                        break;
+                    case 'link':
+                        $('#linkText').val('Click Here');
+                        $('#linkUrl').val('#');
+                        $('#linkModal').modal('show');
+                        break;
+                    case 'image':
+                        $('#imageModal').modal('show');
+                        break;
+                }
+            }
+            
+            // Handle heading insertion from modal
+            $('#insertHeadingBtn').click(function() {
+                const headingText = $('#headingText').val();
+                const headingSize = $('#headingSize').val();
+                const headingColor = $('#headingColor').val();
+                
+                const headingHTML = `<${headingSize} style="color: ${headingColor}; margin-top: 20px; margin-bottom: 10px;">${headingText}</${headingSize}>`;
+                
+                insertAtCursor($('#templateContent')[0], headingHTML);
+                $('#headingModal').modal('hide');
+                showToast('Heading inserted');
+                updateLivePreview();
+            });
+            
+            // Handle paragraph insertion from modal
+            $('#insertParagraphBtn').click(function() {
+                const paragraphText = $('#paragraphText').val();
+                const paragraphColor = $('#paragraphColor').val();
+                
+                const paragraphHTML = `<p style="font-size: 16px; line-height: 1.6; color: ${paragraphColor}; margin-bottom: 20px;">${paragraphText}</p>`;
+                
+                insertAtCursor($('#templateContent')[0], paragraphHTML);
+                $('#paragraphModal').modal('hide');
+                showToast('Paragraph inserted');
+                updateLivePreview();
+            });
+            
+            // Handle button insertion
+            $('#insertButtonBtn').click(function() {
+                const buttonText = $('#buttonText').val();
+                const buttonUrl = $('#buttonUrl').val();
+                const buttonColor = $('#buttonColor').val();
+                const buttonBgColor = $('#buttonBgColor').val();
+                const buttonNewTab = $('#buttonNewTab').is(':checked') ? ' target="_blank"' : '';
+                
+                const buttonHtml = `<a href="${buttonUrl}"${buttonNewTab} class="btn" style="background-color: ${buttonBgColor}; color: ${buttonColor}; display: inline-block; padding: 10px 20px; text-decoration: none; border-radius: 4px; font-weight: bold; margin: 10px 0;">${buttonText}</a>`;
+                
+                insertAtCursor($('#templateContent')[0], buttonHtml);
+                $('#buttonModal').modal('hide');
+                showToast('Button inserted');
+                updateLivePreview();
+            });
+            
+            // Handle link insertion from modal
+            $('#insertLinkBtn').click(function() {
+                const linkText = $('#linkText').val();
+                const linkUrl = $('#linkUrl').val() || '#';
+                const linkColor = $('#linkColor').val();
+                const linkNewTab = $('#linkNewTab').is(':checked') ? ' target="_blank"' : '';
+                const linkUnderline = $('#linkUnderline').is(':checked');
+                
+                // Create link HTML
+                const linkHTML = `<a href="${linkUrl}"${linkNewTab} style="color: ${linkColor}; text-decoration: ${linkUnderline ? 'underline' : 'none'};">${linkText}</a>`;
+                
+                insertAtCursor($('#templateContent')[0], linkHTML);
+                $('#linkModal').modal('hide');
+                showToast('Link inserted');
+                updateLivePreview();
+            });
+            
+            // Handle social media checkbox changes
+            $('#socialFacebook').change(function() {
+                if ($(this).is(':checked')) {
+                    $('#facebookUrlGroup').show();
+                } else {
+                    $('#facebookUrlGroup').hide();
+                }
+            });
+            
+            $('#socialTwitter').change(function() {
+                if ($(this).is(':checked')) {
+                    $('#twitterUrlGroup').show();
+                } else {
+                    $('#twitterUrlGroup').hide();
+                }
+            });
+            
+            $('#socialLinkedin').change(function() {
+                if ($(this).is(':checked')) {
+                    $('#linkedinUrlGroup').show();
+                } else {
+                    $('#linkedinUrlGroup').hide();
+                }
+            });
+            
+            $('#socialInstagram').change(function() {
+                if ($(this).is(':checked')) {
+                    $('#instagramUrlGroup').show();
+                            } else {
+                    $('#instagramUrlGroup').hide();
+                }
+            });
+            
+            // Initialize social modal when shown
+            $('#socialModal').on('show.bs.modal', function() {
+                // Check initial state of checkboxes
+                $('#socialFacebook').trigger('change');
+                $('#socialTwitter').trigger('change');
+                $('#socialLinkedin').trigger('change');
+                $('#socialInstagram').trigger('change');
+            });
+            
+            // Handle social links insertion from modal
+            $('#insertSocialBtn').click(function() {
+                let socialHTML = `<div style="text-align: center; margin: 20px 0;">`;
+                
+                if ($('#socialFacebook').is(':checked')) {
+                    const facebookUrl = $('#facebookUrl').val() || '#';
+                    socialHTML += `<a href="${facebookUrl}" target="_blank" style="display: inline-block; margin: 0 10px; text-decoration: none;">
+                        <img src="https://cdn4.iconfinder.com/data/icons/social-media-logos-6/512/83-facebook-512.png" alt="Facebook" width="32" height="32" style="border: none;">
+                    </a>`;
+                }
+                
+                if ($('#socialTwitter').is(':checked')) {
+                    const twitterUrl = $('#twitterUrl').val() || '#';
+                    socialHTML += `<a href="${twitterUrl}" target="_blank" style="display: inline-block; margin: 0 10px; text-decoration: none;">
+                        <img src="https://cdn4.iconfinder.com/data/icons/social-media-logos-6/512/36-twitter_social-512.png" alt="Twitter" width="32" height="32" style="border: none;">
+                    </a>`;
+                }
+                
+                if ($('#socialLinkedin').is(':checked')) {
+                    const linkedinUrl = $('#linkedinUrl').val() || '#';
+                    socialHTML += `<a href="${linkedinUrl}" target="_blank" style="display: inline-block; margin: 0 10px; text-decoration: none;">
+                        <img src="https://cdn4.iconfinder.com/data/icons/social-media-logos-6/512/56-linkedin-512.png" alt="LinkedIn" width="32" height="32" style="border: none;">
+                    </a>`;
+                }
+                
+                if ($('#socialInstagram').is(':checked')) {
+                    const instagramUrl = $('#instagramUrl').val() || '#';
+                    socialHTML += `<a href="${instagramUrl}" target="_blank" style="display: inline-block; margin: 0 10px; text-decoration: none;">
+                        <img src="https://cdn4.iconfinder.com/data/icons/social-media-logos-6/512/64-instagram-512.png" alt="Instagram" width="32" height="32" style="border: none;">
+                    </a>`;
+                }
+                
+                socialHTML += `</div>`;
+                
+                insertAtCursor($('#templateContent')[0], socialHTML);
+                $('#socialModal').modal('hide');
+                showToast('Social links inserted');
+                updateLivePreview();
+            });
+            
+            // Handle image preview and insertion
+            $('#imageUploadModal').change(function() {
+                const file = this.files[0];
+                if (file) {
+                    // Check file size (max 2MB)
+                    if (file.size > 2 * 1024 * 1024) {
+                        showToast('Image is too large. Maximum size is 2MB.', 'warning');
+                        $(this).val(''); // Clear the file input
+                        return;
+                    }
+                    
+                    // Check file type
+                    if (!file.type.match('image.*')) {
+                        showToast('Please select a valid image file (JPG, PNG, GIF)', 'warning');
+                        $(this).val(''); // Clear the file input
+                        return;
+                    }
+                    
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        $('#imagePreviewModal').attr('src', e.target.result).show();
+                        $('#imagePreviewPlaceholder').hide();
+                    };
+                    reader.onerror = function() {
+                        showToast('Error reading file. Please try again.', 'error');
+                        $('#imageUploadModal').val(''); // Clear the file input
+                    };
+                    reader.readAsDataURL(file);
+                    // Clear URL input to avoid confusion
+                    $('#imageUrl').val('');
+                }
+            });
+            
+            $('#imageUrl').on('input', function() {
+                const url = $(this).val();
+                if (url) {
+                    $('#imagePreviewModal').attr('src', url).show();
+                    $('#imagePreviewPlaceholder').hide();
+                    // Clear file input to avoid confusion
+                    $('#imageUploadModal').val('');
+                } else {
+                    $('#imagePreviewModal').hide();
+                    $('#imagePreviewPlaceholder').show();
+                }
+            });
+            
+            $('#insertImageBtn').click(function() {
+                // Get image source from preview image, which will be populated from either upload or URL
+                let imageSource = $('#imagePreviewModal').attr('src');
+                
+                if (!imageSource || imageSource === '') {
+                    showToast('Please select an image or enter a URL', 'warning');
+                    return;
+                }
+                
+                const altText = $('#imageAltText').val() || 'Email image';
+                const width = $('#imageWidth').val();
+                const alignment = $('#imageAlignment').val();
+                
+                let alignStyle = '';
+                if (alignment === 'center') {
+                    alignStyle = 'margin-left: auto; margin-right: auto; display: block;';
+                } else if (alignment === 'right') {
+                    alignStyle = 'float: right; margin-left: 15px;';
+                } else if (alignment === 'left') {
+                    alignStyle = 'float: left; margin-right: 15px;';
+                }
+                
+                const imageHtml = `<img src="${imageSource}" alt="${altText}" style="width: ${width}; ${alignStyle}" class="img-fluid">`;
+                
+                insertAtCursor($('#templateContent')[0], imageHtml);
+                $('#imageModal').modal('hide');
+                
+                // Reset the form
+                $('#imageUploadModal').val('');
+                $('#imageUrl').val('');
+                $('#imageAltText').val('');
+                $('#imagePreviewModal').hide();
+                $('#imagePreviewPlaceholder').show();
+                
+                showToast('Image inserted');
+                updateLivePreview();
+            });
+            
+            // Make textarea a drop target
+            const textarea = $('#templateContent')[0];
+            
+            $(textarea).on('dragover', function(e) {
+                e.preventDefault();
+                e.originalEvent.dataTransfer.dropEffect = 'copy';
+            });
+            
+            $(textarea).on('dragenter', function() {
+                $(this).addClass('dragover');
+            });
+            
+            $(textarea).on('dragleave', function() {
+                $(this).removeClass('dragover');
+            });
+            
+            $(textarea).on('drop', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                $(this).removeClass('dragover');
+                
+                const variable = e.originalEvent.dataTransfer.getData('text/plain');
+                const element = e.originalEvent.dataTransfer.getData('text/html');
+                
+                if (variable) {
+                    insertAtCursor(this, variable);
+                    showToast('Variable inserted');
+                } else if (element) {
+                    // For dragged elements, show the modal instead of direct insertion
+                    showElementModal(element);
+                }
+                
+                updateLivePreview();
+            });
+            
+            // Real-time preview
+            $('#templateContent').on('input', function() {
+                updateLivePreview();
+            });
+            
+            // Initialize preview
+            updateLivePreview();
+            
+            // Image upload handling
+            let uploadedImages = [];
+            
+            // Upload image button click
+            $('#uploadImageBtn').click(function() {
+                const fileInput = $('#imageUpload')[0];
+                
+                if (fileInput.files.length === 0) {
+                    alert('Please select an image to upload');
+                    return;
+                }
+                
+                const file = fileInput.files[0];
+                const maxSize = 2 * 1024 * 1024; // 2MB
+                
+                // Check file size
+                if (file.size > maxSize) {
+                    alert('Image is too large. Maximum size is 2MB.');
+                    return;
+                }
+                
+                // Check file type
+                if (!file.type.match('image.*')) {
+                    alert('Please select a valid image file (JPG, PNG, GIF)');
+                    return;
+                }
+                
+                // For demo purposes, we'll use FileReader to display the image
+                // In a real app, you would upload to server
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imageUrl = e.target.result;
+                    const imageName = file.name;
+                    const imageId = 'img_' + Date.now();
+                    
+                    // Add image to gallery
+                    addImageToGallery({
+                        id: imageId,
+                        name: imageName,
+                        url: imageUrl
+                    });
+                    
+                    // Clear file input
+                    $('#imageUpload').val('');
+                    
+                    showToast('Image uploaded successfully');
+                };
+                reader.readAsDataURL(file);
+            });
+            
+            // Make image gallery items draggable
+            function makeImageDraggable(imageElement) {
+                imageElement.on('dragstart', function(e) {
+                    const imageUrl = $(this).data('image-url');
+                    const imageAlt = $(this).data('image-name');
+                    const imageHtml = `<img src="${imageUrl}" alt="${imageAlt}" style="max-width: 100%; height: auto; margin: 10px 0;">`;
+                    
+                    e.originalEvent.dataTransfer.setData('text/html', imageHtml);
+                    $(this).addClass('dragging');
+                });
+                
+                imageElement.on('dragend', function() {
+                    $(this).removeClass('dragging');
+                });
+                
+                // Click to insert
+                imageElement.find('.insert-image-btn').on('click', function(e) {
+                    e.preventDefault();
+                    const imageUrl = $(this).closest('.image-item').data('image-url');
+                    const imageAlt = $(this).closest('.image-item').data('image-name');
+                    const imageHtml = `<img src="${imageUrl}" alt="${imageAlt}" style="max-width: 100%; height: auto; margin: 10px 0;">`;
+                    
+                    insertAtCursor($('#templateContent')[0], imageHtml);
+                    showToast('Image inserted');
+                    updateLivePreview();
+                });
+            }
+            
+            // Add image to gallery
+            function addImageToGallery(image) {
+                // Remove "no images" message if it's there
+                $('#noImagesMessage').remove();
+                
+                // Create image card
+                const imageCard = $(`
+                    <div class="col image-item" data-image-id="${image.id}" data-image-name="${image.name}" data-image-url="${image.url}" draggable="true">
+                        <div class="card h-100">
+                            <div class="card-img-container" style="height: 80px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                                <img src="${image.url}" class="card-img-top" alt="${image.name}" style="object-fit: contain; max-height: 100%; max-width: 100%;">
+                            </div>
+                            <div class="card-body p-1">
+                                <p class="card-text small text-truncate mb-1">${image.name}</p>
+                                <div class="btn-group btn-group-sm w-100">
+                                    <button type="button" class="btn btn-sm btn-outline-primary insert-image-btn">
+                                        <i class="fas fa-plus-circle"></i> Insert
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger remove-image-btn">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `);
+                
+                // Add to gallery
+                $('#imageGallery').append(imageCard);
+                
+                // Make draggable
+                makeImageDraggable(imageCard);
+                
+                // Add click handler for remove button
+                imageCard.find('.remove-image-btn').click(function() {
+                    imageCard.remove();
+                    
+                    // Add "no images" message if no images left
+                    if ($('#imageGallery .image-item').length === 0) {
+                        $('#imageGallery').html(`
+                            <div class="col" id="noImagesMessage">
+                                <div class="alert alert-light text-center">
+                                    <i class="fas fa-images fa-2x mb-2 text-muted"></i>
+                                    <p class="mb-0">No images uploaded</p>
+                                </div>
+                            </div>
+                        `);
+                    }
+                });
+                
+                // Add to uploaded images array
+                uploadedImages.push(image);
+            }
+            
+            // Update live preview
+            function updateLivePreview() {
+                const content = $('#templateContent').val();
+                $('#livePreview').html(content);
+                
+                // Replace template variables with sample values in the preview
+                $('#livePreview').find('*').contents().each(function() {
+                    if (this.nodeType === 3) { // Text node
+                        let text = this.nodeValue;
+                        text = text.replace(/{{LeadName}}/g, 'John Doe');
+                        text = text.replace(/{{LeadEmail}}/g, 'john.doe@example.com');
+                        text = text.replace(/{{LeadPhone}}/g, '(555) 123-4567');
+                        text = text.replace(/{{BusinessName}}/g, 'ACME Corporation');
+                        text = text.replace(/{{CurrentDate}}/g, new Date().toLocaleDateString());
+                        this.nodeValue = text;
+                    }
+                });
+                
+                // Add remove buttons to elements in the preview
+                addRemoveButtons();
+            }
+            
+            // Add remove buttons to elements in the preview
+            function addRemoveButtons() {
+                // Add remove buttons to images, buttons, headings, paragraphs, dividers, social links, and other elements
+                $('#livePreview').find('img, a.btn, h1, h2, h3, p, hr, div[style*="height: 30px"]').each(function() {
+                    // Skip if already has a remove button
+                    if ($(this).parent().find('.element-remove-btn').length > 0) {
+                        return;
+                    }
+                    
+                    const $element = $(this);
+                    let $container;
+                    
+                    $container = $('<div>').addClass('position-relative d-inline-block');
+                    // If the element is not already wrapped, wrap it
+                    if (!$element.parent().hasClass('position-relative')) {
+                        $element.wrap($container);
+                        $container = $element.parent();
+                    }
+                    
+                    // Create the remove button for regular elements
+                    const $removeBtn = $('<button>')
+                        .addClass('element-remove-btn btn btn-sm btn-danger position-absolute')
+                        .css({
+                            'top': '5px',
+                            'right': '5px',
+                            'z-index': '1000',
+                            'opacity': '0',
+                            'transition': 'opacity 0.2s'
+                        })
+                        .html('<i class="fas fa-times"></i>')
+                        .attr('title', 'Remove element')
+                        .appendTo($container);
+                    
+                    // Show/hide button on hover
+                    $container.hover(
+                        function() { $(this).find('.element-remove-btn').css('opacity', '1'); },
+                        function() { $(this).find('.element-remove-btn').css('opacity', '0'); }
+                    );
+                    
+                    // Handle click on remove button
+                    $removeBtn.on('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        // Get the element to remove from the template content
+                        let elementToRemove;
+                        let textToFind;
+                        
+                        // For other elements, get the outerHTML
+                        elementToRemove = $element.prop('outerHTML');
+                        textToFind = elementToRemove;
+                        
+                        // Remove the element from the preview
+                        if ($container.is($element)) {
+                            $element.remove();
+                        } else {
+                            $container.remove();
+                        }
+                        
+                        // Find and remove the element from the template content
+                        const currentContent = $('#templateContent').val();
+                        
+                        // For other elements, use regex replacement
+                        const escapedHtml = textToFind.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                        const regex = new RegExp(escapedHtml, 'g');
+                        
+                        // Replace the element in the textarea
+                        const newContent = currentContent.replace(regex, '');
+                        $('#templateContent').val(newContent);
+                        
+                        // Update the preview to reflect the changes
+                        updateLivePreview();
+                        
+                        showToast('Element removed');
+                    });
+                });
+                
+                // Special handling for social links div - needs separate selector and handling
+                $('#livePreview').find('div').each(function() {
+                    const $element = $(this);
+                    // Check if this is a social links container
+                    if ($element.attr('style') && 
+                        $element.attr('style').includes('text-align: center') && 
+                        $element.find('a').length > 0 && 
+                        ($element.find('i.fab').length > 0 || $element.find('img[alt="Facebook"], img[alt="Twitter"], img[alt="LinkedIn"], img[alt="Instagram"]').length > 0)) {
+                        
+                        // Skip if already has a remove button
+                        if ($element.find('.element-remove-btn').length > 0) {
+                            return;
+                        }
+                        
+                        // Add position-relative class to the container
+                        $element.addClass('position-relative');
+                        const $container = $element;
+                        
+                        // Create the remove button for social links
+                        const $removeBtn = $('<button>')
+                            .addClass('element-remove-btn btn btn-sm btn-danger position-absolute')
+                            .css({
+                                'top': '5px',
+                                'right': '5px',
+                                'z-index': '1000',
+                                'opacity': '0',
+                                'transition': 'opacity 0.2s'
+                            })
+                            .html('<i class="fas fa-times"></i>')
+                            .attr('title', 'Remove social links')
+                            .appendTo($container);
+                        
+                        // Show/hide button on hover
+                        $container.hover(
+                            function() { $(this).find('.element-remove-btn').css('opacity', '1'); },
+                            function() { $(this).find('.element-remove-btn').css('opacity', '0'); }
+                        );
+                        
+                        // Handle click on remove button for social links
+                        $removeBtn.on('click', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            
+                            // Remove the element from the preview
+                            $element.remove();
+                            
+                            // Find and remove the element from the template content
+                            const currentContent = $('#templateContent').val();
+                            
+                            // Try to find the social div in the content
+                            // First try with the standard div start
+                            const socialDivStart = '<div style="text-align: center; margin: 20px 0;">';
+                            let startIndex = currentContent.indexOf(socialDivStart);
+                            
+                            if (startIndex !== -1) {
+                                const endIndex = currentContent.indexOf('</div>', startIndex) + 6; // +6 for the </div> length
+                                if (endIndex !== -1) {
+                                    const newContent = currentContent.substring(0, startIndex) + currentContent.substring(endIndex);
+                                    $('#templateContent').val(newContent);
+                                    
+                                    // Update the preview to reflect the changes
+                                    updateLivePreview();
+                                    
+                                    showToast('Social links removed');
+                                    return;
+                                }
+                            }
+                            
+                            // If we couldn't find the standard div, look for any div containing social media images
+                            const regex = /<div[^>]*>[\s\S]*?<img[^>]*alt="(?:Facebook|Twitter|LinkedIn|Instagram)"[\s\S]*?<\/div>/i;
+                            const match = currentContent.match(regex);
+                            
+                            if (match) {
+                                const newContent = currentContent.replace(match[0], '');
+                                $('#templateContent').val(newContent);
+                                
+                                // Update the preview to reflect the changes
+                                updateLivePreview();
+                                
+                                showToast('Social links removed');
+                            }
+                        });
+                    }
+                });
+            }
         });
+        
+        // Insert text at cursor position
+        function insertAtCursor(textarea, text) {
+            const startPos = textarea.selectionStart;
+            const endPos = textarea.selectionEnd;
+            const scrollTop = textarea.scrollTop;
+            
+            textarea.value = textarea.value.substring(0, startPos) + text + textarea.value.substring(endPos, textarea.value.length);
+            
+            // Move cursor position after inserted text
+            textarea.selectionStart = startPos + text.length;
+            textarea.selectionEnd = startPos + text.length;
+            
+            // Restore scroll position
+            textarea.scrollTop = scrollTop;
+            
+            // Focus back on textarea
+            textarea.focus();
+        }
+        
+        // Insert element HTML at cursor position
+        function insertElementAtCursor(textarea, elementType) {
+            let elementHTML = '';
+            
+            switch (elementType) {
+                case 'divider':
+                    elementHTML = `<hr style="border: 0; border-top: 1px solid #e0e0e0; margin: 20px 0;">`;
+                    break;
+                case 'spacer':
+                    elementHTML = `<div style="height: 30px;"></div>`;
+                    break;
+            }
+            
+            insertAtCursor(textarea, elementHTML);
+        }
+        
+        // Show toast notification
+        function showToast(message, type = 'success') {
+            let bgClass = 'bg-success';
+            let icon = 'fa-check-circle';
+            
+            if (type === 'warning') {
+                bgClass = 'bg-warning';
+                icon = 'fa-exclamation-triangle';
+            } else if (type === 'error') {
+                bgClass = 'bg-danger';
+                icon = 'fa-exclamation-circle';
+            }
+            
+            const toast = $(`
+                <div class="toast align-items-center text-white ${bgClass} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            <i class="fas ${icon} me-2"></i> ${message}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+            `);
+            
+            const toastContainer = $('.toast-container');
+            if (toastContainer.length === 0) {
+                $('body').append('<div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 5"></div>');
+            }
+            
+            $('.toast-container').append(toast);
+            
+            const bsToast = new bootstrap.Toast(toast, {
+                autohide: true,
+                delay: 3000
+            });
+            
+            bsToast.show();
+            
+            toast.on('hidden.bs.toast', function() {
+                toast.remove();
+            });
+        }
     </script>
+    
+    <style>
+        /* Drag and drop styles */
+        .template-variable, .template-element, .image-item {
+            cursor: grab;
+            transition: all 0.2s ease;
+            position: relative;
+            padding-right: 2rem !important;
+        }
+        
+        .template-variable:hover, .template-element:hover, .image-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .template-variable.dragging, .template-element.dragging, .image-item.dragging {
+            opacity: 0.7;
+            transform: scale(1.05);
+        }
+        
+        .drag-handle {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 0.6;
+            font-size: 0.8rem;
+        }
+        
+        .template-variable:hover .drag-handle, .template-element:hover .drag-handle {
+            opacity: 1;
+        }
+        
+        #templateContent {
+            border: 2px dashed #dee2e6;
+            transition: all 0.3s ease;
+            min-height: 300px;
+            font-family: monospace;
+            line-height: 1.5;
+        }
+        
+        #templateContent:focus {
+            border-color: #4e73df;
+            box-shadow: 0 0 0 0.25rem rgba(78, 115, 223, 0.25);
+        }
+        
+        #templateContent.dragover {
+            border-color: #4e73df;
+            background-color: rgba(78, 115, 223, 0.05);
+        }
+        
+        #livePreview {
+            border: 2px solid #dee2e6;
+            transition: all 0.3s ease;
+            min-height: 300px;
+            font-family: Arial, sans-serif;
+        }
+        
+        /* Tooltip for drag elements */
+        .template-variable::after, .template-element::after {
+            content: "Drag to insert";
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0,0,0,0.8);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            pointer-events: none;
+            white-space: nowrap;
+            z-index: 1000;
+        }
+        
+        .template-variable:hover::after, .template-element:hover::after {
+            opacity: 1;
+        }
+        
+        /* Image gallery */
+        .image-item {
+            cursor: grab;
+        }
+        
+        .image-item .card {
+            transition: all 0.2s ease;
+        }
+        
+        .image-item .card:hover {
+            border-color: #4e73df;
+        }
+    </style>
 } 

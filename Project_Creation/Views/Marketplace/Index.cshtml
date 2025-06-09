@@ -6,7 +6,7 @@
 
 <div class="marketplace-container">
     <!-- Marketplace Header -->
-    <div class="marketplace-header">
+    <div class="marketplace-header mx-3">
         <div class="header-content">
             <h1>Marketplace</h1>
             <p>Find quality products from our trusted sellers</p>
@@ -14,33 +14,36 @@
     </div>
 
     <div class="marketplace-wrapper">
-        <!-- Top Categories -->
-        <div class="categories-container">
-            <div class="categories-scroll">
-                <a href="@Url.Action("Index", "Marketplace")" class="category-pill @(string.IsNullOrEmpty(Model.CategoryFilter) ? "active" : "")">
-                    <i class="fas fa-th-large"></i> All Categories
-                </a>
-                @foreach (var category in ViewBag.Categories)
-                {
-                    <a href="@Url.Action("Index", "Marketplace", new { category = category.CategoryName, search = Model.SearchQuery })"
-                       class="category-pill @(Model.CategoryFilter == category.CategoryName ? "active" : "")">
-                        <i class="fas fa-tag"></i> @category.CategoryName
-                    </a>
-                }
-            </div>
-        </div>
-
-        <!-- Main Content -->
-        <div class="marketplace-content">
-            <div class="content-card">
-                <!-- Search Bar -->
+        <!-- Categories and Search -->
+        <div class="filters-container">
+            <!-- Top Categories -->
+            <div class="category-selection d-flex flex-column flex-sm-row gap-2">
+                <div class="dropdown main-category-dropdown">
+                    <button class="btn dropdown-toggle custom-select w-100 text-start" type="button" id="mainCategoryDropdown">
+                        <span id="selectedMainCategory">@(string.IsNullOrEmpty(Model.MainCategoryFilter) ? "All Categories" : Model.MainCategoryFilter)</span>
+                    </button>
+                    <div class="dropdown-menu w-100" id="mainCategoryList">
+                        <a class="dropdown-item main-category-item @(string.IsNullOrEmpty(Model.MainCategoryFilter) ? "active" : "")" href="#" data-value="">All Categories</a>
+                        @foreach (var mainCategory in ViewBag.MainCategories ?? new List<string>())
+                        {
+                            <a class="dropdown-item main-category-item @(mainCategory == ViewBag.CurrentMainCategory ? "active" : "")" 
+                                href="#" 
+                                data-value="@mainCategory">@mainCategory</a>
+                        }
+                    </div>
+                </div>
+                
                 <div class="search-container">
                     <form asp-action="Index" method="get" class="search-form">
-                        <div class="search-input-group">
+                        <div class="search-input-group ">
                             <input type="text" name="search" class="search-input" placeholder="Search products..." value="@Model.SearchQuery">
                             @if (!string.IsNullOrEmpty(Model.CategoryFilter))
                             {
                                 <input type="hidden" name="category" value="@Model.CategoryFilter" />
+                            }
+                            @if (!string.IsNullOrEmpty(Model.MainCategoryFilter))
+                            {
+                                <input type="hidden" name="mainCategory" value="@Model.MainCategoryFilter" />
                             }
                             <button class="search-button" type="submit">
                                 <i class="fas fa-search"></i>
@@ -48,7 +51,12 @@
                         </div>
                     </form>
                 </div>
+            </div>
+        </div>
 
+        <!-- Main Content -->
+        <div class="marketplace-content">
+            <div class="content-card">
                 <!-- Main Products List -->
                 <div class="products-container">
                     @if (Model.Products.Any())
@@ -194,68 +202,114 @@
         overflow: hidden;
     }
 
-    .categories-scroll {
+    .category-selection {
         display: flex;
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        padding: 0.5rem 0;
-        gap: 0.75rem;
-        scrollbar-width: thin;
-        scrollbar-color: #f48c06 #faf6f2;
+        gap: 1rem;
     }
 
-        .categories-scroll::-webkit-scrollbar {
-            height: 6px;
-        }
+    .main-category-dropdown,
+    .search-container {
+        flex: 1;
+        position: relative;
+    }
 
-        .categories-scroll::-webkit-scrollbar-track {
-            background: #faf6f2;
-            border-radius: 10px;
-        }
+    .dropdown {
+        position: relative;
+        z-index: 1000;
+    }
 
-        .categories-scroll::-webkit-scrollbar-thumb {
-            background-color: #f48c06;
-            border-radius: 10px;
-        }
-
-    .category-pill {
-        display: inline-flex;
+    .custom-select {
+        background-color: #fff;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        color: #495057;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
         align-items: center;
-        padding: 0.5rem 1rem;
-        background: #faf6f2;
-        color: #444;
-        border-radius: 50px;
-        font-size: 0.9rem;
-        font-weight: 500;
-        text-decoration: none;
-        transition: all 0.2s ease;
+        position: relative;
+        box-shadow: none;
+        height: 50px;
+        text-overflow: ellipsis;
         white-space: nowrap;
-        flex-shrink: 0;
+        overflow: hidden;
     }
 
-        .category-pill i {
-            margin-right: 0.5rem;
-            font-size: 0.85rem;
-            color: #f48c06;
-        }
+    .dropdown-toggle::after {
+        content: '';
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 0;
+        height: 0;
+        border-left: 6px solid transparent;
+        border-right: 6px solid transparent;
+        border-top: 6px solid #495057;
+        margin: 0;
+    }
 
-        .category-pill:hover {
-            background: #ffd8a8;
-            color: #9a3412;
-        }
+    .dropdown-menu {
+        position: absolute;
+        left: 0;
+        top: calc(100% + 2px);
+        background-color: white;
+        border-radius: 4px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        padding: 0.5rem;
+        z-index: 9999;
+        width: 100%;
+        max-height: 300px;
+        overflow-y: auto;
+        display: none;
+        border: 1px solid #ced4da;
+    }
 
-        .category-pill.active {
-            background: #f48c06;
-            color: white;
-        }
+    .dropdown-menu.show {
+        display: block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        transform: none !important;
+        pointer-events: auto !important;
+    }
 
-            .category-pill.active i {
-                color: white;
-            }
+    .dropdown-item {
+        display: block;
+        width: 100%;
+        padding: 0.5rem 1rem;
+        text-align: left;
+        background: none;
+        border: none;
+        font-size: 0.9rem;
+        color: #495057;
+        cursor: pointer;
+        border-radius: 4px;
+        transition: background-color 0.2s ease;
+        text-decoration: none;
+    }
+
+    .dropdown-item:hover {
+        background-color: #f8f9fa;
+        color: #f48c06;
+    }
+
+    .dropdown-item.active {
+        background-color: #f48c06;
+        color: white;
+    }
+
+    .main-category-item.active {
+        background-color: #f48c06;
+        color: white;
+    }
 
     /* Main Content Styling */
     .marketplace-content {
         width: 100%;
+        position: relative;
+        z-index: 50;
     }
 
     .content-card {
@@ -267,8 +321,8 @@
 
     /* Search Bar Styling */
     .search-container {
-        padding: 1.5rem;
-        border-bottom: 1px solid #f1f1f1;
+        padding: 0;
+        border-bottom: none;
     }
 
     .search-form {
@@ -283,17 +337,18 @@
     .search-input {
         flex-grow: 1;
         padding: 0.75rem 1rem;
-        border: 1px solid #e0e0e0;
-        border-radius: 8px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
         font-size: 1rem;
         transition: all 0.2s ease;
+        height: 50px;
     }
 
-        .search-input:focus {
-            border-color: #f48c06;
-            box-shadow: 0 0 0 3px rgba(244, 140, 6, 0.15);
-            outline: none;
-        }
+    .search-input:focus {
+        border-color: #f48c06;
+        box-shadow: 0 0 0 3px rgba(244, 140, 6, 0.15);
+        outline: none;
+    }
 
     .search-button {
         position: absolute;
@@ -303,15 +358,15 @@
         background: #f48c06;
         color: white;
         border: none;
-        border-radius: 6px;
+        border-radius: 4px;
         padding: 0 1.25rem;
         cursor: pointer;
         transition: all 0.2s ease;
     }
 
-        .search-button:hover {
-            background: #dc6803;
-        }
+    .search-button:hover {
+        background: #dc6803;
+    }
 
     /* Products Container */
     .products-container {
@@ -444,7 +499,7 @@
 
     .product-price {
         font-weight: 700;
-        font-size: 1.2rem;
+        <!-- font-size: 1.2rem; -->
         color: #dc6803;
     }
 
@@ -546,4 +601,98 @@
             padding: 0 1rem;
         }
     }
-</style> 
+
+    .filters-container {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        position: relative;
+        z-index: 100;
+    }
+
+    .categories-container {
+        margin-bottom: 1.5rem;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Set initial values based on URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const categoryParam = urlParams.get('category');
+            const mainCategoryParam = urlParams.get('mainCategory');
+            
+            if (mainCategoryParam) {
+                $('#selectedMainCategory').text(mainCategoryParam);
+                $('.main-category-item').removeClass('active');
+                $(`.main-category-item[data-value="${mainCategoryParam}"]`).addClass('active');
+            }
+            
+            // Toggle dropdowns
+            $('#mainCategoryDropdown').on('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Toggle this dropdown
+                const isVisible = $('#mainCategoryList').hasClass('show');
+                
+                // Close all dropdowns first
+                $('.dropdown-menu').removeClass('show');
+                
+                // Then show this one if it wasn't visible
+                if (!isVisible) {
+                    $('#mainCategoryList').addClass('show');
+                }
+            });
+            
+            // Close dropdowns when clicking outside
+            $(document).on('click', function(e) {
+                if (!$(e.target).closest('.main-category-dropdown').length) {
+                    $('#mainCategoryList').removeClass('show');
+                }
+            });
+            
+            // Handle main category selection
+            $('.main-category-item').on('click', function(e) {
+                e.preventDefault();
+                
+                const mainCategory = $(this).data('value');
+                $('#selectedMainCategory').text($(this).text());
+                
+                // Update active state
+                $('.main-category-item').removeClass('active');
+                $(this).addClass('active');
+                
+                // Close dropdown
+                $('#mainCategoryList').removeClass('show');
+                
+                // Apply filter
+                applyFilters(mainCategory);
+            });
+            
+            // Function to apply filters and redirect
+            function applyFilters(mainCategory) {
+                let url = '@Url.Action("Index", "Marketplace")';
+                const params = [];
+                
+                if (mainCategory) {
+                    params.push('mainCategory=' + encodeURIComponent(mainCategory));
+                }
+                
+                const currentSearch = '@Model.SearchQuery';
+                if (currentSearch) {
+                    params.push('search=' + encodeURIComponent(currentSearch));
+                }
+                
+                if (params.length > 0) {
+                    url += '?' + params.join('&');
+                }
+                
+                window.location.href = url;
+            }
+        });
+    </script>
+} 

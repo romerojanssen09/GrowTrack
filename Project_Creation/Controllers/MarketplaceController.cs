@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query; // Add this for IIncludableQueryable
 using Project_Creation.Data;
 using Project_Creation.Models.Entities;
 using Project_Creation.Models.ViewModels;
@@ -22,7 +23,8 @@ namespace Project_Creation.Controllers
         }
 
         // GET: Marketplace
-        public async Task<IActionResult> Index(string category, string search, int page = 1)
+        [HttpGet]
+        public async Task<IActionResult> Index(string category, string mainCategory, string search, int page = 1)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId != null)
@@ -45,33 +47,50 @@ namespace Project_Creation.Controllers
                 }
             }
 
-            var categories = await _context.Categories
-               .Select(c => c.CategoryName.ToLower())
-               .Distinct()
-               .Select(name => new { CategoryName = char.ToUpper(name[0]) + name.Substring(1) })
-               .ToListAsync();
-
-            ViewBag.Categories = categories;
-            ViewBag.CurrentCategory = category;
-            ViewBag.CurrentSearch = search;
-
-            // Base query - only include actual navigation properties
-            var query = _context.Products2
-                .Include(p => p.Images)
+            // Base query for products
+            var productsQuery = _context.Products2
                 .Where(p => p.IsPublished && p.QuantityInStock > 0);
 
-            // Base query
-            //var query = _context.Products2
-            //    .Include(p => p.Category)
-            //    .Include(p => p.BOId)
-            //    .Include(p => p.Images)
-            //    .Where(p => p.IsPublished && p.QuantityInStock > 0);
+            // Get categories from published products
+            var categoriesWithMain = await productsQuery
+                .Select(p => new { 
+                    CategoryName = p.Category,
+                    // Extract main category (everything before the first dash or the whole string if no dash)
+                    MainCategory = p.Category.Contains("-") ? 
+                        p.Category.Substring(0, p.Category.IndexOf("-")).Trim() : 
+                        p.Category
+                })
+                .Distinct()
+                .OrderBy(c => c.MainCategory)
+                .ThenBy(c => c.CategoryName)
+                .ToListAsync();
+
+            // Get distinct main categories
+            var mainCategories = categoriesWithMain
+                .Select(c => c.MainCategory)
+                .Distinct()
+                .OrderBy(c => c)
+                .ToList();
+
+            ViewBag.Categories = categoriesWithMain;
+            ViewBag.MainCategories = mainCategories;
+            ViewBag.CurrentCategory = category;
+            ViewBag.CurrentMainCategory = mainCategory;
+            ViewBag.CurrentSearch = search;
+
+            // Include navigation properties - explicitly include Images
+            IQueryable<Product> query = productsQuery.Include(p => p.Images);
 
             // Apply filters
             if (!string.IsNullOrEmpty(category))
             {
-                // Compare with the correct property - assuming Category is a string property
+                // Filter by specific category
                 query = query.Where(p => p.Category == category);
+            }
+            else if (!string.IsNullOrEmpty(mainCategory))
+            {
+                // Filter by main category (all subcategories that start with the main category)
+                query = query.Where(p => p.Category.StartsWith(mainCategory + "-") || p.Category == mainCategory);
             }
 
             if (!string.IsNullOrEmpty(search))
@@ -107,6 +126,7 @@ namespace Project_Creation.Controllers
                 CurrentPage = page,
                 TotalPages = totalPages,
                 CategoryFilter = category,
+                MainCategoryFilter = mainCategory,
                 SearchQuery = search
             };
 
@@ -159,6 +179,7 @@ namespace Project_Creation.Controllers
         }
 
         // GET: Marketplace/BusinessProducts/5
+        [HttpGet]
         public async Task<IActionResult> BusinessProducts(int id)
         {
             var business = await _context.Users.FindAsync(id);
@@ -168,7 +189,6 @@ namespace Project_Creation.Controllers
             }
 
             var products = await _context.Products2
-                .Include(p => p.Category)
                 .Include(p => p.Images)
                 .Where(p => p.BOId == id && p.IsPublished && p.QuantityInStock > 0)
                 .OrderByDescending(p => p.UpdatedAt)
@@ -180,6 +200,7 @@ namespace Project_Creation.Controllers
         }
 
         // GET: Marketplace/SearchBusinesses
+        [HttpGet]
         public async Task<IActionResult> SearchBusinesses(string search)
         {
             var businesses = await _context.Users
@@ -212,7 +233,6 @@ namespace Project_Creation.Controllers
         {
             // First get all distinct business owner IDs from the products
             var businessOwnerIds = products
-                .Where(p => p.BOId == GetCurrentUserId())
                 .Select(p => p.BOId)
                 .Distinct()
                 .ToList();
@@ -226,7 +246,7 @@ namespace Project_Creation.Controllers
             {
                 Id = p.Id,
                 Name = p.ProductName,
-                Description = p.Description ?? p.Description ?? string.Empty,
+                Description = p.Description ?? string.Empty,
                 Price = p.SellingPrice,
                 CategoryName = p.Category,
                 BusinessName = GetUserDataById(Convert.ToInt32(p.BOId), "BusinessName"),

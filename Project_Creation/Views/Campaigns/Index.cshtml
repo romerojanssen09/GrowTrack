@@ -26,7 +26,7 @@
 
 <div class="container">
     <div class="row mb-4">
-        <div class="col-md-12 d-flex justify-content-between align-items-center">
+        <div class="col-md-12 d-flex justify-content-between align-items-center flex-sm-row flex-column gap-2">
             <h1>Campaign Management</h1>
             <a class="btn btn-primary" asp-action="Create">
                 <i class="fas fa-plus"></i> Create Campaign
@@ -130,6 +130,9 @@
                                             <button class="btn btn-sm btn-info btn-view" data-id="@item.Id">
                                                 <i class="fas fa-eye"></i>
                                             </button>
+                                            <button class="btn btn-sm btn-secondary btn-preview" data-id="@item.Id" data-message="@item.Message" data-subject="@item.Subject">
+                                                <i class="fas fa-envelope-open"></i>
+                                            </button>
                                             <a class="btn btn-sm btn-warning btn-edit" asp-route-id="@item.Id" asp-action="Edit">
                                                 <i class="fas fa-edit"></i>
                                             </a>
@@ -184,6 +187,96 @@
                     <button type="submit" class="btn btn-primary">Save Changes</button>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+<!-- Selected Leads Modal -->
+<div class="modal fade" id="selectedLeadsModal" tabindex="-1" aria-labelledby="selectedLeadsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="selectedLeadsModalLabel">Selected Leads</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="selectedLeadsContainer">
+                    <p class="text-center">No leads selected</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Email Preview Modal -->
+<div class="modal fade" id="previewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-envelope-open me-2"></i> Email Preview
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <ul class="nav nav-tabs" id="previewTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="desktop-tab" data-bs-toggle="tab" data-bs-target="#desktop-preview" type="button" role="tab">
+                            <i class="fas fa-desktop me-1"></i> Desktop
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="tablet-tab" data-bs-toggle="tab" data-bs-target="#tablet-preview" type="button" role="tab">
+                            <i class="fas fa-tablet-alt me-1"></i> Tablet
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="mobile-tab" data-bs-toggle="tab" data-bs-target="#mobile-preview" type="button" role="tab">
+                            <i class="fas fa-mobile-alt me-1"></i> Mobile
+                        </button>
+                    </li>
+                </ul>
+                
+                <div class="tab-content p-3" id="previewTabContent">
+                    <!-- Desktop Preview -->
+                    <div class="tab-pane fade show active" id="desktop-preview" role="tabpanel">
+                        <div class="p-3">
+                            <h6 class="border-bottom pb-2 mb-3">Subject: <span id="preview-subject" class="text-primary"></span></h6>
+                            <div id="desktop-preview-content" class="border p-3" style="min-height: 400px; max-width: 650px; margin: 0 auto;"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Tablet Preview -->
+                    <div class="tab-pane fade" id="tablet-preview" role="tabpanel">
+                        <div class="p-3 d-flex justify-content-center">
+                            <div class="device-mockup">
+                                <div class="device-frame" style="width: 768px; height: 500px; overflow: auto; border: 16px solid #e2e2e2; border-radius: 12px;">
+                                    <h6 class="border-bottom pb-2 mb-3">Subject: <span id="preview-subject-tablet" class="text-primary"></span></h6>
+                                    <div id="tablet-preview-content" class="p-3"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Mobile Preview -->
+                    <div class="tab-pane fade" id="mobile-preview" role="tabpanel">
+                        <div class="p-3 d-flex justify-content-center">
+                            <div class="device-mockup">
+                                <div class="device-frame" style="width: 375px; height: 667px; overflow: auto; border: 16px solid #e2e2e2; border-radius: 36px;">
+                                    <h6 class="border-bottom pb-2 mb-3">Subject: <span id="preview-subject-mobile" class="text-primary"></span></h6>
+                                    <div id="mobile-preview-content" class="p-3"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
         </div>
     </div>
 </div>
@@ -244,6 +337,17 @@
 
         .expand-target:hover {
             text-decoration: underline;
+        }
+        
+        /* Device mockups for responsive preview */
+        .device-mockup {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            margin: 0 auto;
+        }
+        
+        .device-frame {
+            background-color: white;
         }
     </style>
 }
@@ -329,6 +433,36 @@
                     }
                 });
             });
+
+            // Preview Button Click
+            $(document).on('click', '.btn-preview', function() {
+                var campaignId = $(this).data('id');
+                var subject = $(this).data('subject') || 'No Subject';
+                var message = $(this).data('message') || '<p>No content available</p>';
+                
+                // Add responsive email wrapper if not already present
+                if (!message.includes('<div class="email-container"')) {
+                    message = wrapWithResponsiveContainer(message);
+                }
+                
+                // Update preview content
+                $('#preview-subject, #preview-subject-tablet, #preview-subject-mobile').text(subject);
+                $('#desktop-preview-content, #tablet-preview-content, #mobile-preview-content').html(message);
+                
+                // Show preview modal
+                $('#previewModal').modal('show');
+            });
+            
+            // Wrap content with responsive container
+            function wrapWithResponsiveContainer(content) {
+                return `
+                    <div class="email-container" style="max-width: 600px; margin: auto;">
+                        <div style="font-family: Arial, sans-serif; line-height: 1.5;">
+                            ${content}
+                        </div>
+                    </div>
+                `;
+            }
 
             // Toggle target products visibility
             $('#SendToAll').change(function() {

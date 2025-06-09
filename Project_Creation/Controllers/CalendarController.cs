@@ -112,7 +112,10 @@ namespace Project_Creation.Controllers
                 // Get business categories
                 var categories = await _context.Users
                     .Where(u => u.UserRole == "BusinessOwner")
-                    .Select(u => u.CategoryOfBusiness)
+                    .Select(u => new {
+                        Id = u.Id,
+                        Name = u.CategoryOfBusiness
+                    })
                     .Distinct()
                     .ToListAsync();
 
@@ -312,7 +315,33 @@ namespace Project_Creation.Controllers
                     }
 
                     _logger.LogInformation($"Found {tasks.Count} tasks for user {userId}");
-                    return Json(tasks);
+                    // Convert tasks to a format that includes endDate and endTime
+                    var tasksWithEndDate = tasks.Select(t => new {
+                        id = t.Id,
+                        title = t.Title,
+                        date = t.Date.ToString("yyyy-MM-dd"),
+                        time = t.Time.HasValue ? t.Time.Value.ToString("HH:mm") : null,
+                        endDate = t.EndDate.HasValue ? t.EndDate.Value.ToString("yyyy-MM-dd") : null,
+                        endTime = t.EndTime.HasValue ? t.EndTime.Value.ToString("HH:mm") : null,
+                        priority = t.Priority.ToString(),
+                        notes = t.Notes,
+                        createdAt = t.CreatedAt,
+                        finishedAt = t.FinishedAt,
+                        isAll = t.IsAll,
+                        boViewers = t.BOViewers,
+                        adminViewers1 = t.AdminViewers1,
+                        adminViewers2 = t.AdminViewers2,
+                        userId = t.UserId,
+                        userIdString = t.UserId.ToString(),
+                        user = new { 
+                            id = t.User?.Id ?? 0,
+                            name = $"{t.User?.FirstName} {t.User?.LastName}" ?? "Unknown User"
+                        },
+                        whoSetAppointment = t.WhoSetAppointment,
+                        isPast = t.Date < DateOnly.FromDateTime(DateTime.Now) || (t.Date == DateOnly.FromDateTime(DateTime.Now) && t.Time.HasValue && t.Time.Value < TimeOnly.FromDateTime(DateTime.Now))
+                    }).ToList();
+                    
+                    return Json(tasksWithEndDate);
                 }
                 catch (Exception ex)
                 {
@@ -381,7 +410,34 @@ namespace Project_Creation.Controllers
                     }
                     
                     _logger.LogInformation($"Fallback query found {fallbackTasks.Count} tasks for user {userId}");
-                    return Json(fallbackTasks);
+                    
+                    // Convert tasks to a format that includes endDate and endTime
+                    var tasksWithEndDate = fallbackTasks.Select(t => new {
+                        id = t.Id,
+                        title = t.Title,
+                        date = t.Date.ToString("yyyy-MM-dd"),
+                        time = t.Time.HasValue ? t.Time.Value.ToString("HH:mm") : null,
+                        endDate = t.EndDate.HasValue ? t.EndDate.Value.ToString("yyyy-MM-dd") : null,
+                        endTime = t.EndTime.HasValue ? t.EndTime.Value.ToString("HH:mm") : null,
+                        priority = t.Priority.ToString(),
+                        notes = t.Notes,
+                        createdAt = t.CreatedAt,
+                        finishedAt = t.FinishedAt,
+                        isAll = t.IsAll,
+                        boViewers = t.BOViewers,
+                        adminViewers1 = t.AdminViewers1,
+                        adminViewers2 = t.AdminViewers2,
+                        userId = t.UserId,
+                        userIdString = t.UserId.ToString(),
+                        user = new { 
+                            id = t.User?.Id ?? 0,
+                            name = $"{t.User?.FirstName} {t.User?.LastName}" ?? "Unknown User"
+                        },
+                        whoSetAppointment = t.WhoSetAppointment,
+                        isPast = t.Date < DateOnly.FromDateTime(DateTime.Now) || (t.Date == DateOnly.FromDateTime(DateTime.Now) && t.Time.HasValue && t.Time.Value < TimeOnly.FromDateTime(DateTime.Now))
+                    }).ToList();
+                    
+                    return Json(tasksWithEndDate);
                 }
                 
                 _logger.LogInformation($"Found {tasks.Count} tasks for user {userId}");
@@ -550,7 +606,7 @@ namespace Project_Creation.Controllers
                     if (TimeOnly.TryParse(task.Time, out TimeOnly parsedTime))
                     {
                         timeOnly = parsedTime;
-                }
+                    }
                 }
                 
                 // Get user role to determine appointment type
@@ -562,7 +618,7 @@ namespace Project_Creation.Controllers
                     whoSetAppointment = WhoSetAppointments.Admin;
                 }
                 else if (role == "Staff")
-                            {
+                {
                     whoSetAppointment = WhoSetAppointments.Staff;
                 }
                 
@@ -570,27 +626,70 @@ namespace Project_Creation.Controllers
                 bool isAll = task.SendReminder; // Use this field to store IsAll value from JSON
                 
                 // Create new Calendar event
-                var newEvent = new Calendar
+                // Parse end date if provided
+                DateTime endTaskDate;
+                DateOnly? endDateOnly = null;
+                if (!string.IsNullOrEmpty(task.EndDate) && DateTime.TryParse(task.EndDate, out endTaskDate))
+                {
+                    endDateOnly = DateOnly.FromDateTime(endTaskDate);
+                }
+
+                // Parse end time if provided
+                TimeOnly? endTimeOnly = null;
+                if (!string.IsNullOrEmpty(task.EndTime))
+                {
+                    if (TimeOnly.TryParse(task.EndTime, out TimeOnly parsedEndTime))
                     {
+                        endTimeOnly = parsedEndTime;
+                    }
+                }
+
+                var newEvent = new Calendar
+                {
                     Title = task.Title,
                     Date = DateOnly.FromDateTime(taskDate),
                     Time = timeOnly,
+                    EndDate = endDateOnly,
+                    EndTime = endTimeOnly,
                     Priority = task.Priority, // Now directly using the enum from DTO
                     Notes = task.Description,
                     CreatedAt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Singapore")),
-                        UserId = userId,
+                    UserId = userId,
                     WhoSetAppointment = whoSetAppointment,
                     IsAll = isAll
-                    };
+                };
 
                 // Handle sharing options based on user role
-                    if (role == "Admin")
-                    {
+                if (role == "Admin")
+                {
                     newEvent.IsAdminSetAll = isAll;
-                                    }
+                    
+                    // Handle business categories if not sharing with all
+                    if (!isAll && task.SelectedBusinessCategories != null && task.SelectedBusinessCategories.Count > 0)
+                    {
+                        newEvent.AdminViewers1 = string.Join(",", task.SelectedBusinessCategories);
+                        _logger.LogInformation($"Setting AdminViewers1 to: {newEvent.AdminViewers1}");
+                    }
+                    
+                    // Handle specific business owners if not sharing with all
+                    if (!isAll && task.SelectedBusinessOwners != null && task.SelectedBusinessOwners.Count > 0)
+                    {
+                        newEvent.AdminViewers2 = string.Join(",", task.SelectedBusinessOwners);
+                        _logger.LogInformation($"Setting AdminViewers2 to: {newEvent.AdminViewers2}");
+                    }
+                }
+                else if (role == "BusinessOwner" || role == "Staff")
+                {
+                    // Handle staff sharing for business owners
+                    if (!isAll && task.SelectedStaff != null && task.SelectedStaff.Count > 0)
+                    {
+                        newEvent.BOViewers = string.Join(",", task.SelectedStaff);
+                        _logger.LogInformation($"Setting BOViewers to: {newEvent.BOViewers}");
+                    }
+                }
                 
                 _context.Calendar.Add(newEvent);
-                    await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync();
 
                 // Create a reminder notification for the event
                 string reminderTitle = $"Calendar Event: {task.Title}";
@@ -611,13 +710,24 @@ namespace Project_Creation.Controllers
                 if (user != null && !string.IsNullOrEmpty(user.Email))
                 {
                     string emailSubject = $"New Calendar Event: {task.Title}";
+                    string endDateInfo = "";
+                    if (endDateOnly.HasValue)
+                    {
+                        endDateInfo = $"<p><strong>End Date:</strong> {endDateOnly.Value.ToString("dddd, MMMM d, yyyy")}</p>";
+                        if (endTimeOnly.HasValue)
+                        {
+                            endDateInfo += $"<p><strong>End Time:</strong> {endTimeOnly.Value.ToString("h:mm tt")}</p>";
+                        }
+                    }
+                    
                     string emailBody = $@"
                         <h2>Calendar Event Reminder</h2>
                         <p>You have a new event scheduled:</p>
                         <div style='padding: 15px; border-left: 4px solid #f3993e; margin: 20px 0;'>
                             <h3>{task.Title}</h3>
-                            <p><strong>Date:</strong> {taskDate.ToString("dddd, MMMM d, yyyy")}</p>
-                            <p><strong>Time:</strong> {(timeOnly.HasValue ? timeOnly.Value.ToString("h:mm tt") : "All day")}</p>
+                            <p><strong>Start Date:</strong> {taskDate.ToString("dddd, MMMM d, yyyy")}</p>
+                            <p><strong>Start Time:</strong> {(timeOnly.HasValue ? timeOnly.Value.ToString("h:mm tt") : "All day")}</p>
+                            {endDateInfo}
                             <p><strong>Priority:</strong> {task.Priority}</p>
                             <p><strong>Description:</strong> {reminderMessage}</p>
                         </div>
@@ -643,7 +753,9 @@ namespace Project_Creation.Controllers
                     Id = newEvent.Id,
                     Title = newEvent.Title,
                     Date = newEvent.Date.ToString("yyyy-MM-dd"),
+                    EndDate = newEvent.EndDate?.ToString("yyyy-MM-dd") ?? "",
                     Time = newEvent.Time?.ToString("HH:mm") ?? "",
+                    EndTime = newEvent.EndTime?.ToString("HH:mm") ?? "",
                     Priority = newEvent.Priority.ToString(), // Convert enum to string for DTO
                     Notes = newEvent.Notes ?? "",
                     CreatedAt = newEvent.CreatedAt,
@@ -652,6 +764,109 @@ namespace Project_Creation.Controllers
                     AdminViewers1 = newEvent.AdminViewers1 ?? "",
                     AdminViewers2 = newEvent.AdminViewers2 ?? ""
                 };
+
+                // Now send real-time updates to all relevant users via SignalR
+                // 1. Always send to the creator
+                await _hubContext.Clients.User(userId.ToString()).SendAsync(
+                    "ReceiveAppointment",
+                    responseTask
+                );
+
+                // 2. Send to appropriate recipients based on sharing settings
+                List<string> recipientUserIds = new List<string>();
+
+                if (role == "Admin")
+                {
+                    if (isAll) // Shared with all business owners
+                    {
+                        var businessOwners = await _context.Users
+                            .Where(u => u.UserRole == "BusinessOwner")
+                            .Select(u => u.Id.ToString())
+                            .ToListAsync();
+                        recipientUserIds.AddRange(businessOwners);
+                    }
+                    else // Shared with specific business owners or categories
+                    {
+                        // Handle sharing with specific business categories
+                        if (!string.IsNullOrEmpty(newEvent.AdminViewers1))
+                        {
+                            var categories = newEvent.AdminViewers1.Split(',');
+                            var businessOwnersInCategories = await _context.Users
+                                .Where(u => u.UserRole == "BusinessOwner" && categories.Contains(u.CategoryOfBusiness))
+                                .Select(u => u.Id.ToString())
+                                .ToListAsync();
+                            recipientUserIds.AddRange(businessOwnersInCategories);
+                        }
+
+                        // Handle sharing with specific business owners
+                        if (!string.IsNullOrEmpty(newEvent.AdminViewers2))
+                        {
+                            var specificOwnerIds = newEvent.AdminViewers2.Split(',');
+                            recipientUserIds.AddRange(specificOwnerIds);
+                        }
+                    }
+                }
+                else if (role == "BusinessOwner")
+                {
+                    if (isAll) // Shared with all staff
+                    {
+                        var staffMembers = await _context.Staff
+                            .Where(s => s.BOId == userId)
+                            .Select(s => s.Id.ToString())
+                            .ToListAsync();
+                        recipientUserIds.AddRange(staffMembers);
+                    }
+                    else // Shared with specific staff
+                    {
+                        if (!string.IsNullOrEmpty(newEvent.BOViewers))
+                        {
+                            var specificStaffIds = newEvent.BOViewers.Split(',');
+                            recipientUserIds.AddRange(specificStaffIds);
+                        }
+                    }
+                }
+                else if (role == "Staff")
+                {
+                    // Get the business owner ID for this staff
+                    var staffMember = await _context.Staff.FindAsync(int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)));
+                    if (staffMember != null)
+                    {
+                        // Always send to the business owner
+                        recipientUserIds.Add(staffMember.BOId.ToString());
+
+                        if (isAll) // Shared with all staff
+                        {
+                            var otherStaffMembers = await _context.Staff
+                                .Where(s => s.BOId == staffMember.BOId && s.Id != staffMember.Id)
+                                .Select(s => s.Id.ToString())
+                                .ToListAsync();
+                            recipientUserIds.AddRange(otherStaffMembers);
+                        }
+                        else // Shared with specific staff
+                        {
+                            if (!string.IsNullOrEmpty(newEvent.BOViewers))
+                            {
+                                var specificStaffIds = newEvent.BOViewers.Split(',');
+                                recipientUserIds.AddRange(specificStaffIds);
+                            }
+                        }
+                    }
+                }
+
+                // Remove duplicates and send to all recipients
+                recipientUserIds = recipientUserIds.Distinct().ToList();
+                
+                // Log the recipients for debugging
+                _logger.LogInformation($"Sending appointment notification to {recipientUserIds.Count} recipients: {string.Join(", ", recipientUserIds)}");
+                
+                // Send to each recipient
+                foreach (var recipientId in recipientUserIds)
+                {
+                    await _hubContext.Clients.User(recipientId).SendAsync(
+                        "ReceiveAppointment",
+                        responseTask
+                    );
+                }
 
                 return Ok(new { success = true, task = responseTask });
             }
@@ -766,6 +981,17 @@ namespace Project_Creation.Controllers
                     return BadRequest(new { success = false, message = "Invalid date format" });
                 }
 
+                // Parse end date if provided
+                DateOnly? endDate = null;
+                if (!string.IsNullOrEmpty(taskDTO.EndDate))
+                {
+                    if (!DateOnly.TryParse(taskDTO.EndDate, out var parsedEndDate))
+                    {
+                        return BadRequest(new { success = false, message = "Invalid end date format" });
+                    }
+                    endDate = parsedEndDate;
+                }
+
                 // Parse time if provided
                 TimeOnly? time = null;
                 if (!string.IsNullOrEmpty(taskDTO.Time))
@@ -776,6 +1002,17 @@ namespace Project_Creation.Controllers
                     }
                     time = parsedTime;
                 }
+                
+                // Parse end time if provided
+                TimeOnly? endTime = null;
+                if (!string.IsNullOrEmpty(taskDTO.EndTime))
+                {
+                    if (!TimeOnly.TryParse(taskDTO.EndTime, out var parsedEndTime))
+                    {
+                        return BadRequest(new { success = false, message = "Invalid end time format" });
+                    }
+                    endTime = parsedEndTime;
+                }
 
                 // Store original values for comparison to determine if notifications are needed
                 bool sharingChanged = existingTask.IsAll != taskDTO.IsAll || 
@@ -784,13 +1021,17 @@ namespace Project_Creation.Controllers
                 // Store previous sharing settings to compare
                 string previousAdminViewers1 = existingTask.AdminViewers1;
                 string previousAdminViewers2 = existingTask.AdminViewers2;
+                string previousBOViewers = existingTask.BOViewers;
+                bool previousIsAll = existingTask.IsAll;
                 
                 // List to collect business owners for notifications
                 var notifyBusinessOwners = new List<Users>();
 
                 existingTask.Title = taskDTO.Title;
                 existingTask.Date = date;
+                existingTask.EndDate = endDate;
                 existingTask.Time = time;
+                existingTask.EndTime = endTime;
                 existingTask.Priority = priority;
                 existingTask.Notes = taskDTO.Notes;
                 
@@ -874,7 +1115,7 @@ namespace Project_Creation.Controllers
                             .Where(u => u.UserRole == "BusinessOwner" && selectedCategories.Contains(u.CategoryOfBusiness))
                             .ToListAsync();
                             
-                        notifyBusinessOwners.AddRange(businessOwnersFromCategories);
+                            notifyBusinessOwners.AddRange(businessOwnersFromCategories);
                     }
                     else
                     {
@@ -890,14 +1131,14 @@ namespace Project_Creation.Controllers
                             .Where(u => u.UserRole == "BusinessOwner" && taskDTO.SelectedBusinessOwners.Contains(u.Id))
                             .ToListAsync();
                             
-                        // Add only the ones not already in the list
-                        foreach(var owner in specificBusinessOwners)
-                        {
-                            if (!notifyBusinessOwners.Any(bo => bo.Id == owner.Id))
+                            // Add only the ones not already in the list
+                            foreach(var owner in specificBusinessOwners)
                             {
-                                notifyBusinessOwners.Add(owner);
+                                if (!notifyBusinessOwners.Any(bo => bo.Id == owner.Id))
+                                {
+                                    notifyBusinessOwners.Add(owner);
+                                }
                             }
-                        }
                     }
                     else
                     {
@@ -927,11 +1168,23 @@ namespace Project_Creation.Controllers
                         {
                             // Prepare email content
                             string subject = "Appointment Updated";
-                            string timeInfo = existingTask.Time.HasValue ? $" at {existingTask.Time.Value.ToString("hh:mm tt")}" : "";
+                            string startTimeInfo = existingTask.Time.HasValue ? $" at {existingTask.Time.Value.ToString("hh:mm tt")}" : "";
+                            string endDateInfo = "";
+                            if (existingTask.EndDate.HasValue)
+                            {
+                                endDateInfo = $"<strong>End Date:</strong> {existingTask.EndDate.Value.ToString("dddd, MMMM d, yyyy")}";
+                                if (existingTask.EndTime.HasValue)
+                                {
+                                    endDateInfo += $" at {existingTask.EndTime.Value.ToString("hh:mm tt")}";
+                                }
+                                endDateInfo += "<br>";
+                            }
+                            
                             string message = $"<p>Dear {owner.FirstName},</p>" + 
                                 $"<p>An appointment has been updated by {adminName}:</p>" +
                                 $"<p><strong>Title:</strong> {existingTask.Title}<br>" +
-                                $"<strong>Date:</strong> {existingTask.Date.ToString("dddd, MMMM d, yyyy")}{timeInfo}<br>" +
+                                $"<strong>Start Date:</strong> {existingTask.Date.ToString("dddd, MMMM d, yyyy")}{startTimeInfo}<br>" +
+                                $"{endDateInfo}" +
                                 $"<strong>Priority:</strong> {existingTask.Priority}</p>";
                                 
                             if (!string.IsNullOrEmpty(existingTask.Notes))
@@ -960,6 +1213,180 @@ namespace Project_Creation.Controllers
                             // Continue with other notifications even if one fails
                         }
                     }
+                }
+
+                // Now send real-time updates to all relevant users via SignalR
+                // 1. Determine all users who should receive the update
+                List<string> recipientUserIds = new List<string>();
+
+                // Always include the creator
+                recipientUserIds.Add(existingTask.UserId.ToString());
+
+                // Determine recipients based on role and sharing settings
+                if (role == "Admin")
+                {
+                    if (taskDTO.IsAll) // Shared with all business owners
+                    {
+                        var businessOwners = await _context.Users
+                            .Where(u => u.UserRole == "BusinessOwner")
+                            .Select(u => u.Id.ToString())
+                            .ToListAsync();
+                        recipientUserIds.AddRange(businessOwners);
+                    }
+                    else // Shared with specific business owners or categories
+                    {
+                        // Handle sharing with specific business categories
+                        if (!string.IsNullOrEmpty(existingTask.AdminViewers1))
+                        {
+                            var categories = existingTask.AdminViewers1.Split(',');
+                            var businessOwnersInCategories = await _context.Users
+                                .Where(u => u.UserRole == "BusinessOwner" && categories.Contains(u.CategoryOfBusiness))
+                                .Select(u => u.Id.ToString())
+                                .ToListAsync();
+                            recipientUserIds.AddRange(businessOwnersInCategories);
+                        }
+
+                        // Handle sharing with specific business owners
+                        if (!string.IsNullOrEmpty(existingTask.AdminViewers2))
+                        {
+                            var specificOwnerIds = existingTask.AdminViewers2.Split(',');
+                            recipientUserIds.AddRange(specificOwnerIds);
+                        }
+                    }
+
+                    // If sharing settings changed, also notify users who previously had access
+                    if (sharingChanged || previousAdminViewers1 != existingTask.AdminViewers1 || previousAdminViewers2 != existingTask.AdminViewers2)
+                    {
+                        // Add users from previous sharing settings
+                        if (!string.IsNullOrEmpty(previousAdminViewers1))
+                        {
+                            var previousCategories = previousAdminViewers1.Split(',');
+                            var previousBusinessOwners = await _context.Users
+                                .Where(u => u.UserRole == "BusinessOwner" && previousCategories.Contains(u.CategoryOfBusiness))
+                                .Select(u => u.Id.ToString())
+                                .ToListAsync();
+                            recipientUserIds.AddRange(previousBusinessOwners);
+                        }
+
+                        if (!string.IsNullOrEmpty(previousAdminViewers2))
+                        {
+                            var previousOwnerIds = previousAdminViewers2.Split(',');
+                            recipientUserIds.AddRange(previousOwnerIds);
+                        }
+
+                        // If previously shared with all, include all business owners
+                        if (previousIsAll)
+                        {
+                            var allBusinessOwners = await _context.Users
+                                .Where(u => u.UserRole == "BusinessOwner")
+                                .Select(u => u.Id.ToString())
+                                .ToListAsync();
+                            recipientUserIds.AddRange(allBusinessOwners);
+                        }
+                    }
+                }
+                else if (role == "BusinessOwner")
+                {
+                    if (taskDTO.IsAll) // Shared with all staff
+                    {
+                        var staffMembers = await _context.Staff
+                            .Where(s => s.BOId == userId)
+                            .Select(s => s.Id.ToString())
+                            .ToListAsync();
+                        recipientUserIds.AddRange(staffMembers);
+                    }
+                    else // Shared with specific staff
+                    {
+                        if (!string.IsNullOrEmpty(existingTask.BOViewers))
+                        {
+                            var specificStaffIds = existingTask.BOViewers.Split(',');
+                            recipientUserIds.AddRange(specificStaffIds);
+                        }
+                    }
+
+                    // If sharing settings changed, also notify users who previously had access
+                    if (sharingChanged || previousBOViewers != existingTask.BOViewers)
+                    {
+                        // Add users from previous sharing settings
+                        if (!string.IsNullOrEmpty(previousBOViewers))
+                        {
+                            var previousStaffIds = previousBOViewers.Split(',');
+                            recipientUserIds.AddRange(previousStaffIds);
+                        }
+
+                        // If previously shared with all, include all staff
+                        if (previousIsAll)
+                        {
+                            var allStaff = await _context.Staff
+                                .Where(s => s.BOId == userId)
+                                .Select(s => s.Id.ToString())
+                                .ToListAsync();
+                            recipientUserIds.AddRange(allStaff);
+                        }
+                    }
+                }
+                else if (role == "Staff")
+                {
+                    // Get the business owner ID for this staff
+                    var staffMember = await _context.Staff.FindAsync(userId);
+                    if (staffMember != null)
+                    {
+                        // Always include the business owner
+                        recipientUserIds.Add(staffMember.BOId.ToString());
+
+                        if (taskDTO.IsAll) // Shared with all staff
+                        {
+                            var otherStaffMembers = await _context.Staff
+                                .Where(s => s.BOId == staffMember.BOId && s.Id != staffMember.Id)
+                                .Select(s => s.Id.ToString())
+                                .ToListAsync();
+                            recipientUserIds.AddRange(otherStaffMembers);
+                        }
+                        else // Shared with specific staff
+                        {
+                            if (!string.IsNullOrEmpty(existingTask.BOViewers))
+                            {
+                                var specificStaffIds = existingTask.BOViewers.Split(',');
+                                recipientUserIds.AddRange(specificStaffIds);
+                            }
+                        }
+
+                        // If sharing settings changed, also notify users who previously had access
+                        if (sharingChanged || previousBOViewers != existingTask.BOViewers)
+                        {
+                            // Add users from previous sharing settings
+                            if (!string.IsNullOrEmpty(previousBOViewers))
+                            {
+                                var previousStaffIds = previousBOViewers.Split(',');
+                                recipientUserIds.AddRange(previousStaffIds);
+                            }
+
+                            // If previously shared with all, include all staff
+                            if (previousIsAll)
+                            {
+                                var allStaff = await _context.Staff
+                                    .Where(s => s.BOId == staffMember.BOId)
+                                    .Select(s => s.Id.ToString())
+                                    .ToListAsync();
+                                recipientUserIds.AddRange(allStaff);
+                            }
+                        }
+                    }
+                }
+
+                // Remove duplicates and send to all recipients
+                recipientUserIds = recipientUserIds.Distinct().ToList();
+                
+                // Log the recipients for debugging
+                _logger.LogInformation($"Sending appointment update to {recipientUserIds.Count} recipients: {string.Join(", ", recipientUserIds)}");
+                
+                // Send to each recipient
+                foreach (var recipientId in recipientUserIds)
+                {
+                    await _hubContext.Clients.User(recipientId).SendAsync(
+                        "UpdateAppointment",
+                        taskDTO
+                    );
                 }
 
                 return Json(new { success = true, task = taskDTO });
@@ -1083,8 +1510,109 @@ namespace Project_Creation.Controllers
                     return Forbid(new { success = false, message = "You do not have permission to delete this appointment" });
                 }
 
+                // Before deleting, collect all users who should be notified of the deletion
+                List<string> recipientUserIds = new List<string>();
+
+                // Always include the creator
+                recipientUserIds.Add(task.UserId.ToString());
+
+                // Determine recipients based on role and sharing settings
+                if (role == "Admin")
+                {
+                    if (task.IsAdminSetAll) // Shared with all business owners
+                    {
+                        var businessOwners = await _context.Users
+                            .Where(u => u.UserRole == "BusinessOwner")
+                            .Select(u => u.Id.ToString())
+                            .ToListAsync();
+                        recipientUserIds.AddRange(businessOwners);
+                    }
+                    else // Shared with specific business owners or categories
+                    {
+                        // Handle sharing with specific business categories
+                        if (!string.IsNullOrEmpty(task.AdminViewers1))
+                        {
+                            var categories = task.AdminViewers1.Split(',');
+                            var businessOwnersInCategories = await _context.Users
+                                .Where(u => u.UserRole == "BusinessOwner" && categories.Contains(u.CategoryOfBusiness))
+                                .Select(u => u.Id.ToString())
+                                .ToListAsync();
+                            recipientUserIds.AddRange(businessOwnersInCategories);
+                        }
+
+                        // Handle sharing with specific business owners
+                        if (!string.IsNullOrEmpty(task.AdminViewers2))
+                        {
+                            var specificOwnerIds = task.AdminViewers2.Split(',');
+                            recipientUserIds.AddRange(specificOwnerIds);
+                        }
+                    }
+                }
+                else if (role == "BusinessOwner")
+                {
+                    if (task.IsAll) // Shared with all staff
+                    {
+                        var staffMembers = await _context.Staff
+                            .Where(s => s.BOId == userId)
+                            .Select(s => s.Id.ToString())
+                            .ToListAsync();
+                        recipientUserIds.AddRange(staffMembers);
+                    }
+                    else // Shared with specific staff
+                    {
+                        if (!string.IsNullOrEmpty(task.BOViewers))
+                        {
+                            var specificStaffIds = task.BOViewers.Split(',');
+                            recipientUserIds.AddRange(specificStaffIds);
+                        }
+                    }
+                }
+                else if (role == "Staff")
+                {
+                    // Get the business owner ID for this staff
+                    var staffMember = await _context.Staff.FindAsync(userId);
+                    if (staffMember != null)
+                    {
+                        // Always include the business owner
+                        recipientUserIds.Add(staffMember.BOId.ToString());
+
+                        if (task.IsAll) // Shared with all staff
+                        {
+                            var otherStaffMembers = await _context.Staff
+                                .Where(s => s.BOId == staffMember.BOId && s.Id != staffMember.Id)
+                                .Select(s => s.Id.ToString())
+                                .ToListAsync();
+                            recipientUserIds.AddRange(otherStaffMembers);
+                        }
+                        else // Shared with specific staff
+                        {
+                            if (!string.IsNullOrEmpty(task.BOViewers))
+                            {
+                                var specificStaffIds = task.BOViewers.Split(',');
+                                recipientUserIds.AddRange(specificStaffIds);
+                            }
+                        }
+                    }
+                }
+
+                // Now delete the task
                 _context.Calendar.Remove(task);
                 await _context.SaveChangesAsync();
+
+                // Remove duplicates and send to all recipients
+                recipientUserIds = recipientUserIds.Distinct().ToList();
+                
+                // Log the recipients for debugging
+                _logger.LogInformation($"Sending appointment deletion notification to {recipientUserIds.Count} recipients: {string.Join(", ", recipientUserIds)}");
+                
+                // Send to each recipient
+                foreach (var recipientId in recipientUserIds)
+                {
+                    await _hubContext.Clients.User(recipientId).SendAsync(
+                        "DeleteAppointment",
+                        id
+                    );
+                }
 
                 return Json(new { success = true, message = "Appointment deleted successfully" });
             }

@@ -669,7 +669,7 @@
 						<a class="dropdown-item" href="/Profile">
 							<i class="fas fa-user-circle me-2"></i>My Profile
 						</a>
-						<a class="dropdown-item" href="/Settings">
+						<a class="dropdown-item" href="/Profile/Settings">
 							<i class="fas fa-cog me-2"></i>Settings
 						</a>
 						<div class="dropdown-divider"></div>
@@ -891,10 +891,12 @@
 			// Navbar scroll effect
 			window.addEventListener('scroll', function() {
 				const navbar = document.querySelector('.navbar-modern');
-				if (window.scrollY > 50) {
-					navbar.classList.add('scrolled');
-				} else {
-					navbar.classList.remove('scrolled');
+				if(navbar){
+					if (window.scrollY > 50) {
+						navbar.classList.add('scrolled');
+					} else {
+						navbar.classList.remove('scrolled');
+					}
 				}
 			});
 

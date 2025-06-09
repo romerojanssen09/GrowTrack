@@ -226,6 +226,10 @@ namespace Project_Creation.Controllers
         {
             if (!ModelState.IsValid)
             {
+                foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    _logger.LogWarning("ModelState error: {Error}", error.ErrorMessage);
+                }
                 return View("Index", model);
             }
 
@@ -233,185 +237,230 @@ namespace Project_Creation.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId == null)
             {
+                _logger.LogWarning("User ID not found in claims");
+                TempData["ErrorMessage"] = "User identification failed. Please log in again.";
                 return RedirectToAction("Login", "Login");
             }
 
             // Parse userId as integer
             if (!int.TryParse(userId, out int businessOwnerId))
             {
+                _logger.LogWarning("Invalid user ID format: {UserId}", userId);
                 TempData["ErrorMessage"] = "Invalid user ID format.";
                 return RedirectToAction("Dashboard", "Pages");
             }
+
+            _logger.LogInformation("Processing profile update for user {UserId}", businessOwnerId);
 
             // Handle file upload for business permit if provided
             string businessPermitPath = model.BusinessPermitPath;
             if (model.BusinessPermitFile != null && model.BusinessPermitFile.Length > 0)
             {
-                string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", "business_permits");
-                if (!Directory.Exists(uploadsFolder))
+                try
                 {
-                    Directory.CreateDirectory(uploadsFolder);
+                    string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", "business_permits");
+                    if (!Directory.Exists(uploadsFolder))
+                    {
+                        Directory.CreateDirectory(uploadsFolder);
+                    }
+
+                    string uniqueFileName = Guid.NewGuid().ToString() + "_" + model.BusinessPermitFile.FileName;
+                    string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                    using (var fileStream = new FileStream(filePath, FileMode.Create))
+                    {
+                        model.BusinessPermitFile.CopyTo(fileStream);
+                    }
+
+                    businessPermitPath = "/uploads/business_permits/" + uniqueFileName;
+                    _logger.LogInformation("Business permit file uploaded successfully: {FilePath}", businessPermitPath);
                 }
-
-                string uniqueFileName = Guid.NewGuid().ToString() + "_" + model.BusinessPermitFile.FileName;
-                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                catch (Exception ex)
                 {
-                    model.BusinessPermitFile.CopyTo(fileStream);
+                    _logger.LogError(ex, "Error uploading business permit file");
+                    TempData["ErrorMessage"] = "Error uploading business permit file. Please try again.";
+                    return RedirectToAction(nameof(Index));
                 }
-
-                businessPermitPath = "/uploads/business_permits/" + uniqueFileName;
             }
 
-            // Use raw SQL query with parameters
-            using (var command = _context.Database.GetDbConnection().CreateCommand())
+            try
             {
-                command.CommandText = "SELECT * FROM Users WHERE Id = @Id";
-                var parameter = command.CreateParameter();
-                parameter.ParameterName = "@Id";
-                parameter.Value = businessOwnerId;
-                command.Parameters.Add(parameter);
-
-                _context.Database.OpenConnection();
-
-                using (var result = command.ExecuteReader())
+                using (var connection = _context.Database.GetDbConnection())
                 {
-                    if (!result.HasRows)
+                    // Ensure connection is open
+                    if (connection.State != ConnectionState.Open)
                     {
-                        TempData["ErrorMessage"] = "User profile not found.";
-                        return RedirectToAction("Dashboard", "Pages");
+                        connection.Open();
+                        _logger.LogInformation("Database connection opened");
                     }
 
-                    result.Read();
-
-                    // Manually map the data
-                    var user = new Users
+                    // First check if user exists
+                    using (var command = connection.CreateCommand())
                     {
-                        Id = result.GetInt32(result.GetOrdinal("Id")),
-                        FirstName = result.IsDBNull(result.GetOrdinal("FirstName")) ? string.Empty : result.GetString(result.GetOrdinal("FirstName")),
-                        LastName = result.IsDBNull(result.GetOrdinal("LastName")) ? string.Empty : result.GetString(result.GetOrdinal("LastName")),
-                        Email = result.IsDBNull(result.GetOrdinal("Email")) ? string.Empty : result.GetString(result.GetOrdinal("Email")),
-                        PhoneNumber = result.IsDBNull(result.GetOrdinal("PhoneNumber")) ? string.Empty : result.GetString(result.GetOrdinal("PhoneNumber")),
-                        Password = result.IsDBNull(result.GetOrdinal("Password")) ? "placeholder-not-used" : result.GetString(result.GetOrdinal("Password")),
-                        BusinessName = result.IsDBNull(result.GetOrdinal("BusinessName")) ? string.Empty : result.GetString(result.GetOrdinal("BusinessName")),
-                        BusinessAddress = result.IsDBNull(result.GetOrdinal("BusinessAddress")) ? string.Empty : result.GetString(result.GetOrdinal("BusinessAddress")),
-                        DTIReqistrationNumber = result.IsDBNull(result.GetOrdinal("DTIReqistrationNumber")) ? string.Empty : result.GetString(result.GetOrdinal("DTIReqistrationNumber")),
-                        NumberOfBusinessYearsOperation = result.IsDBNull(result.GetOrdinal("NumberOfBusinessYearsOperation")) ? string.Empty : result.GetString(result.GetOrdinal("NumberOfBusinessYearsOperation")),
-                        CompanyBackground = result.IsDBNull(result.GetOrdinal("CompanyBackground")) ? string.Empty : result.GetString(result.GetOrdinal("CompanyBackground")),
-                        BusinessPermitPath = result.IsDBNull(result.GetOrdinal("BusinessPermitPath")) ? string.Empty : result.GetString(result.GetOrdinal("BusinessPermitPath")),
-                        //ScopeOfBusiness = result.IsDBNull(result.GetOrdinal("ScopeOfBusiness")) ? string.Empty : result.GetString(result.GetOrdinal("ScopeOfBusiness"))
-                    };
+                        command.CommandText = "SELECT * FROM Users WHERE Id = @Id";
+                        var parameter = command.CreateParameter();
+                        parameter.ParameterName = "@Id";
+                        parameter.Value = businessOwnerId;
+                        command.Parameters.Add(parameter);
 
-                    // Update user properties
-                    user.FirstName = model.FirstName;
-                    user.LastName = model.LastName;
-                    user.PhoneNumber = model.PhoneNumber;
-                    user.BusinessName = model.BusinessName;
-                    user.BusinessAddress = model.BusinessAddress;
-                    user.DTIReqistrationNumber = model.DTIRegistrationNumber;
-                    user.NumberOfBusinessYearsOperation = model.NumberOfBusinessYearsOperation;
-                    user.CompanyBackground = model.CompanyBackground;
-
-                    // Only update business permit path if a new file was uploaded
-                    if (model.BusinessPermitFile != null && model.BusinessPermitFile.Length > 0)
-                    {
-                        user.BusinessPermitPath = businessPermitPath;
-                    }
-
-                    // Build SQL UPDATE statement
-                    string updateSql = @"
-                        UPDATE Users 
-                        SET FirstName = @FirstName, 
-                            LastName = @LastName,
-                            PhoneNumber = @PhoneNumber,
-                            BusinessName = @BusinessName,
-                            BusinessAddress = @BusinessAddress,
-                            DTIReqistrationNumber = @DTIReqistrationNumber,
-                            NumberOfBusinessYearsOperation = @NumberOfBusinessYearsOperation,
-                            CompanyBackground = @CompanyBackground";
-
-                    // Only include business permit path in SQL if a new file was uploaded
-                    if (model.BusinessPermitFile != null && model.BusinessPermitFile.Length > 0)
-                    {
-                        updateSql += ", BusinessPermitPath = @BusinessPermitPath";
-                    }
-
-                    updateSql += " WHERE Id = @Id";
-
-                    try
-                    {
-                        // Create parameters dictionary
-                        var parameters = new Dictionary<string, object>
+                        using (var result = command.ExecuteReader())
                         {
-                            { "@FirstName", model.FirstName },
-                            { "@LastName", model.LastName },
-                            { "@PhoneNumber", model.PhoneNumber },
-                            { "@BusinessName", model.BusinessName },
-                            { "@BusinessAddress", model.BusinessAddress },
-                            { "@DTIReqistrationNumber", model.DTIRegistrationNumber },
-                            { "@NumberOfBusinessYearsOperation", model.NumberOfBusinessYearsOperation },
-                            { "@CompanyBackground", model.CompanyBackground },
-                            { "@Id", businessOwnerId }
-                        };
-
-                        // Add BusinessPermitPath parameter if needed
-                        if (model.BusinessPermitFile != null && model.BusinessPermitFile.Length > 0)
-                        {
-                            parameters.Add("@BusinessPermitPath", businessPermitPath);
-                        }
-
-                        // Create direct command for better control over execution
-                        using (var connection = _context.Database.GetDbConnection())
-                        {
-                            if (connection.State != System.Data.ConnectionState.Open)
+                            if (!result.HasRows)
                             {
-                                connection.Open();
+                                _logger.LogWarning("User not found with ID: {UserId}", businessOwnerId);
+                                TempData["ErrorMessage"] = "User profile not found.";
+                                return RedirectToAction("Dashboard", "Pages");
                             }
 
+                            result.Read();
+
+                            // Manually map the data
+                            var user = new Users
+                            {
+                                Id = result.GetInt32(result.GetOrdinal("Id")),
+                                FirstName = result.IsDBNull(result.GetOrdinal("FirstName")) ? string.Empty : result.GetString(result.GetOrdinal("FirstName")),
+                                LastName = result.IsDBNull(result.GetOrdinal("LastName")) ? string.Empty : result.GetString(result.GetOrdinal("LastName")),
+                                Email = result.IsDBNull(result.GetOrdinal("Email")) ? string.Empty : result.GetString(result.GetOrdinal("Email")),
+                                PhoneNumber = result.IsDBNull(result.GetOrdinal("PhoneNumber")) ? string.Empty : result.GetString(result.GetOrdinal("PhoneNumber")),
+                                Password = result.IsDBNull(result.GetOrdinal("Password")) ? "placeholder-not-used" : result.GetString(result.GetOrdinal("Password")),
+                                BusinessName = result.IsDBNull(result.GetOrdinal("BusinessName")) ? string.Empty : result.GetString(result.GetOrdinal("BusinessName")),
+                                BusinessAddress = result.IsDBNull(result.GetOrdinal("BusinessAddress")) ? string.Empty : result.GetString(result.GetOrdinal("BusinessAddress")),
+                                DTIReqistrationNumber = result.IsDBNull(result.GetOrdinal("DTIReqistrationNumber")) ? string.Empty : result.GetString(result.GetOrdinal("DTIReqistrationNumber")),
+                                NumberOfBusinessYearsOperation = result.IsDBNull(result.GetOrdinal("NumberOfBusinessYearsOperation")) ? string.Empty : result.GetString(result.GetOrdinal("NumberOfBusinessYearsOperation")),
+                                CompanyBackground = result.IsDBNull(result.GetOrdinal("CompanyBackground")) ? string.Empty : result.GetString(result.GetOrdinal("CompanyBackground")),
+                                BusinessPermitPath = result.IsDBNull(result.GetOrdinal("BusinessPermitPath")) ? string.Empty : result.GetString(result.GetOrdinal("BusinessPermitPath")),
+                            };
+
+                            // Track which fields are actually changing
+                            var changedFields = new List<string>();
+                            
+                            if (user.FirstName != model.FirstName) 
+                            {
+                                changedFields.Add("First Name");
+                                user.FirstName = model.FirstName;
+                            }
+                            
+                            if (user.LastName != model.LastName) 
+                            {
+                                changedFields.Add("Last Name");
+                                user.LastName = model.LastName;
+                            }
+                            
+                            if (user.PhoneNumber != model.PhoneNumber) 
+                            {
+                                changedFields.Add("Phone Number");
+                                user.PhoneNumber = model.PhoneNumber;
+                            }
+                            
+                            if (user.BusinessName != model.BusinessName) 
+                            {
+                                changedFields.Add("Business Name");
+                                user.BusinessName = model.BusinessName;
+                            }
+                            
+                            if (user.BusinessAddress != model.BusinessAddress) 
+                            {
+                                changedFields.Add("Business Address");
+                                user.BusinessAddress = model.BusinessAddress;
+                            }
+                            
+                            if (user.DTIReqistrationNumber != model.DTIRegistrationNumber) 
+                            {
+                                changedFields.Add("DTI Registration Number");
+                                user.DTIReqistrationNumber = model.DTIRegistrationNumber;
+                            }
+                            
+                            if (user.NumberOfBusinessYearsOperation != model.NumberOfBusinessYearsOperation) 
+                            {
+                                changedFields.Add("Years in Operation");
+                                user.NumberOfBusinessYearsOperation = model.NumberOfBusinessYearsOperation;
+                            }
+                            
+                            if (user.CompanyBackground != model.CompanyBackground) 
+                            {
+                                changedFields.Add("Company Background");
+                                user.CompanyBackground = model.CompanyBackground;
+                            }
+
+                            // Only update business permit path if a new file was uploaded
+                            if (model.BusinessPermitFile != null && model.BusinessPermitFile.Length > 0)
+                            {
+                                changedFields.Add("Business Permit");
+                                user.BusinessPermitPath = businessPermitPath;
+                            }
+
+                            // If no changes were made, inform the user and return
+                            if (changedFields.Count == 0)
+                            {
+                                _logger.LogInformation("No changes detected in profile update for user {UserId}", businessOwnerId);
+                                TempData["WarningMessage"] = "No changes were made to your profile. Please make sure you've changed at least one field before saving.";
+                                return RedirectToAction(nameof(Index));
+                            }
+
+                            // Build SQL UPDATE statement
+                            string updateSql = @"
+                                UPDATE Users 
+                                SET FirstName = @FirstName, 
+                                    LastName = @LastName,
+                                    PhoneNumber = @PhoneNumber,
+                                    BusinessName = @BusinessName,
+                                    BusinessAddress = @BusinessAddress,
+                                    DTIReqistrationNumber = @DTIReqistrationNumber,
+                                    NumberOfBusinessYearsOperation = @NumberOfBusinessYearsOperation,
+                                    CompanyBackground = @CompanyBackground";
+
+                            // Only include business permit path in SQL if a new file was uploaded
+                            if (model.BusinessPermitFile != null && model.BusinessPermitFile.Length > 0)
+                            {
+                                updateSql += ", BusinessPermitPath = @BusinessPermitPath";
+                            }
+
+                            updateSql += " WHERE Id = @Id";
+
+                            // Create direct command for better control over execution
                             using (var updateCommand = connection.CreateCommand())
                             {
                                 updateCommand.CommandText = updateSql;
+
+                                // Add parameters to command
+                                var parameters = new Dictionary<string, object>
+                                {
+                                    { "@FirstName", model.FirstName },
+                                    { "@LastName", model.LastName },
+                                    { "@PhoneNumber", model.PhoneNumber },
+                                    { "@BusinessName", model.BusinessName },
+                                    { "@BusinessAddress", model.BusinessAddress },
+                                    { "@DTIReqistrationNumber", model.DTIRegistrationNumber },
+                                    { "@NumberOfBusinessYearsOperation", model.NumberOfBusinessYearsOperation },
+                                    { "@CompanyBackground", model.CompanyBackground },
+                                    { "@Id", businessOwnerId }
+                                };
+
+                                // Add BusinessPermitPath parameter if needed
+                                if (model.BusinessPermitFile != null && model.BusinessPermitFile.Length > 0)
+                                {
+                                    parameters.Add("@BusinessPermitPath", businessPermitPath);
+                                }
 
                                 // Add parameters to command
                                 foreach (var param in parameters)
                                 {
                                     var sqlParameter = updateCommand.CreateParameter();
                                     sqlParameter.ParameterName = param.Key;
-                                    sqlParameter.Value = param.Value;
+                                    sqlParameter.Value = param.Value ?? DBNull.Value;
                                     updateCommand.Parameters.Add(sqlParameter);
                                 }
 
-                                // Log the SQL and parameters for debugging
-                                string debugInfo = updateSql + " Parameters: ";
-                                foreach (var param in updateCommand.Parameters)
-                                {
-                                    var p = param as Microsoft.Data.SqlClient.SqlParameter;
-                                    if (p != null)
-                                    {
-                                        debugInfo += $"{p.ParameterName}={p.Value}, ";
-                                    }
-                                }
-                                System.Diagnostics.Debug.WriteLine(debugInfo);
+                                // Log the SQL for debugging
+                                _logger.LogDebug("Executing SQL: {Sql}", updateSql);
 
                                 // Execute the command and get rows affected
                                 var rowsAffected = updateCommand.ExecuteNonQuery();
+                                _logger.LogInformation("Profile update affected {RowCount} rows for user {UserId}", rowsAffected, businessOwnerId);
 
                                 if (rowsAffected > 0)
                                 {
-                                    // Create a detailed success message that confirms which fields were updated
-                                    var updatedFields = new List<string>();
-                                    if (!string.IsNullOrEmpty(model.FirstName)) updatedFields.Add("First Name");
-                                    if (!string.IsNullOrEmpty(model.LastName)) updatedFields.Add("Last Name");
-                                    if (!string.IsNullOrEmpty(model.PhoneNumber)) updatedFields.Add("Phone Number");
-                                    if (!string.IsNullOrEmpty(model.BusinessName)) updatedFields.Add("Business Name");
-                                    if (!string.IsNullOrEmpty(model.BusinessAddress)) updatedFields.Add("Business Address");
-                                    if (!string.IsNullOrEmpty(model.DTIRegistrationNumber)) updatedFields.Add("DTI Registration Number");
-                                    if (!string.IsNullOrEmpty(model.NumberOfBusinessYearsOperation)) updatedFields.Add("Years in Operation");
-                                    if (!string.IsNullOrEmpty(model.CompanyBackground)) updatedFields.Add("Company Background");
-                                    if (model.BusinessPermitFile != null) updatedFields.Add("Business Permit");
-
-                                    var fieldsUpdated = string.Join(", ", updatedFields);
+                                    var fieldsUpdated = string.Join(", ", changedFields);
                                     TempData["SuccessMessage"] = $"Profile updated successfully! Updated information: {fieldsUpdated}";
 
                                     // Update user claims to ensure dashboard displays correct information
@@ -474,29 +523,32 @@ namespace Project_Creation.Controllers
                                         {
                                             var principal = new System.Security.Claims.ClaimsPrincipal(identity);
                                             HttpContext.SignInAsync(principal);
+                                            _logger.LogInformation("User claims updated for user {UserId}", businessOwnerId);
                                         }
                                     }
                                     catch (Exception ex)
                                     {
                                         // Log exception but don't prevent successful update
-                                        System.Diagnostics.Debug.WriteLine($"Error updating user claims: {ex.Message}");
+                                        _logger.LogError(ex, "Error updating user claims for user {UserId}", businessOwnerId);
                                     }
                                 }
                                 else
                                 {
+                                    _logger.LogWarning("No rows affected when updating profile for user {UserId}", businessOwnerId);
                                     TempData["WarningMessage"] = "No changes were made to your profile. Please make sure you've changed at least one field before saving.";
                                 }
                             }
                         }
                     }
-                    catch (Exception ex)
-                    {
-                        TempData["ErrorMessage"] = $"Error updating profile: {ex.Message}";
-                    }
-
-                    return RedirectToAction(nameof(Index));
                 }
             }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating profile for user {UserId}", businessOwnerId);
+                TempData["ErrorMessage"] = $"Error updating profile: {ex.Message}";
+            }
+
+            return RedirectToAction(nameof(Index));
         }
 
         public IActionResult Settings()
@@ -532,37 +584,26 @@ namespace Project_Creation.Controllers
         {
     if (!ModelState.IsValid)
     {
-        var email = User.FindFirstValue(ClaimTypes.Email) ?? User.Identity?.Name ?? string.Empty;
-        var fullname = User.FindFirstValue(ClaimTypes.Name) ?? User.Identity?.Name ?? string.Empty;
-        var settingsViewModel = new SettingsViewModel
-        {
-            Email = email,
-            Fullname = fullname
-        };
-        TempData["ErrorMessage"] = "Please correct the errors and try again.";
-        return View("Settings", settingsViewModel);
+        return Json(new { success = false, message = "Please correct the errors and try again." });
     }
 
     // Check if password and confirmation match
     if (model.NewPassword != model.ConfirmPassword)
     {
-        TempData["ErrorMessage"] = "New password and confirmation password do not match.";
-        return RedirectToAction("Settings");
+        return Json(new { success = false, message = "New password and confirmation password do not match." });
     }
 
     // Get the current user's ID from claims
     var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
     if (userId == null)
     {
-        TempData["ErrorMessage"] = "User not found. Please log in again.";
-        return RedirectToAction("Login", "Login");
+        return Json(new { success = false, message = "User not found. Please log in again." });
     }
 
     // Parse userId as integer
     if (!int.TryParse(userId, out int businessOwnerId))
     {
-        TempData["ErrorMessage"] = "Invalid user ID format.";
-        return RedirectToAction("Dashboard", "Pages");
+        return Json(new { success = false, message = "Invalid user ID format." });
     }
 
     try
@@ -596,8 +637,7 @@ namespace Project_Creation.Controllers
                     }
                     else
                     {
-                        TempData["ErrorMessage"] = "User not found.";
-                        return RedirectToAction("Settings");
+                        return Json(new { success = false, message = "User not found." });
                     }
                 }
             }
@@ -607,15 +647,13 @@ namespace Project_Creation.Controllers
 
             if (!passwordVerified)
             {
-                TempData["ErrorMessage"] = "Current password is incorrect.";
-                return RedirectToAction("Settings");
+                return Json(new { success = false, message = "Current password is incorrect." });
             }
             
             // Check if new password is the same as the current password
             if (BCrypt.Net.BCrypt.Verify(model.NewPassword, storedHashedPassword))
             {
-                TempData["ErrorMessage"] = "New password cannot be the same as your current password.";
-                return RedirectToAction("Settings");
+                return Json(new { success = false, message = "New password cannot be the same as your current password." });
             }
 
             // Hash the new password
@@ -640,22 +678,20 @@ namespace Project_Creation.Controllers
 
                 if (rowsAffected > 0)
                 {
-                    TempData["SuccessMessage"] = "Password changed successfully! Please use your new password the next time you log in.";
+                    return Json(new { success = true, message = "Password changed successfully! Please use your new password the next time you log in." });
                 }
                 else
                 {
-                    TempData["ErrorMessage"] = "Failed to update password. Please try again.";
+                    return Json(new { success = false, message = "Failed to update password. Please try again." });
                 }
             }
         }
     }
     catch (Exception ex)
     {
-        TempData["ErrorMessage"] = $"An error occurred: {ex.Message}";
-        return RedirectToAction("Settings");
+        _logger.LogError(ex, "Error changing password for user {UserId}", userId);
+        return Json(new { success = false, message = $"An error occurred: {ex.Message}" });
     }
-
-    return RedirectToAction(nameof(Settings));
 }
 
 [HttpPost]

@@ -7,7 +7,9 @@ namespace Project_Creation.DTO
         public int Id { get; set; }
         public string Title { get; set; }
         public string Date { get; set; }
+        public string? EndDate { get; set; }
         public string? Time { get; set; }
+        public string? EndTime { get; set; }
         public string Priority { get; set; }
         public string? Notes { get; set; }
         public WhoSetAppointments? WhoMarkedFinished { get; set; }

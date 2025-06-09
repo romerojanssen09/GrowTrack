@@ -114,7 +114,7 @@
                         {
                             @if (Model.InStock)
                             {
-                                <button type="button" class="btn btn-primary send-product-request" data-product-id="@Model.Id" data-product-name="@Model.Name">
+                                <button type="button" class="btn btn-primary send-product-request" data-product-id="@Model.Id" data-product-name="@Model.Name" data-product-stock="@Model.QuantityInStock">
                                     <i class="fas fa-shopping-cart me-2"></i> Request Product
                                 </button>
                             }
@@ -182,6 +182,7 @@
                 <form id="productRequestForm">
                     @Html.AntiForgeryToken()
                     <input type="hidden" id="requestProductId" name="productId" />
+                    <input type="hidden" id="requestProductStock" name="productStock" />
 
                     <div class="mb-3">
                         <label class="form-label">Product:</label>
@@ -195,7 +196,16 @@
 
                     <div class="mb-3">
                         <label for="requestQuantity" class="form-label">Quantity:</label>
-                        <input type="number" class="form-control" id="requestQuantity" name="quantity" min="1" required />
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="requestQuantity" name="quantity" min="1" required 
+                                   onkeypress="return event.charCode >= 48 && event.charCode <= 57" 
+                                   oninput="this.value = this.value.replace(/[^0-9]/g, '');" />
+                            <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Quick Select</button>
+                            <ul class="dropdown-menu dropdown-menu-end" id="quantityPresetList">
+                                <!-- Quantity presets will be dynamically generated -->
+                            </ul>
+                        </div>
+                        <small class="form-text text-muted available-stock">Available: 0</small>
                     </div>
 
                     <div class="mb-3">
@@ -221,17 +231,55 @@
                 interval: 5000
             });
 
+            // Prevent non-numeric characters in quantity input
+            $('#requestQuantity').on('keydown', function(e) {
+                // Allow: backspace, delete, tab, escape, enter
+                if ($.inArray(e.keyCode, [46, 8, 9, 27, 13]) !== -1 ||
+                    // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+                    (e.keyCode === 65 && e.ctrlKey === true) ||
+                    (e.keyCode === 67 && e.ctrlKey === true) ||
+                    (e.keyCode === 86 && e.ctrlKey === true) ||
+                    (e.keyCode === 88 && e.ctrlKey === true) ||
+                    // Allow: home, end, left, right
+                    (e.keyCode >= 35 && e.keyCode <= 39)) {
+                    // let it happen, don't do anything
+                    return;
+                }
+                // Ensure that it's a number and stop the keypress if not
+                if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
+                    e.preventDefault();
+                }
+            });
+
             // Handle quantity input validation
             $('#requestQuantity').on('input', function() {
-                var max = parseInt($(this).attr('max'));
+                // Remove any non-numeric characters
+                $(this).val($(this).val().replace(/[^0-9]/g, ''));
+                
+                var max = parseInt($('#requestProductStock').val());
                 var value = parseInt($(this).val());
 
                 if (value > max) {
                     $(this).val(max);
+                    alert(`Quantity cannot exceed available stock (${max})`);
                 }
                 if (value < 1) {
                     $(this).val(1);
                 }
+            });
+            
+            // Handle quantity preset selection
+            $('.quantity-preset').on('click', function(e) {
+                e.preventDefault();
+                var presetValue = parseInt($(this).data('value'));
+                var max = parseInt($('#requestProductStock').val());
+                
+                // Make sure preset doesn't exceed available stock
+                if (presetValue > max) {
+                    presetValue = max;
+                }
+                
+                $('#requestQuantity').val(presetValue);
             });
         });
 
@@ -241,12 +289,47 @@
             $(document).on('click', '.send-product-request', function() {
                 const productId = $(this).data('product-id');
                 const productName = $(this).data('product-name');
+                const productStock = $(this).data('product-stock');
 
                 // Show the product request modal
                 $('#productRequestModal').modal('show');
                 $('#requestProductId').val(productId);
                 $('#requestProductName').text(productName);
+                $('#requestProductStock').val(productStock);
+                $('.available-stock').text(`Available: ${productStock}`);
+                
+                // Set max attribute on quantity input
+                $('#requestQuantity').attr('max', productStock);
+                
+                // Generate quantity presets (5 options dividing the available stock)
+                generateQuantityPresets(productStock);
             });
+            
+            // Function to generate quantity presets
+            function generateQuantityPresets(maxQuantity) {
+                const $presetList = $('#quantityPresetList');
+                $presetList.empty(); // Clear existing presets
+                
+                if (maxQuantity <= 0) {
+                    return; // No stock available
+                }
+                
+                // Calculate 5 steps
+                for (let i = 1; i <= 5; i++) {
+                    const value = Math.ceil((maxQuantity * i) / 5);
+                    const uniqueValue = Math.min(value, maxQuantity); // Ensure we don't exceed max
+                    
+                    // Add preset option
+                    $presetList.append(`<li><a class="dropdown-item quantity-preset" href="#" data-value="${uniqueValue}">${uniqueValue}</a></li>`);
+                }
+                
+                // Re-attach click event for the new presets
+                $('.quantity-preset').off('click').on('click', function(e) {
+                    e.preventDefault();
+                    const presetValue = parseInt($(this).data('value'));
+                    $('#requestQuantity').val(presetValue);
+                });
+            }
 
             // Handle product request form submission
             $('#productRequestForm').submit(function(e) {

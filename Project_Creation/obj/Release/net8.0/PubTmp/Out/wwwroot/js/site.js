@@ -136,53 +136,6 @@ function closeDropdownOnClickOutside(e) {
     }
 }
 
-// for signalR
-
-
-// end of signalR
-
-//let lastActivity = new Date();
-//let currentStatus = 'online';
-//let idleTimeLimit = 60 * 1000; // 1 minute
-
-//function setStatus(newStatus) {
-//    if (newStatus !== currentStatus) {
-//        currentStatus = newStatus;
-//        console.log("Status changed to:", newStatus);
-//    }
-//    // Do not send here � we send in the heartbeat below
-//}
-
-//function updateActivity() {
-//    lastActivity = new Date();
-//    setStatus('online');
-//}
-
-//window.addEventListener('mousemove', updateActivity);
-//window.addEventListener('keydown', updateActivity);
-
-//// Check for idle/away every 30 seconds
-//setInterval(() => {
-//    let now = new Date();
-//    let idleTime = now - lastActivity;
-
-//    if (idleTime >= idleTimeLimit && currentStatus !== 'away') {
-//        setStatus('away');
-//    }
-//}, 30000);
-
-//// Heartbeat to server every 60 seconds
-//setInterval(() => {
-//    fetch('/Online/Status', {
-//        method: 'POST',
-//        body: new URLSearchParams({ status: currentStatus }),
-//        headers: {
-//            'Content-Type': 'application/x-www-form-urlencoded',
-//            'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
-//        }
-//    });
-//}, 60000);
-
 // Function to check for today's calendar events
 function checkTodayCalendarEvents() {
     // Only check if user is authenticated

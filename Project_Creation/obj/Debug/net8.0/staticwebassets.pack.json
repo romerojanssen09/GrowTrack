@@ -37,6 +37,10 @@
       "PackagePath": "staticwebassets\\js\\account-status-checker.js"
     },
     {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\js\\calendar.js",
+      "PackagePath": "staticwebassets\\js\\calendar.js"
+    },
+    {
       "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\js\\dashboard.js",
       "PackagePath": "staticwebassets\\js\\dashboard.js"
     },
@@ -307,6 +311,14 @@
     {
       "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\barcodes\\barcode_BAT-ELE-9769_20250603082127.png",
       "PackagePath": "staticwebassets\\uploads\\1\\barcodes\\barcode_BAT-ELE-9769_20250603082127.png"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\barcodes\\barcode_IND-MAN-19892_20250608123043.png",
+      "PackagePath": "staticwebassets\\uploads\\1\\barcodes\\barcode_IND-MAN-19892_20250608123043.png"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\products\\GrowTrackChart_c65d8683-c6a3-4376-8640-c2246833b8a7.png",
+      "PackagePath": "staticwebassets\\uploads\\1\\products\\GrowTrackChart_c65d8683-c6a3-4376-8640-c2246833b8a7.png"
     },
     {
       "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.Project_Creation.Microsoft.AspNetCore.StaticWebAssetEndpoints.props",

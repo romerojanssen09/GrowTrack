@@ -7,7 +7,6 @@ C:\Users\chell\source\repos\New folder\Project_Creation\Project_Creation\obj\Rel
 C:\Users\chell\source\repos\New folder\Project_Creation\Project_Creation\obj\Release\net8.0\Project_Creation.RazorAssemblyInfo.cache
 C:\Users\chell\source\repos\New folder\Project_Creation\Project_Creation\obj\Release\net8.0\Project_Creation.RazorAssemblyInfo.cs
 C:\Users\chell\source\repos\New folder\Project_Creation\Project_Creation\obj\Release\net8.0\Project_Creation.sourcelink.json
-C:\Users\chell\source\repos\New folder\Project_Creation\Project_Creation\bin\Release\net8.0\appsettings.Development.json
 C:\Users\chell\source\repos\New folder\Project_Creation\Project_Creation\bin\Release\net8.0\appsettings.json
 C:\Users\chell\source\repos\New folder\Project_Creation\Project_Creation\bin\Release\net8.0\Project_Creation.staticwebassets.runtime.json
 C:\Users\chell\source\repos\New folder\Project_Creation\Project_Creation\bin\Release\net8.0\Project_Creation.staticwebassets.endpoints.json
