@@ -57,7 +57,7 @@
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-md-2" style="z-index:99;">
-                    <img src="@(Model.LogoPath ?? "https://ui-avatars.com/api/?name=@Model.ShopName&background=fff&color=6366f1&rounded=true&size=256")" alt="@Model.ShopName Logo" class="business-logo img-thumbnail">
+                    <img src="@(Model.LogoPath ?? "https://ui-avatars.com/api/?name=@ViewBag.BusinessOwner&background=fff&color=6366f1&rounded=true&size=256")" alt="@ViewBag.BusinessOwner Logo" class="business-logo img-thumbnail">
                 </div>
                 <div class="col-md-8" style="z-index:99;">
                     <h1 class="business-name">@Model.ShopName</h1>

@@ -19,7 +19,7 @@ namespace Project_Creation.Models.Entities
         public string ShopName { get; set; }
 
         [Required]
-        [StringLength(100)]
+        [Column(TypeName = "nvarchar(MAX)")] // allows large text content
         public string Description { get; set; }
 
         [Required]

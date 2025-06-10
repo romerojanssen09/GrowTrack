@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "uVJDRH+2ZEFH7iUvrveuURL6F9GWs6RnYzYCYBKoixk=",
+  "Hash": "8ptAUtOOHNL2DKt/B8OJ9RnxlRsheR6lmtO87gs0lJw=",
   "Source": "Project_Creation",
   "BasePath": "_content/Project_Creation",
   "Mode": "Default",
@@ -1606,8 +1606,8 @@
       "RelatedAsset": "",
       "AssetTraitName": "",
       "AssetTraitValue": "",
-      "Fingerprint": "unoeo6jene",
-      "Integrity": "WhTmiJcsZmUpHAn9H462KcphDLtHpkcE4H020OiJ9GY=",
+      "Fingerprint": "wevx05a1re",
+      "Integrity": "uM46eqUGdjvjQh69EQs7lCJwZOgFjRWKDqbPFrlMwkM=",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\js\\navbar.js"
@@ -1632,6 +1632,27 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\js\\site.js"
+    },
+    {
+      "Identity": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\js\\staff-access.js",
+      "SourceId": "Project_Creation",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\",
+      "BasePath": "_content/Project_Creation",
+      "RelativePath": "js/staff-access#[.{fingerprint}]?.js",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "Fingerprint": "qkdqnp2qxe",
+      "Integrity": "OuLjPIqrRGVRnyhD+YVUUq7V/MCT2+UPG3n6FcoQkHk=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\js\\staff-access.js"
     },
     {
       "Identity": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\js\\table-responsive.js",
@@ -2871,153 +2892,6 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\lib\\microsoft\\signalr\\dist\\browser\\signalr.min.js"
-    },
-    {
-      "Identity": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\barcodes\\barcode_BAT-ELE-29713_20250603124729.png",
-      "SourceId": "Project_Creation",
-      "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\",
-      "BasePath": "_content/Project_Creation",
-      "RelativePath": "uploads/1/barcodes/barcode_BAT-ELE-29713_20250603124729#[.{fingerprint}]?.png",
-      "AssetKind": "All",
-      "AssetMode": "All",
-      "AssetRole": "Primary",
-      "AssetMergeBehavior": "",
-      "AssetMergeSource": "",
-      "RelatedAsset": "",
-      "AssetTraitName": "",
-      "AssetTraitValue": "",
-      "Fingerprint": "xc5qevzgfr",
-      "Integrity": "X4iOAT1oeKG9wozpSTrizm1kl7wRdt9uBjwVhGM8bRc=",
-      "CopyToOutputDirectory": "Never",
-      "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "wwwroot\\uploads\\1\\barcodes\\barcode_BAT-ELE-29713_20250603124729.png"
-    },
-    {
-      "Identity": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\barcodes\\barcode_BAT-ELE-29833_20250603133258.png",
-      "SourceId": "Project_Creation",
-      "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\",
-      "BasePath": "_content/Project_Creation",
-      "RelativePath": "uploads/1/barcodes/barcode_BAT-ELE-29833_20250603133258#[.{fingerprint}]?.png",
-      "AssetKind": "All",
-      "AssetMode": "All",
-      "AssetRole": "Primary",
-      "AssetMergeBehavior": "",
-      "AssetMergeSource": "",
-      "RelatedAsset": "",
-      "AssetTraitName": "",
-      "AssetTraitValue": "",
-      "Fingerprint": "w25o8appit",
-      "Integrity": "SJAE9ammuX2nZozNWGbqkyD96lTAAbcrzy0YeZgETR0=",
-      "CopyToOutputDirectory": "Never",
-      "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "wwwroot\\uploads\\1\\barcodes\\barcode_BAT-ELE-29833_20250603133258.png"
-    },
-    {
-      "Identity": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\barcodes\\barcode_BAT-ELE-67048_20250603051849.png",
-      "SourceId": "Project_Creation",
-      "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\",
-      "BasePath": "_content/Project_Creation",
-      "RelativePath": "uploads/1/barcodes/barcode_BAT-ELE-67048_20250603051849#[.{fingerprint}]?.png",
-      "AssetKind": "All",
-      "AssetMode": "All",
-      "AssetRole": "Primary",
-      "AssetMergeBehavior": "",
-      "AssetMergeSource": "",
-      "RelatedAsset": "",
-      "AssetTraitName": "",
-      "AssetTraitValue": "",
-      "Fingerprint": "8uq40k8iul",
-      "Integrity": "4DBTdnVrWMxvrYY7ezL/D94w+tk0DarfhBs3q83Tc9g=",
-      "CopyToOutputDirectory": "Never",
-      "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "wwwroot\\uploads\\1\\barcodes\\barcode_BAT-ELE-67048_20250603051849.png"
-    },
-    {
-      "Identity": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\barcodes\\barcode_BAT-ELE-74283_20250603121233.png",
-      "SourceId": "Project_Creation",
-      "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\",
-      "BasePath": "_content/Project_Creation",
-      "RelativePath": "uploads/1/barcodes/barcode_BAT-ELE-74283_20250603121233#[.{fingerprint}]?.png",
-      "AssetKind": "All",
-      "AssetMode": "All",
-      "AssetRole": "Primary",
-      "AssetMergeBehavior": "",
-      "AssetMergeSource": "",
-      "RelatedAsset": "",
-      "AssetTraitName": "",
-      "AssetTraitValue": "",
-      "Fingerprint": "s0ydjqpkao",
-      "Integrity": "fBilutokmy5nuY3yngvDldGZxJxGlHE1VtMsnZgUZCc=",
-      "CopyToOutputDirectory": "Never",
-      "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "wwwroot\\uploads\\1\\barcodes\\barcode_BAT-ELE-74283_20250603121233.png"
-    },
-    {
-      "Identity": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\barcodes\\barcode_BAT-ELE-9769_20250603082127.png",
-      "SourceId": "Project_Creation",
-      "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\",
-      "BasePath": "_content/Project_Creation",
-      "RelativePath": "uploads/1/barcodes/barcode_BAT-ELE-9769_20250603082127#[.{fingerprint}]?.png",
-      "AssetKind": "All",
-      "AssetMode": "All",
-      "AssetRole": "Primary",
-      "AssetMergeBehavior": "",
-      "AssetMergeSource": "",
-      "RelatedAsset": "",
-      "AssetTraitName": "",
-      "AssetTraitValue": "",
-      "Fingerprint": "kmp36c7v5b",
-      "Integrity": "fEoA6OTQ3dRfwuzpbi3cnwpmWX/DpNrMjhb6i2AVnys=",
-      "CopyToOutputDirectory": "Never",
-      "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "wwwroot\\uploads\\1\\barcodes\\barcode_BAT-ELE-9769_20250603082127.png"
-    },
-    {
-      "Identity": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\barcodes\\barcode_IND-MAN-19892_20250608123043.png",
-      "SourceId": "Project_Creation",
-      "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\",
-      "BasePath": "_content/Project_Creation",
-      "RelativePath": "uploads/1/barcodes/barcode_IND-MAN-19892_20250608123043#[.{fingerprint}]?.png",
-      "AssetKind": "All",
-      "AssetMode": "All",
-      "AssetRole": "Primary",
-      "AssetMergeBehavior": "",
-      "AssetMergeSource": "",
-      "RelatedAsset": "",
-      "AssetTraitName": "",
-      "AssetTraitValue": "",
-      "Fingerprint": "3pvu54o9id",
-      "Integrity": "CY/P323yhHCcdlsl64PY8D0qP5KrG+1+ng9sno/JeoY=",
-      "CopyToOutputDirectory": "Never",
-      "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "wwwroot\\uploads\\1\\barcodes\\barcode_IND-MAN-19892_20250608123043.png"
-    },
-    {
-      "Identity": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\products\\GrowTrackChart_c65d8683-c6a3-4376-8640-c2246833b8a7.png",
-      "SourceId": "Project_Creation",
-      "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\",
-      "BasePath": "_content/Project_Creation",
-      "RelativePath": "uploads/1/products/GrowTrackChart_c65d8683-c6a3-4376-8640-c2246833b8a7#[.{fingerprint}]?.png",
-      "AssetKind": "All",
-      "AssetMode": "All",
-      "AssetRole": "Primary",
-      "AssetMergeBehavior": "",
-      "AssetMergeSource": "",
-      "RelatedAsset": "",
-      "AssetTraitName": "",
-      "AssetTraitValue": "",
-      "Fingerprint": "g49743n5q3",
-      "Integrity": "8ElTUXGCKctaUZ9P1lOKsXTvTRT5wwqCUdZBfHul07o=",
-      "CopyToOutputDirectory": "Never",
-      "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "wwwroot\\uploads\\1\\products\\GrowTrackChart_c65d8683-c6a3-4376-8640-c2246833b8a7.png"
     }
   ],
   "Endpoints": [
@@ -6347,7 +6221,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "19844"
+          "Value": "19891"
         },
         {
           "Name": "Content-Type",
@@ -6355,11 +6229,11 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"WhTmiJcsZmUpHAn9H462KcphDLtHpkcE4H020OiJ9GY=\""
+          "Value": "\"uM46eqUGdjvjQh69EQs7lCJwZOgFjRWKDqbPFrlMwkM=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Mon, 09 Jun 2025 04:19:08 GMT"
+          "Value": "Tue, 10 Jun 2025 10:51:56 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -6369,12 +6243,12 @@
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-WhTmiJcsZmUpHAn9H462KcphDLtHpkcE4H020OiJ9GY="
+          "Value": "sha256-uM46eqUGdjvjQh69EQs7lCJwZOgFjRWKDqbPFrlMwkM="
         }
       ]
     },
     {
-      "Route": "js/navbar.unoeo6jene.js",
+      "Route": "js/navbar.wevx05a1re.js",
       "AssetFile": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\js\\navbar.js",
       "Selectors": [],
       "ResponseHeaders": [
@@ -6384,7 +6258,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "19844"
+          "Value": "19891"
         },
         {
           "Name": "Content-Type",
@@ -6392,11 +6266,11 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"WhTmiJcsZmUpHAn9H462KcphDLtHpkcE4H020OiJ9GY=\""
+          "Value": "\"uM46eqUGdjvjQh69EQs7lCJwZOgFjRWKDqbPFrlMwkM=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Mon, 09 Jun 2025 04:19:08 GMT"
+          "Value": "Tue, 10 Jun 2025 10:51:56 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -6406,7 +6280,7 @@
       "EndpointProperties": [
         {
           "Name": "fingerprint",
-          "Value": "unoeo6jene"
+          "Value": "wevx05a1re"
         },
         {
           "Name": "label",
@@ -6414,7 +6288,7 @@
         },
         {
           "Name": "integrity",
-          "Value": "sha256-WhTmiJcsZmUpHAn9H462KcphDLtHpkcE4H020OiJ9GY="
+          "Value": "sha256-uM46eqUGdjvjQh69EQs7lCJwZOgFjRWKDqbPFrlMwkM="
         }
       ]
     },
@@ -6497,6 +6371,88 @@
         {
           "Name": "integrity",
           "Value": "sha256-TANE3+nZZZoRzObKVv2CLPMWw/WZBZzE85XnuNqLGZw="
+        }
+      ]
+    },
+    {
+      "Route": "js/staff-access.js",
+      "AssetFile": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\js\\staff-access.js",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "23431"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"OuLjPIqrRGVRnyhD+YVUUq7V/MCT2+UPG3n6FcoQkHk=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Tue, 10 Jun 2025 13:38:13 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-OuLjPIqrRGVRnyhD+YVUUq7V/MCT2+UPG3n6FcoQkHk="
+        }
+      ]
+    },
+    {
+      "Route": "js/staff-access.qkdqnp2qxe.js",
+      "AssetFile": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\js\\staff-access.js",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "23431"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"OuLjPIqrRGVRnyhD+YVUUq7V/MCT2+UPG3n6FcoQkHk=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Tue, 10 Jun 2025 13:38:13 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "qkdqnp2qxe"
+        },
+        {
+          "Name": "label",
+          "Value": "js/staff-access.js"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-OuLjPIqrRGVRnyhD+YVUUq7V/MCT2+UPG3n6FcoQkHk="
         }
       ]
     },
@@ -11335,580 +11291,6 @@
         {
           "Name": "integrity",
           "Value": "sha256-4opyCjWbN8sBV1jVQ/kIcw7Vu+R42wlQa7aIfxgxNTg="
-        }
-      ]
-    },
-    {
-      "Route": "uploads/1/barcodes/barcode_BAT-ELE-29713_20250603124729.png",
-      "AssetFile": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\barcodes\\barcode_BAT-ELE-29713_20250603124729.png",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "4520"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "image/png"
-        },
-        {
-          "Name": "ETag",
-          "Value": "\"X4iOAT1oeKG9wozpSTrizm1kl7wRdt9uBjwVhGM8bRc=\""
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "Tue, 03 Jun 2025 04:47:29 GMT"
-        },
-        {
-          "Name": "Cache-Control",
-          "Value": "max-age=3600, must-revalidate"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "integrity",
-          "Value": "sha256-X4iOAT1oeKG9wozpSTrizm1kl7wRdt9uBjwVhGM8bRc="
-        }
-      ]
-    },
-    {
-      "Route": "uploads/1/barcodes/barcode_BAT-ELE-29713_20250603124729.xc5qevzgfr.png",
-      "AssetFile": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\barcodes\\barcode_BAT-ELE-29713_20250603124729.png",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "4520"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "image/png"
-        },
-        {
-          "Name": "ETag",
-          "Value": "\"X4iOAT1oeKG9wozpSTrizm1kl7wRdt9uBjwVhGM8bRc=\""
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "Tue, 03 Jun 2025 04:47:29 GMT"
-        },
-        {
-          "Name": "Cache-Control",
-          "Value": "max-age=31536000, immutable"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "fingerprint",
-          "Value": "xc5qevzgfr"
-        },
-        {
-          "Name": "label",
-          "Value": "uploads/1/barcodes/barcode_BAT-ELE-29713_20250603124729.png"
-        },
-        {
-          "Name": "integrity",
-          "Value": "sha256-X4iOAT1oeKG9wozpSTrizm1kl7wRdt9uBjwVhGM8bRc="
-        }
-      ]
-    },
-    {
-      "Route": "uploads/1/barcodes/barcode_BAT-ELE-29833_20250603133258.png",
-      "AssetFile": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\barcodes\\barcode_BAT-ELE-29833_20250603133258.png",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "4608"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "image/png"
-        },
-        {
-          "Name": "ETag",
-          "Value": "\"SJAE9ammuX2nZozNWGbqkyD96lTAAbcrzy0YeZgETR0=\""
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "Tue, 03 Jun 2025 05:32:58 GMT"
-        },
-        {
-          "Name": "Cache-Control",
-          "Value": "max-age=3600, must-revalidate"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "integrity",
-          "Value": "sha256-SJAE9ammuX2nZozNWGbqkyD96lTAAbcrzy0YeZgETR0="
-        }
-      ]
-    },
-    {
-      "Route": "uploads/1/barcodes/barcode_BAT-ELE-29833_20250603133258.w25o8appit.png",
-      "AssetFile": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\barcodes\\barcode_BAT-ELE-29833_20250603133258.png",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "4608"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "image/png"
-        },
-        {
-          "Name": "ETag",
-          "Value": "\"SJAE9ammuX2nZozNWGbqkyD96lTAAbcrzy0YeZgETR0=\""
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "Tue, 03 Jun 2025 05:32:58 GMT"
-        },
-        {
-          "Name": "Cache-Control",
-          "Value": "max-age=31536000, immutable"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "fingerprint",
-          "Value": "w25o8appit"
-        },
-        {
-          "Name": "label",
-          "Value": "uploads/1/barcodes/barcode_BAT-ELE-29833_20250603133258.png"
-        },
-        {
-          "Name": "integrity",
-          "Value": "sha256-SJAE9ammuX2nZozNWGbqkyD96lTAAbcrzy0YeZgETR0="
-        }
-      ]
-    },
-    {
-      "Route": "uploads/1/barcodes/barcode_BAT-ELE-67048_20250603051849.8uq40k8iul.png",
-      "AssetFile": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\barcodes\\barcode_BAT-ELE-67048_20250603051849.png",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "4551"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "image/png"
-        },
-        {
-          "Name": "ETag",
-          "Value": "\"4DBTdnVrWMxvrYY7ezL/D94w+tk0DarfhBs3q83Tc9g=\""
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "Mon, 02 Jun 2025 21:18:49 GMT"
-        },
-        {
-          "Name": "Cache-Control",
-          "Value": "max-age=31536000, immutable"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "fingerprint",
-          "Value": "8uq40k8iul"
-        },
-        {
-          "Name": "label",
-          "Value": "uploads/1/barcodes/barcode_BAT-ELE-67048_20250603051849.png"
-        },
-        {
-          "Name": "integrity",
-          "Value": "sha256-4DBTdnVrWMxvrYY7ezL/D94w+tk0DarfhBs3q83Tc9g="
-        }
-      ]
-    },
-    {
-      "Route": "uploads/1/barcodes/barcode_BAT-ELE-67048_20250603051849.png",
-      "AssetFile": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\barcodes\\barcode_BAT-ELE-67048_20250603051849.png",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "4551"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "image/png"
-        },
-        {
-          "Name": "ETag",
-          "Value": "\"4DBTdnVrWMxvrYY7ezL/D94w+tk0DarfhBs3q83Tc9g=\""
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "Mon, 02 Jun 2025 21:18:49 GMT"
-        },
-        {
-          "Name": "Cache-Control",
-          "Value": "max-age=3600, must-revalidate"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "integrity",
-          "Value": "sha256-4DBTdnVrWMxvrYY7ezL/D94w+tk0DarfhBs3q83Tc9g="
-        }
-      ]
-    },
-    {
-      "Route": "uploads/1/barcodes/barcode_BAT-ELE-74283_20250603121233.png",
-      "AssetFile": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\barcodes\\barcode_BAT-ELE-74283_20250603121233.png",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "4548"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "image/png"
-        },
-        {
-          "Name": "ETag",
-          "Value": "\"fBilutokmy5nuY3yngvDldGZxJxGlHE1VtMsnZgUZCc=\""
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "Tue, 03 Jun 2025 04:12:33 GMT"
-        },
-        {
-          "Name": "Cache-Control",
-          "Value": "max-age=3600, must-revalidate"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "integrity",
-          "Value": "sha256-fBilutokmy5nuY3yngvDldGZxJxGlHE1VtMsnZgUZCc="
-        }
-      ]
-    },
-    {
-      "Route": "uploads/1/barcodes/barcode_BAT-ELE-74283_20250603121233.s0ydjqpkao.png",
-      "AssetFile": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\barcodes\\barcode_BAT-ELE-74283_20250603121233.png",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "4548"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "image/png"
-        },
-        {
-          "Name": "ETag",
-          "Value": "\"fBilutokmy5nuY3yngvDldGZxJxGlHE1VtMsnZgUZCc=\""
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "Tue, 03 Jun 2025 04:12:33 GMT"
-        },
-        {
-          "Name": "Cache-Control",
-          "Value": "max-age=31536000, immutable"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "fingerprint",
-          "Value": "s0ydjqpkao"
-        },
-        {
-          "Name": "label",
-          "Value": "uploads/1/barcodes/barcode_BAT-ELE-74283_20250603121233.png"
-        },
-        {
-          "Name": "integrity",
-          "Value": "sha256-fBilutokmy5nuY3yngvDldGZxJxGlHE1VtMsnZgUZCc="
-        }
-      ]
-    },
-    {
-      "Route": "uploads/1/barcodes/barcode_BAT-ELE-9769_20250603082127.kmp36c7v5b.png",
-      "AssetFile": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\barcodes\\barcode_BAT-ELE-9769_20250603082127.png",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "3936"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "image/png"
-        },
-        {
-          "Name": "ETag",
-          "Value": "\"fEoA6OTQ3dRfwuzpbi3cnwpmWX/DpNrMjhb6i2AVnys=\""
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "Tue, 03 Jun 2025 00:21:27 GMT"
-        },
-        {
-          "Name": "Cache-Control",
-          "Value": "max-age=31536000, immutable"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "fingerprint",
-          "Value": "kmp36c7v5b"
-        },
-        {
-          "Name": "label",
-          "Value": "uploads/1/barcodes/barcode_BAT-ELE-9769_20250603082127.png"
-        },
-        {
-          "Name": "integrity",
-          "Value": "sha256-fEoA6OTQ3dRfwuzpbi3cnwpmWX/DpNrMjhb6i2AVnys="
-        }
-      ]
-    },
-    {
-      "Route": "uploads/1/barcodes/barcode_BAT-ELE-9769_20250603082127.png",
-      "AssetFile": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\barcodes\\barcode_BAT-ELE-9769_20250603082127.png",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "3936"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "image/png"
-        },
-        {
-          "Name": "ETag",
-          "Value": "\"fEoA6OTQ3dRfwuzpbi3cnwpmWX/DpNrMjhb6i2AVnys=\""
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "Tue, 03 Jun 2025 00:21:27 GMT"
-        },
-        {
-          "Name": "Cache-Control",
-          "Value": "max-age=3600, must-revalidate"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "integrity",
-          "Value": "sha256-fEoA6OTQ3dRfwuzpbi3cnwpmWX/DpNrMjhb6i2AVnys="
-        }
-      ]
-    },
-    {
-      "Route": "uploads/1/barcodes/barcode_IND-MAN-19892_20250608123043.3pvu54o9id.png",
-      "AssetFile": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\barcodes\\barcode_IND-MAN-19892_20250608123043.png",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "4690"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "image/png"
-        },
-        {
-          "Name": "ETag",
-          "Value": "\"CY/P323yhHCcdlsl64PY8D0qP5KrG+1+ng9sno/JeoY=\""
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "Sun, 08 Jun 2025 04:30:43 GMT"
-        },
-        {
-          "Name": "Cache-Control",
-          "Value": "max-age=31536000, immutable"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "fingerprint",
-          "Value": "3pvu54o9id"
-        },
-        {
-          "Name": "label",
-          "Value": "uploads/1/barcodes/barcode_IND-MAN-19892_20250608123043.png"
-        },
-        {
-          "Name": "integrity",
-          "Value": "sha256-CY/P323yhHCcdlsl64PY8D0qP5KrG+1+ng9sno/JeoY="
-        }
-      ]
-    },
-    {
-      "Route": "uploads/1/barcodes/barcode_IND-MAN-19892_20250608123043.png",
-      "AssetFile": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\barcodes\\barcode_IND-MAN-19892_20250608123043.png",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "4690"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "image/png"
-        },
-        {
-          "Name": "ETag",
-          "Value": "\"CY/P323yhHCcdlsl64PY8D0qP5KrG+1+ng9sno/JeoY=\""
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "Sun, 08 Jun 2025 04:30:43 GMT"
-        },
-        {
-          "Name": "Cache-Control",
-          "Value": "max-age=3600, must-revalidate"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "integrity",
-          "Value": "sha256-CY/P323yhHCcdlsl64PY8D0qP5KrG+1+ng9sno/JeoY="
-        }
-      ]
-    },
-    {
-      "Route": "uploads/1/products/GrowTrackChart_c65d8683-c6a3-4376-8640-c2246833b8a7.g49743n5q3.png",
-      "AssetFile": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\products\\GrowTrackChart_c65d8683-c6a3-4376-8640-c2246833b8a7.png",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "978315"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "image/png"
-        },
-        {
-          "Name": "ETag",
-          "Value": "\"8ElTUXGCKctaUZ9P1lOKsXTvTRT5wwqCUdZBfHul07o=\""
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "Sun, 08 Jun 2025 05:16:42 GMT"
-        },
-        {
-          "Name": "Cache-Control",
-          "Value": "max-age=31536000, immutable"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "fingerprint",
-          "Value": "g49743n5q3"
-        },
-        {
-          "Name": "label",
-          "Value": "uploads/1/products/GrowTrackChart_c65d8683-c6a3-4376-8640-c2246833b8a7.png"
-        },
-        {
-          "Name": "integrity",
-          "Value": "sha256-8ElTUXGCKctaUZ9P1lOKsXTvTRT5wwqCUdZBfHul07o="
-        }
-      ]
-    },
-    {
-      "Route": "uploads/1/products/GrowTrackChart_c65d8683-c6a3-4376-8640-c2246833b8a7.png",
-      "AssetFile": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\products\\GrowTrackChart_c65d8683-c6a3-4376-8640-c2246833b8a7.png",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "978315"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "image/png"
-        },
-        {
-          "Name": "ETag",
-          "Value": "\"8ElTUXGCKctaUZ9P1lOKsXTvTRT5wwqCUdZBfHul07o=\""
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "Sun, 08 Jun 2025 05:16:42 GMT"
-        },
-        {
-          "Name": "Cache-Control",
-          "Value": "max-age=3600, must-revalidate"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "integrity",
-          "Value": "sha256-8ElTUXGCKctaUZ9P1lOKsXTvTRT5wwqCUdZBfHul07o="
         }
       ]
     }

@@ -139,7 +139,7 @@ namespace Project_Creation.Controllers
                 UserId = id,
                 ShopName = existingProfile?.ShopName ?? userData.BusinessName ?? string.Empty,
                 ShopDescription = existingProfile?.Description ?? string.Empty,
-                BusinessBackgroundImgPath = existingProfile?.BusinessBackgroundImgPath ?? DefaultBackground(),
+                BusinessBackgroundImgPath = existingProfile?.BusinessBackgroundImgPath ?? DefaultBackground(id),
                 LogoPath = userData.LogoPath ?? DefaultLogo(),
                 BusinessAddress = userData.BusinessAddress ?? string.Empty,
                 PhoneNumber = userData.PhoneNumber ?? "Not provided",
@@ -191,6 +191,8 @@ namespace Project_Creation.Controllers
             }
 
             ViewBag.SelectedCategory = category;
+            ViewBag.BusinessName = userData.BusinessName;
+            ViewBag.BusinessOwner = userData.FirstName + " " + userData.LastName;
             return View(viewModel);
         }
 
@@ -236,6 +238,8 @@ namespace Project_Creation.Controllers
         public async Task<IActionResult> UpdateProfile(BOBusinessProfileDto model, IFormFile logo = null, IFormFile backgroundImage = null)
         {
             _logger.LogInformation("UpdateProfile action started");
+            _logger.LogInformation("Received model: {@Model}", model);
+
             if (!ModelState.IsValid)
             {
                 // Log specific validation errors
@@ -250,15 +254,6 @@ namespace Project_Creation.Controllers
                 _logger.LogWarning("ModelState errors: {@Errors}", errors);
 
                 return View("BusinessProfile", model);
-            }
-
-            foreach (var key in ModelState.Keys)
-            {
-                var state = ModelState[key];
-                foreach (var error in state.Errors)
-                {
-                    _logger.LogWarning($"Field: {key}, Error: {error.ErrorMessage}");
-                }
             }
 
             _logger.LogInformation("Updating profile for user {UserId}", model.UserId);
@@ -276,6 +271,7 @@ namespace Project_Creation.Controllers
             var user = await _context.Users.FindAsync(model.UserId);
             if (user == null)
             {
+                _logger.LogWarning("User not found with ID: {UserId}", model.UserId);
                 return NotFound();
             }
 
@@ -285,6 +281,7 @@ namespace Project_Creation.Controllers
             // Handle logo upload only if a new logo was provided
             if (logo != null && logo.Length > 0)
             {
+                _logger.LogInformation("Processing new logo upload");
                 // Create directory if it doesn't exist
                 var logoDirectory = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", model.UserId.ToString(), "logos");
                 if (!Directory.Exists(logoDirectory))
@@ -302,17 +299,20 @@ namespace Project_Creation.Controllers
 
                 user.LogoPath = $"/uploads/{model.UserId}/logos/{logoFileName}";
                 changesDetected = true;
+                _logger.LogInformation("Logo updated successfully");
             }
 
             // Update user information only if changed
             if (!string.IsNullOrEmpty(model.BusinessName) && user.BusinessName != model.BusinessName)
             {
+                _logger.LogInformation("Updating BusinessName from '{OldName}' to '{NewName}'", user.BusinessName, model.BusinessName);
                 user.BusinessName = model.BusinessName;
                 changesDetected = true;
             }
 
             if (!string.IsNullOrEmpty(model.BusinessAddress) && user.BusinessAddress != model.BusinessAddress)
             {
+                _logger.LogInformation("Updating BusinessAddress from '{OldAddress}' to '{NewAddress}'", user.BusinessAddress, model.BusinessAddress);
                 user.BusinessAddress = model.BusinessAddress;
                 changesDetected = true;
             }
@@ -324,45 +324,53 @@ namespace Project_Creation.Controllers
                 existingProfile = await _context.BOBusinessProfiles
                     .Where(bp => bp.UserId == model.UserId)
                     .FirstOrDefaultAsync();
+                
+                _logger.LogInformation("Existing profile found: {@Profile}", existingProfile);
             }
             catch (Exception ex)
             {
-                // Log the error
-                _logger.LogError(ex, "Error accessing BOBusinessProfiles table. It may not exist yet.");
-                // We'll handle this by creating a new profile below
+                _logger.LogError(ex, "Error accessing BOBusinessProfiles table");
             }
 
             if (existingProfile == null)
             {
+                _logger.LogInformation("Creating new business profile");
                 // Create new profile
                 var newProfile = new BOBusinessProfile
                 {
                     UserId = model.UserId,
                     ShopName = model.ShopName ?? string.Empty,
                     Description = model.Description ?? string.Empty,
-                    BusinessBackgroundImgPath = DefaultBackground()
+                    BusinessBackgroundImgPath = DefaultBackground(model.UserId)
                 };
                 _context.BOBusinessProfiles.Add(newProfile);
                 existingProfile = newProfile;
+                changesDetected = true;
             }
             else
             {
+                _logger.LogInformation("Updating existing business profile");
                 // Ensure the existing profile is being tracked
                 if (_context.Entry(existingProfile).State == EntityState.Detached)
                 {
                     _context.BOBusinessProfiles.Attach(existingProfile);
-                    _context.Entry(existingProfile).State = EntityState.Modified;
                 }
+                _context.Entry(existingProfile).State = EntityState.Modified;
 
                 // Update properties and track changes
                 if (existingProfile.ShopName != model.ShopName)
                 {
+                    _logger.LogInformation("Updating ShopName from '{OldName}' to '{NewName}'", existingProfile.ShopName, model.ShopName);
                     existingProfile.ShopName = model.ShopName;
                     changesDetected = true;
                 }
-                if (existingProfile.Description != (model.Description ?? string.Empty))
+
+                // Always update Description if it's provided in the model
+                if (model.Description != null)
                 {
-                    existingProfile.Description = model.Description ?? string.Empty;
+                    _logger.LogInformation("Updating Description from '{OldDesc}' to '{NewDesc}'", 
+                        existingProfile.Description, model.Description);
+                    existingProfile.Description = model.Description;
                     changesDetected = true;
                 }
             }
@@ -370,6 +378,7 @@ namespace Project_Creation.Controllers
             // Handle background image upload only if a new image was provided
             if (backgroundImage != null && backgroundImage.Length > 0)
             {
+                _logger.LogInformation("Processing new background image upload");
                 // Create directory if it doesn't exist
                 var backgroundDirectory = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", model.UserId.ToString(), "backgrounds");
                 if (!Directory.Exists(backgroundDirectory))
@@ -388,6 +397,7 @@ namespace Project_Creation.Controllers
                 string backgroundPath = $"/uploads/{model.UserId}/backgrounds/{uniqueFileName}";
                 existingProfile.BusinessBackgroundImgPath = backgroundPath;
                 changesDetected = true;
+                _logger.LogInformation("Background image updated successfully");
             }
 
             // Only save changes if something was actually modified
@@ -395,8 +405,9 @@ namespace Project_Creation.Controllers
             {
                 try
                 {
+                    _logger.LogInformation("Saving changes to database");
                     var changes = await _context.SaveChangesAsync();
-                    _logger.LogInformation("Saved {Count} changes to database", changes);
+                    _logger.LogInformation("Successfully saved {Count} changes to database", changes);
 
                     if (changes == 0)
                     {
@@ -410,6 +421,10 @@ namespace Project_Creation.Controllers
                     _logger.LogError(ex, "Error saving business profile changes");
                     TempData["ErrorMessage"] = "An error occurred while saving your changes.";
                 }
+            }
+            else
+            {
+                _logger.LogInformation("No changes detected, skipping save");
             }
 
             return RedirectToAction("BusinessProfile", new { id = model.UserId });
@@ -506,7 +521,7 @@ namespace Project_Creation.Controllers
                     UserId = model.UserId,
                     ShopName = model.ShopName ?? string.Empty,
                     Description = model.Description ?? string.Empty,
-                    BusinessBackgroundImgPath = DefaultBackground()
+                    BusinessBackgroundImgPath = DefaultBackground(model.UserId)
                 };
                 _context.BOBusinessProfiles.Add(newProfile);
                 existingProfile = newProfile;
@@ -663,11 +678,10 @@ namespace Project_Creation.Controllers
             }
         }
 
-        private string DefaultBackground()
+        private string DefaultBackground(int userId)
         {
             try
             {
-                int userId = GetCurrentUserId();
                 string businessName = GetUserDataById(userId, "BusinessName") ?? string.Empty;
 
                 if (string.IsNullOrEmpty(businessName))

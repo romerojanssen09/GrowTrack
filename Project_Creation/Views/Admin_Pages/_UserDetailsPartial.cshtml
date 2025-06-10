@@ -15,84 +15,100 @@
             <span class="badge bg-success mx-1">Step 3: Status Overview</span>
         </div>
     </div>
-    <div class="d-flex flex-row gap-4 flex-wrap mb-3">
-        <div class="card shadow-sm mb-3 flex-fill" style="min-width:320px;max-width:420px;">
-            <div class="card-header bg-light fw-bold"><i class="bi bi-person"></i> Personal Information</div>
-            <div class="card-body">
-                <dl class="row mb-0">
-                    <dt class="col-sm-5">Full Name:</dt>
-                    <dd class="col-sm-7">@Model.User.FirstName @Model.User.LastName</dd>
-                    <dt class="col-sm-5">Email:</dt>
-                    <dd class="col-sm-7">@Model.User.Email</dd>
-                    <dt class="col-sm-5">Phone:</dt>
-                    <dd class="col-sm-7">@Model.User.PhoneNumber</dd>
-                    <dt class="col-sm-5">Registered Date:</dt>
-                    <dd class="col-sm-7">@Model.User.RegistrationDate.ToString("MMMM dd, yyyy")</dd>
-                </dl>
+    <div class="row mb-3">
+        <div class="col-lg-5 col-md-12 mb-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-light fw-bold"><i class="bi bi-person"></i> Personal Information</div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-5">Full Name:</dt>
+                        <dd class="col-sm-7">@Model.User.FirstName @Model.User.LastName</dd>
+                        <dt class="col-sm-5">Email:</dt>
+                        <dd class="col-sm-7">@Model.User.Email</dd>
+                        <dt class="col-sm-5">Phone:</dt>
+                        <dd class="col-sm-7">@Model.User.PhoneNumber</dd>
+                        <dt class="col-sm-5">Registered Date:</dt>
+                        <dd class="col-sm-7">@Model.User.RegistrationDate.ToString("MMMM dd, yyyy")</dd>
+                    </dl>
+                </div>
             </div>
         </div>
-        <div class="card shadow-sm mb-3 flex-fill" style="min-width:420px;max-width:700px;">
-            <div class="card-header bg-light fw-bold"><i class="bi bi-building"></i> Business Information</div>
-            <div class="card-body">
-                <dl class="row mb-0">
-                    <dt class="col-sm-5">Business Name:</dt>
-                    <dd class="col-sm-7">@Model.User.BusinessName</dd>
-                    <dt class="col-sm-5">DTI Registration:</dt>
-                    <dd class="col-sm-7">
-                        @Model.User.DTIReqistrationNumber
-                        <button type="button" class="btn btn-sm btn-outline-info ms-2" data-bs-toggle="popover" data-bs-placement="right" 
-                                title="DTI Registration Number Format" 
-                                data-bs-content="Valid DTI Registration Numbers follow these formats:
-                                    - Certificate No. (CBNR): 7-digit number (e.g., 1234567)
-                                    - Reference Code: Format - BNRS-MMDDYY-XXXXXX where X is alphanumeric
-                                    - Business Name Registration System (BNRS) Number: Alphanumeric code
-                                    Verify authenticity at https://bnrs.dti.gov.ph/search">
-                            <i class="bi bi-info-circle"></i>
-                        </button>
-                        <a href="https://bnrs.dti.gov.ph/search" target="_blank" class="btn btn-sm btn-outline-info ms-2">
-                            <i class="bi bi-info-circle"></i> Verify DTI Registration
-                        </a>
-                    </dd>
-                    <dt class="col-sm-5">Business Address:</dt>
-                    <dd class="col-sm-7">@Model.User.BusinessAddress</dd>
-                    <dt class="col-sm-5">Years in Operation:</dt>
-                    <dd class="col-sm-7">@Model.User.NumberOfBusinessYearsOperation</dd>
-                    <dt class="col-sm-5">Scope of Business:</dt>
-                    <dd class="col-sm-7">@Model.User.CategoryOfBusiness</dd>
-                    <dt class="col-sm-5">Business Permit:</dt>
-                    <dd class="col-sm-7">
-                        @if (!string.IsNullOrEmpty(Model.User.BusinessPermitPath))
-                        {
-                            var ext = System.IO.Path.GetExtension(Model.User.BusinessPermitPath).ToLower();
-                            if (ext == ".pdf")
+        <div class="col-lg-7 col-md-12 mb-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-light fw-bold"><i class="bi bi-building"></i> Business Information</div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-5">Business Name:</dt>
+                        <dd class="col-sm-7">@Model.User.BusinessName</dd>
+                        <dt class="col-sm-5">DTI Registration:</dt>
+                        <dd class="col-sm-7">
+                            <div class="d-flex flex-wrap align-items-center gap-2">
+                                <span>@Model.User.DTIReqistrationNumber</span>
+                                <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="popover" data-bs-placement="auto" 
+                                        title="DTI Registration Number Format" 
+                                        data-bs-content="Valid DTI Registration Numbers follow these formats:
+                                            - Certificate No. (CBNR): 7-digit number (e.g., 1234567)
+                                            - Reference Code: Format - BNRS-MMDDYY-XXXXXX where X is alphanumeric
+                                            - Business Name Registration System (BNRS) Number: Alphanumeric code
+                                            Verify authenticity at https://bnrs.dti.gov.ph/search">
+                                    <i class="bi bi-info-circle"></i>
+                                </button>
+                                <a href="https://bnrs.dti.gov.ph/search" target="_blank" class="btn btn-sm btn-outline-info">
+                                    <i class="bi bi-info-circle"></i> Verify DTI Registration
+                                </a>
+                            </div>
+                        </dd>
+                        <dt class="col-sm-5">Business Address:</dt>
+                        <dd class="col-sm-7">@Model.User.BusinessAddress</dd>
+                        <dt class="col-sm-5">Years in Operation:</dt>
+                        <dd class="col-sm-7">@Model.User.NumberOfBusinessYearsOperation</dd>
+                        <dt class="col-sm-5">Scope of Business:</dt>
+                        <dd class="col-sm-7">@Model.User.CategoryOfBusiness</dd>
+                        <dt class="col-sm-5">Business Permit:</dt>
+                        <dd class="col-sm-7">
+                            @if (!string.IsNullOrEmpty(Model.User.BusinessPermitPath))
                             {
-                                <embed src="@Model.User.BusinessPermitPath" type="application/pdf" width="100%" height="900px" class="border rounded" />
-                            }
-                            else if (ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".gif")
-                            {
-                                <img src="@Model.User.BusinessPermitPath" style="max-width:650px;max-height:900px;" class="img-thumbnail border doc-preview" data-src="@Model.User.BusinessPermitPath" data-title="Business Permit" />
+                                var ext = System.IO.Path.GetExtension(Model.User.BusinessPermitPath).ToLower();
+                                if (ext == ".pdf")
+                                {
+                                    <div class="pdf-container" style="max-width:100%; overflow:auto;">
+                                        <embed src="@Model.User.BusinessPermitPath" type="application/pdf" width="100%" height="400px" class="border rounded" />
+                                    </div>
+                                    <div class="mt-2">
+                                        <a href="@Model.User.BusinessPermitPath" target="_blank" class="btn btn-outline-primary btn-sm">
+                                            <i class="bi bi-file-earmark-pdf"></i> View Full PDF
+                                        </a>
+                                    </div>
+                                }
+                                else if (ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".gif")
+                                {
+                                    <div class="responsive-img-container">
+                                        <img src="@Model.User.BusinessPermitPath" class="img-fluid img-thumbnail border doc-preview" data-src="@Model.User.BusinessPermitPath" data-title="Business Permit" />
+                                    </div>
+                                }
+                                else
+                                {
+                                    <a href="@Model.User.BusinessPermitPath" target="_blank" class="btn btn-outline-primary btn-sm"><i class="bi bi-file-earmark"></i> View File</a>
+                                }
                             }
                             else
                             {
-                                <a href="@Model.User.BusinessPermitPath" target="_blank" class="btn btn-outline-primary btn-sm"><i class="bi bi-file-earmark"></i> View File</a>
+                                <span class="text-muted">No file</span>
                             }
-                        }
-                        else
-                        {
-                            <span class="text-muted">No file</span>
-                        }
-                    </dd>
-                    <dt class="col-sm-5">Logo:</dt>
-                    <dd class="col-sm-7">
-                        @if (!string.IsNullOrEmpty(Model.User.LogoPath))
-                        {
-                            <img src="@Model.User.LogoPath" style="max-width:250px;max-height:250px;" class="img-thumbnail border doc-preview" data-src="@Model.User.LogoPath" data-title="Business Logo" />
-                        }
-                        else
-                        {
-                            <span class="text-muted">No logo</span>
-                        }
-                    </dd>
+                        </dd>
+                        <dt class="col-sm-5">Logo:</dt>
+                        <dd class="col-sm-7">
+                            @if (!string.IsNullOrEmpty(Model.User.LogoPath))
+                            {
+                                <div class="responsive-img-container">
+                                    <img src="@Model.User.LogoPath" class="img-fluid img-thumbnail border doc-preview" style="max-height:200px;" data-src="@Model.User.LogoPath" data-title="Business Logo" />
+                                </div>
+                            }
+                            else
+                            {
+                                <span class="text-muted">No logo</span>
+                            }
+                        </dd>
                     <dt class="col-sm-5">Status:</dt>
                     <dd class="col-sm-7">
                         <span class="badge @(Model.User.IsVerified ? "bg-success" : "bg-warning") text-white me-1">
@@ -123,7 +139,7 @@
 
                     </dd>
                     <!-- Navigation shortcuts -->
-                    <dt class="col-sm-12 mt-3">
+                    <!-- <dt class="col-sm-12 mt-3">
                         <div class="d-flex justify-content-center">
                             <div class="btn-group">
                                 <a href="@Url.Action("BusinessOwners", "Admin")" class="btn btn-primary">
@@ -137,7 +153,7 @@
                                 </a>
                             </div>
                         </div>
-                    </dt>
+                    </dt> -->
                 </dl>
             </div>
         </div>
@@ -160,32 +176,36 @@
             </div>
         </div>
         <div class="row">
-            <div class="col-md-6">
-                <div class="card shadow-sm mb-3">
+            <div class="col-lg-6 col-md-12 mb-3">
+                <div class="card shadow-sm h-100">
                     <div class="card-header bg-light fw-bold"><i class="bi bi-file-earmark-medical"></i> Business Documents</div>
                     <div class="card-body">
                         <dl class="row mb-0">
-                            <dt class="col-sm-6">Barangay Clearance:</dt>
-                            <dd class="col-sm-6">@DisplayFile(Model.AdditionInfo.BrgyClearancePath, "Barangay Clearance")</dd>
-                            <dt class="col-sm-6">SEC Certificate:</dt>
-                            <dd class="col-sm-6">@DisplayFile(Model.AdditionInfo.SecCertPath, "SEC Certificate")</dd>
-                            <dt class="col-sm-6">DTI Certificate:</dt>
-                            <dd class="col-sm-6">@DisplayFile(Model.AdditionInfo.DtiCertPath, "DTI Certificate")</dd>
-                            <dt class="col-sm-6">Business Owner Valid ID:</dt>
-                            <dd class="col-sm-6">@DisplayFile(Model.AdditionInfo.BusinessOwnerValidId, "Business Owner ID")</dd>
+                            <dt class="col-lg-6 col-md-5 col-sm-6">Barangay Clearance:</dt>
+                            <dd class="col-lg-6 col-md-7 col-sm-6">@DisplayFile(Model.AdditionInfo.BrgyClearancePath, "Barangay Clearance")</dd>
+                            
+                            <dt class="col-lg-6 col-md-5 col-sm-6">SEC Certificate:</dt>
+                            <dd class="col-lg-6 col-md-7 col-sm-6">@DisplayFile(Model.AdditionInfo.SecCertPath, "SEC Certificate")</dd>
+                            
+                            <dt class="col-lg-6 col-md-5 col-sm-6">DTI Certificate:</dt>
+                            <dd class="col-lg-6 col-md-7 col-sm-6">@DisplayFile(Model.AdditionInfo.DtiCertPath, "DTI Certificate")</dd>
+                            
+                            <dt class="col-lg-6 col-md-5 col-sm-6">Business Owner Valid ID:</dt>
+                            <dd class="col-lg-6 col-md-7 col-sm-6">@DisplayFile(Model.AdditionInfo.BusinessOwnerValidId, "Business Owner ID")</dd>
                         </dl>
                     </div>
                 </div>
             </div>
-            <div class="col-md-6">
-                <div class="card shadow-sm mb-3">
+            <div class="col-lg-6 col-md-12 mb-3">
+                <div class="card shadow-sm h-100">
                     <div class="card-header bg-light fw-bold"><i class="bi bi-journal-check"></i> Additional Info</div>
                     <div class="card-body">
                         <dl class="row mb-0">
-                            <dt class="col-sm-6">Operation to Operate:</dt>
-                            <dd class="col-sm-6">@DisplayFile(Model.AdditionInfo.OperationToOperate, "Operation to Operate")</dd>
-                            <dt class="col-sm-6">Submitted On:</dt>
-                            <dd class="col-sm-6">@Model.AdditionInfo.SubmissionDate.ToString("MMMM dd, yyyy")</dd>
+                            <dt class="col-lg-6 col-md-5 col-sm-6">Operation to Operate:</dt>
+                            <dd class="col-lg-6 col-md-7 col-sm-6">@DisplayFile(Model.AdditionInfo.OperationToOperate, "Operation to Operate")</dd>
+                            
+                            <dt class="col-lg-6 col-md-5 col-sm-6">Submitted On:</dt>
+                            <dd class="col-lg-6 col-md-7 col-sm-6">@Model.AdditionInfo.SubmissionDate.ToString("MMMM dd, yyyy")</dd>
                         </dl>
                     </div>
                 </div>
@@ -200,16 +220,18 @@
         <div class="modal-content">
             <div class="modal-header bg-dark text-white">
                 <h5 class="modal-title" id="imagePreviewModalLabel">Document Preview</h5>
-                <div class="ms-auto me-3 d-flex gap-2">
-                    <button type="button" class="btn btn-sm btn-outline-light zoom-in-btn">
-                        <i class="bi bi-zoom-in"></i> Zoom In
-                    </button>
-                    <button type="button" class="btn btn-sm btn-outline-light zoom-out-btn">
-                        <i class="bi bi-zoom-out"></i> Zoom Out
-                    </button>
-                    <button type="button" class="btn btn-sm btn-outline-light reset-zoom-btn">
-                        <i class="bi bi-arrows-angle-contract"></i> Reset
-                    </button>
+                <div class="ms-auto me-2 d-flex flex-wrap gap-2 justify-content-end">
+                    <div class="btn-group btn-group-sm">
+                        <button type="button" class="btn btn-outline-light zoom-in-btn">
+                            <i class="bi bi-zoom-in"></i><span class="d-none d-md-inline"> Zoom In</span>
+                        </button>
+                        <button type="button" class="btn btn-outline-light zoom-out-btn">
+                            <i class="bi bi-zoom-out"></i><span class="d-none d-md-inline"> Zoom Out</span>
+                        </button>
+                        <button type="button" class="btn btn-outline-light reset-zoom-btn">
+                            <i class="bi bi-arrows-angle-contract"></i><span class="d-none d-md-inline"> Reset</span>
+                        </button>
+                    </div>
                 </div>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -222,10 +244,14 @@
                 <div class="text-muted small me-auto image-info">
                     <span id="imageDimensions"></span>
                 </div>
-                <a id="downloadBtn" href="" download class="btn btn-primary">
-                    <i class="bi bi-download"></i> Download
-                </a>
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <div class="d-flex gap-2">
+                    <a id="downloadBtn" href="" download class="btn btn-primary btn-sm">
+                        <i class="bi bi-download"></i><span class="d-none d-md-inline"> Download</span>
+                    </a>
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle"></i><span class="d-none d-md-inline"> Close</span>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -239,8 +265,8 @@
         if (ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".gif")
         {
             return new HtmlString($@"
-                <div class='position-relative'>
-                    <img src='{path}' style='max-width:300px;max-height:300px;' class='img-thumbnail border doc-preview' data-src='{path}' data-title='{title}' />
+                <div class='position-relative responsive-img-container'>
+                    <img src='{path}' class='img-fluid img-thumbnail border doc-preview' data-src='{path}' data-title='{title}' />
                     <button type='button' class='btn btn-sm btn-primary position-absolute top-0 end-0 m-2 view-full-btn' data-src='{path}' data-title='{title}'>
                         <i class='bi bi-arrows-fullscreen'></i>
                     </button>
@@ -249,8 +275,8 @@
         else if (ext == ".pdf")
         {
             return new HtmlString($@"
-                <div class='mb-2'>
-                    <embed src='{path}' type='application/pdf' width='300' height='300' class='border rounded' />
+                <div class='mb-2 pdf-container' style='max-width:100%; overflow:auto;'>
+                    <embed src='{path}' type='application/pdf' width='100%' height='300px' class='border rounded' />
                     <div class='mt-2'>
                         <a href='{path}' target='_blank' class='btn btn-outline-primary btn-sm'>
                             <i class='bi bi-file-earmark-pdf'></i> View Full PDF
@@ -269,6 +295,8 @@
     .doc-preview {
         cursor: pointer;
         transition: transform 0.2s;
+        max-width: 100%;
+        height: auto;
     }
     
     .doc-preview:hover {
@@ -278,6 +306,7 @@
     
     .view-full-btn {
         opacity: 0.7;
+        z-index: 5;
     }
     
     .view-full-btn:hover {
@@ -295,6 +324,40 @@
         margin: auto;
         display: block;
         transform-origin: center;
+        max-width: 100%;
+        height: auto;
+    }
+    
+    .responsive-img-container {
+        width: 100%;
+        overflow: hidden;
+        margin-bottom: 15px;
+    }
+    
+    .responsive-img-container img {
+        max-width: 100%;
+        height: auto;
+        display: block;
+    }
+    
+    .pdf-container embed {
+        max-width: 100%;
+    }
+    
+    /* Improve modal responsiveness */
+    @@media (max-width: 768px) {
+        .modal-fullscreen {
+            padding: 0 !important;
+        }
+        
+        .document-viewer {
+            height: calc(100vh - 100px);
+        }
+        
+        .zoom-in-btn, .zoom-out-btn, .reset-zoom-btn {
+            padding: 0.2rem 0.4rem;
+            font-size: 0.75rem;
+        }
     }
 </style>
 
@@ -311,6 +374,8 @@
         
         // Image preview modal
         let currentZoom = 1;
+        let isDragging = false;
+        let startX, startY, translateX = 0, translateY = 0;
         
         $('.doc-preview, .view-full-btn').click(function(e) {
             e.preventDefault();
@@ -321,9 +386,11 @@
             $('#imagePreviewModalLabel').text(title);
             $('#downloadBtn').attr('href', src);
             
-            // Reset zoom level
+            // Reset zoom level and position
             currentZoom = 1;
-            $('#modalImage').css('transform', `scale(${currentZoom})`);
+            translateX = 0;
+            translateY = 0;
+            $('#modalImage').css('transform', 'scale(1) translate(0px, 0px)');
             
             var imageModal = new bootstrap.Modal(document.getElementById('imagePreviewModal'));
             imageModal.show();
@@ -336,24 +403,84 @@
             });
         });
         
+        // Enable image dragging when zoomed
+        $('#modalImage').on('mousedown touchstart', function(e) {
+            if (currentZoom > 1) {
+                isDragging = true;
+                startX = e.type === 'mousedown' ? e.clientX : e.originalEvent.touches[0].clientX;
+                startY = e.type === 'mousedown' ? e.clientY : e.originalEvent.touches[0].clientY;
+                e.preventDefault();
+            }
+        });
+        
+        $(document).on('mousemove touchmove', function(e) {
+            if (!isDragging) return;
+            
+            const clientX = e.type === 'mousemove' ? e.clientX : e.originalEvent.touches[0].clientX;
+            const clientY = e.type === 'mousemove' ? e.clientY : e.originalEvent.touches[0].clientY;
+            
+            const dx = clientX - startX;
+            const dy = clientY - startY;
+            
+            translateX += dx;
+            translateY += dy;
+            
+            $('#modalImage').css('transform', `scale(${currentZoom}) translate(${translateX/currentZoom}px, ${translateY/currentZoom}px)`);
+            
+            startX = clientX;
+            startY = clientY;
+        });
+        
+        $(document).on('mouseup touchend', function() {
+            isDragging = false;
+        });
+        
         // Zoom in
         $('.zoom-in-btn').click(function() {
             currentZoom += 0.25;
             if (currentZoom > 5) currentZoom = 5; // Max zoom
-            $('#modalImage').css('transform', `scale(${currentZoom})`);
+            updateTransform();
         });
         
         // Zoom out
         $('.zoom-out-btn').click(function() {
             currentZoom -= 0.25;
             if (currentZoom < 0.25) currentZoom = 0.25; // Min zoom
-            $('#modalImage').css('transform', `scale(${currentZoom})`);
+            updateTransform();
         });
         
         // Reset zoom
         $('.reset-zoom-btn').click(function() {
             currentZoom = 1;
-            $('#modalImage').css('transform', 'scale(1)');
+            translateX = 0;
+            translateY = 0;
+            updateTransform();
+        });
+        
+        function updateTransform() {
+            $('#modalImage').css('transform', `scale(${currentZoom}) translate(${translateX/currentZoom}px, ${translateY/currentZoom}px)`);
+        }
+        
+        // Handle keyboard shortcuts
+        $(document).on('keydown', function(e) {
+            if ($('#imagePreviewModal').hasClass('show')) {
+                switch(e.key) {
+                    case '+':
+                    case '=':
+                        $('.zoom-in-btn').click();
+                        break;
+                    case '-':
+                    case '_':
+                        $('.zoom-out-btn').click();
+                        break;
+                    case '0':
+                        $('.reset-zoom-btn').click();
+                        break;
+                    case 'Escape':
+                        $('#imagePreviewModal').modal('hide');
+                        break;
+                }
+            }
         });
         
         // Toggle verification status

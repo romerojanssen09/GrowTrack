@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "F7/cyAk0t/LiVjjlnDqb/xpi6KZNtodOgx6T/xhJWRw=",
+  "Hash": "xcJUlO9hjBQn3hXZB9umAOr8od1+ItuePJ5W6sHsVP8=",
   "Source": "Project_Creation",
   "BasePath": "_content/Project_Creation",
   "Mode": "Default",
@@ -1606,8 +1606,8 @@
       "RelatedAsset": "",
       "AssetTraitName": "",
       "AssetTraitValue": "",
-      "Fingerprint": "unoeo6jene",
-      "Integrity": "WhTmiJcsZmUpHAn9H462KcphDLtHpkcE4H020OiJ9GY=",
+      "Fingerprint": "wevx05a1re",
+      "Integrity": "uM46eqUGdjvjQh69EQs7lCJwZOgFjRWKDqbPFrlMwkM=",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\js\\navbar.js"
@@ -1632,6 +1632,27 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\js\\site.js"
+    },
+    {
+      "Identity": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\js\\staff-access.js",
+      "SourceId": "Project_Creation",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\",
+      "BasePath": "_content/Project_Creation",
+      "RelativePath": "js/staff-access#[.{fingerprint}]?.js",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "Fingerprint": "yd8gunzezn",
+      "Integrity": "iieZwmUQtRepCXo+Oz69sHKJwawk+WJgiyIb9ABLk1c=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\js\\staff-access.js"
     },
     {
       "Identity": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\js\\table-responsive.js",
@@ -2871,6 +2892,27 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\lib\\microsoft\\signalr\\dist\\browser\\signalr.min.js"
+    },
+    {
+      "Identity": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\backgrounds\\0c437ccb-bdfc-463c-8925-406da6fc5c27.jpg",
+      "SourceId": "Project_Creation",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\",
+      "BasePath": "_content/Project_Creation",
+      "RelativePath": "uploads/1/backgrounds/0c437ccb-bdfc-463c-8925-406da6fc5c27#[.{fingerprint}]?.jpg",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "Fingerprint": "ppzi1awf3y",
+      "Integrity": "s7EbFPofKK20LGjamp/Pe8tjizHfQ54YHkaAX7+a/9g=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\uploads\\1\\backgrounds\\0c437ccb-bdfc-463c-8925-406da6fc5c27.jpg"
     },
     {
       "Identity": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\barcodes\\barcode_BAT-ELE-29713_20250603124729.png",
@@ -6421,7 +6463,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "19844"
+          "Value": "19891"
         },
         {
           "Name": "Content-Type",
@@ -6429,11 +6471,11 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"WhTmiJcsZmUpHAn9H462KcphDLtHpkcE4H020OiJ9GY=\""
+          "Value": "\"uM46eqUGdjvjQh69EQs7lCJwZOgFjRWKDqbPFrlMwkM=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Mon, 09 Jun 2025 04:19:08 GMT"
+          "Value": "Tue, 10 Jun 2025 10:51:56 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -6443,12 +6485,12 @@
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-WhTmiJcsZmUpHAn9H462KcphDLtHpkcE4H020OiJ9GY="
+          "Value": "sha256-uM46eqUGdjvjQh69EQs7lCJwZOgFjRWKDqbPFrlMwkM="
         }
       ]
     },
     {
-      "Route": "js/navbar.unoeo6jene.js",
+      "Route": "js/navbar.wevx05a1re.js",
       "AssetFile": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\js\\navbar.js",
       "Selectors": [],
       "ResponseHeaders": [
@@ -6458,7 +6500,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "19844"
+          "Value": "19891"
         },
         {
           "Name": "Content-Type",
@@ -6466,11 +6508,11 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"WhTmiJcsZmUpHAn9H462KcphDLtHpkcE4H020OiJ9GY=\""
+          "Value": "\"uM46eqUGdjvjQh69EQs7lCJwZOgFjRWKDqbPFrlMwkM=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Mon, 09 Jun 2025 04:19:08 GMT"
+          "Value": "Tue, 10 Jun 2025 10:51:56 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -6480,7 +6522,7 @@
       "EndpointProperties": [
         {
           "Name": "fingerprint",
-          "Value": "unoeo6jene"
+          "Value": "wevx05a1re"
         },
         {
           "Name": "label",
@@ -6488,7 +6530,7 @@
         },
         {
           "Name": "integrity",
-          "Value": "sha256-WhTmiJcsZmUpHAn9H462KcphDLtHpkcE4H020OiJ9GY="
+          "Value": "sha256-uM46eqUGdjvjQh69EQs7lCJwZOgFjRWKDqbPFrlMwkM="
         }
       ]
     },
@@ -6608,6 +6650,88 @@
         {
           "Name": "integrity",
           "Value": "sha256-TANE3+nZZZoRzObKVv2CLPMWw/WZBZzE85XnuNqLGZw="
+        }
+      ]
+    },
+    {
+      "Route": "js/staff-access.js",
+      "AssetFile": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\js\\staff-access.js",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "17864"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"iieZwmUQtRepCXo+Oz69sHKJwawk+WJgiyIb9ABLk1c=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Tue, 10 Jun 2025 13:07:50 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-iieZwmUQtRepCXo+Oz69sHKJwawk+WJgiyIb9ABLk1c="
+        }
+      ]
+    },
+    {
+      "Route": "js/staff-access.yd8gunzezn.js",
+      "AssetFile": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\js\\staff-access.js",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "17864"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"iieZwmUQtRepCXo+Oz69sHKJwawk+WJgiyIb9ABLk1c=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Tue, 10 Jun 2025 13:07:50 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "yd8gunzezn"
+        },
+        {
+          "Name": "label",
+          "Value": "js/staff-access.js"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-iieZwmUQtRepCXo+Oz69sHKJwawk+WJgiyIb9ABLk1c="
         }
       ]
     },
@@ -13666,6 +13790,88 @@
         {
           "Name": "integrity",
           "Value": "sha256-4opyCjWbN8sBV1jVQ/kIcw7Vu+R42wlQa7aIfxgxNTg="
+        }
+      ]
+    },
+    {
+      "Route": "uploads/1/backgrounds/0c437ccb-bdfc-463c-8925-406da6fc5c27.jpg",
+      "AssetFile": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\backgrounds\\0c437ccb-bdfc-463c-8925-406da6fc5c27.jpg",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "32786"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/jpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"s7EbFPofKK20LGjamp/Pe8tjizHfQ54YHkaAX7+a/9g=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Tue, 10 Jun 2025 10:17:13 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=3600, must-revalidate"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-s7EbFPofKK20LGjamp/Pe8tjizHfQ54YHkaAX7+a/9g="
+        }
+      ]
+    },
+    {
+      "Route": "uploads/1/backgrounds/0c437ccb-bdfc-463c-8925-406da6fc5c27.ppzi1awf3y.jpg",
+      "AssetFile": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\backgrounds\\0c437ccb-bdfc-463c-8925-406da6fc5c27.jpg",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "32786"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/jpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"s7EbFPofKK20LGjamp/Pe8tjizHfQ54YHkaAX7+a/9g=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Tue, 10 Jun 2025 10:17:13 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "ppzi1awf3y"
+        },
+        {
+          "Name": "label",
+          "Value": "uploads/1/backgrounds/0c437ccb-bdfc-463c-8925-406da6fc5c27.jpg"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-s7EbFPofKK20LGjamp/Pe8tjizHfQ54YHkaAX7+a/9g="
         }
       ]
     },

@@ -6,12 +6,12 @@
 
 <div class="container-fluid">
     <!-- Header Row -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-sm-row gap-3 justify-content-between align-items-center mb-4">
         <div>
             <h1 class="h3 mb-0 text-gray-800">Admin Dashboard</h1>
             <p class="mb-0">Welcome back, @User.Identity.Name!</p>
         </div>
-        <div class="btn-group">
+        <div class="btn-group d-flex">
             <a asp-controller="Admin" asp-action="BOApproval" class="btn btn-primary">
                 <i class="fas fa-user-check me-2"></i>Account Approvals
             </a>

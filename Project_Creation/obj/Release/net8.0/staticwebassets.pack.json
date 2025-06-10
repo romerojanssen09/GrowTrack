@@ -57,6 +57,10 @@
       "PackagePath": "staticwebassets\\js\\site.js"
     },
     {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\js\\staff-access.js",
+      "PackagePath": "staticwebassets\\js\\staff-access.js"
+    },
+    {
       "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\js\\table-responsive.js",
       "PackagePath": "staticwebassets\\js\\table-responsive.js"
     },
@@ -291,34 +295,6 @@
     {
       "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\microsoft\\signalr\\dist\\browser\\signalr.min.js",
       "PackagePath": "staticwebassets\\lib\\microsoft\\signalr\\dist\\browser\\signalr.min.js"
-    },
-    {
-      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\barcodes\\barcode_BAT-ELE-29713_20250603124729.png",
-      "PackagePath": "staticwebassets\\uploads\\1\\barcodes\\barcode_BAT-ELE-29713_20250603124729.png"
-    },
-    {
-      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\barcodes\\barcode_BAT-ELE-29833_20250603133258.png",
-      "PackagePath": "staticwebassets\\uploads\\1\\barcodes\\barcode_BAT-ELE-29833_20250603133258.png"
-    },
-    {
-      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\barcodes\\barcode_BAT-ELE-67048_20250603051849.png",
-      "PackagePath": "staticwebassets\\uploads\\1\\barcodes\\barcode_BAT-ELE-67048_20250603051849.png"
-    },
-    {
-      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\barcodes\\barcode_BAT-ELE-74283_20250603121233.png",
-      "PackagePath": "staticwebassets\\uploads\\1\\barcodes\\barcode_BAT-ELE-74283_20250603121233.png"
-    },
-    {
-      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\barcodes\\barcode_BAT-ELE-9769_20250603082127.png",
-      "PackagePath": "staticwebassets\\uploads\\1\\barcodes\\barcode_BAT-ELE-9769_20250603082127.png"
-    },
-    {
-      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\barcodes\\barcode_IND-MAN-19892_20250608123043.png",
-      "PackagePath": "staticwebassets\\uploads\\1\\barcodes\\barcode_IND-MAN-19892_20250608123043.png"
-    },
-    {
-      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\products\\GrowTrackChart_c65d8683-c6a3-4376-8640-c2246833b8a7.png",
-      "PackagePath": "staticwebassets\\uploads\\1\\products\\GrowTrackChart_c65d8683-c6a3-4376-8640-c2246833b8a7.png"
     },
     {
       "Id": "obj\\Release\\net8.0\\staticwebassets\\msbuild.Project_Creation.Microsoft.AspNetCore.StaticWebAssetEndpoints.props",

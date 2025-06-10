@@ -93,8 +93,7 @@ namespace Project_Creation.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(MAX)");
 
                     b.Property<string>("ShopName")
                         .IsRequired()

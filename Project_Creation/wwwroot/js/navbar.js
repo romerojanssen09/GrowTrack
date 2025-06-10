@@ -20,6 +20,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize navigation state
     function initNavigation() {
+        // Get the current collapse state
+        const isCollapsed = localStorage.getItem('sidenavCollapsed') === 'true';
+        
         // On mobile, always use expanded view
         if (window.innerWidth <= 991.98) {
             body.classList.remove('collapsed-nav');
@@ -33,7 +36,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         } else {
             // For desktop, respect saved state
-            const isCollapsed = localStorage.getItem('sidenavCollapsed') === 'true';
             if (isCollapsed) {
                 body.classList.add('collapsed-nav');
                 if (toggleBtn) {

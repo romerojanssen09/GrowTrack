@@ -495,72 +495,93 @@ namespace Project_Creation.Controllers
         {
             try
             {
-                _logger.LogInformation("RefreshClaims called for user");
+                _logger.LogInformation("Refreshing claims for staff user");
                 
-                // Get the staff ID from claims
+                // Get the current staff ID
                 var staffIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                _logger.LogInformation($"Staff ID from claim: {staffIdClaim}");
-                
                 if (string.IsNullOrEmpty(staffIdClaim) || !int.TryParse(staffIdClaim, out int staffId))
                 {
                     _logger.LogWarning("Invalid or missing staff ID in claims");
-                    return BadRequest("Invalid staff ID");
+                    return Json(new { success = false, message = "Invalid staff ID" });
                 }
                 
-                // Find the staff in the database
-                _logger.LogInformation($"Looking up staff with ID: {staffId}");
-                var staff = await _context.Staff.FirstOrDefaultAsync(s => s.Id == staffId);
-                
+                // Get the staff from the database
+                var staff = await _context.Staff.FindAsync(staffId);
                 if (staff == null)
                 {
                     _logger.LogWarning($"Staff with ID {staffId} not found in database");
-                    return Unauthorized("Staff not found");
+                    return Json(new { success = false, message = "Staff not found" });
                 }
                 
-                _logger.LogInformation($"Found staff: {staff.StaffName}, Access Level: {staff.StaffAccessLevel}");
+                // Create new claims with updated access level
+                var claims = new List<Claim>
+                {
+                    new(ClaimTypes.NameIdentifier, staff.Id.ToString()),
+                    new(ClaimTypes.Email, staff.StaffSEmail),
+                    new(ClaimTypes.Name, staff.StaffName),
+                    new(ClaimTypes.Role, staff.Role),
+                    new("AccessLevel", staff.StaffAccessLevel.ToString()),
+                    new("AccountType", "Staff"),
+                    new("BOId", staff.BOId.ToString()),
+                    new("IsVerified", staff.IsActive.ToString())
+                };
+
+                // Create a new identity and principal
+                var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                var principal = new ClaimsPrincipal(identity);
+
+                // Sign in with the new claims
+                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
                 
-                // Refresh the claims
-                await RefreshUserClaims(staff);
-                _logger.LogInformation($"Claims refreshed successfully for staff ID {staffId}");
+                // Get the access level names for the response
+                var accessLevelNames = GetAccessLevelNames(staff.StaffAccessLevel);
                 
-                return Ok(new { success = true, message = "Claims refreshed successfully", accessLevel = staff.StaffAccessLevel.ToString() });
+                return Json(new { 
+                    success = true, 
+                    accessLevel = string.Join(", ", accessLevelNames)
+                });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error refreshing claims");
-                return StatusCode(500, new { success = false, message = "Error refreshing claims" });
+                return Json(new { success = false, message = "Error refreshing claims" });
             }
         }
-
-        public async Task RefreshUserClaims(Staff staff)
+        
+        // Helper method to get access level names
+        private List<string> GetAccessLevelNames(StaffAccessLevel accessLevel)
         {
-            var claims = new List<Claim>
-            {
-                new(ClaimTypes.NameIdentifier, staff.Id.ToString()),
-                new(ClaimTypes.Email, staff.StaffSEmail),
-                new(ClaimTypes.Name, staff.StaffName),
-                new(ClaimTypes.Role, staff.Role),
-                new("AccessLevel", staff.StaffAccessLevel.ToString()),
-                new("AccountType", "Staff"),
-                new("BOId", staff.BOId.ToString()),
-                new("IsVerified", staff.IsActive.ToString())
-            };
+            var accessLevelNames = new List<string>();
+            
+            // Check each flag and add the corresponding name to the list
+            if ((accessLevel & StaffAccessLevel.PublishedProducts) == StaffAccessLevel.PublishedProducts)
+                accessLevelNames.Add("Published Products");
 
-            var claimsIdentity = new ClaimsIdentity(
-                claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            if ((accessLevel & StaffAccessLevel.Leads) == StaffAccessLevel.Leads)
+                accessLevelNames.Add("Leads");
 
-            var authProperties = new AuthenticationProperties
-            {
-                IsPersistent = true,
-                ExpiresUtc = DateTimeOffset.UtcNow.AddDays(30),
-                AllowRefresh = true
-            };
+            if ((accessLevel & StaffAccessLevel.QuickSales) == StaffAccessLevel.QuickSales)
+                accessLevelNames.Add("QuickSales");
 
-            await HttpContext.SignInAsync(
-                CookieAuthenticationDefaults.AuthenticationScheme,
-                new ClaimsPrincipal(claimsIdentity),
-                authProperties
-            );
+            if ((accessLevel & StaffAccessLevel.Inventory) == StaffAccessLevel.Inventory)
+                accessLevelNames.Add("Inventory");
+
+            if ((accessLevel & StaffAccessLevel.Campaigns) == StaffAccessLevel.Campaigns)
+                accessLevelNames.Add("Campaigns");
+                
+            if ((accessLevel & StaffAccessLevel.Reports) == StaffAccessLevel.Reports)
+                accessLevelNames.Add("Reports");
+                
+            if ((accessLevel & StaffAccessLevel.Notifications) == StaffAccessLevel.Notifications)
+                accessLevelNames.Add("Notifications");
+                
+            if ((accessLevel & StaffAccessLevel.Calendar) == StaffAccessLevel.Calendar)
+                accessLevelNames.Add("Calendar");
+                
+            if ((accessLevel & StaffAccessLevel.Chat) == StaffAccessLevel.Chat)
+                accessLevelNames.Add("Chat");
+            
+            return accessLevelNames;
         }
 
         [HttpGet]
@@ -783,6 +804,77 @@ namespace Project_Creation.Controllers
                 _logger.LogError(ex, "Error getting lead requests");
                 return Json(new { success = false, message = ex.Message });
             }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [StaffAccess(StaffAccessLevel.Inventory)]
+        public async Task<IActionResult> SendMessageToSupplier([FromBody] SupplierMessageRequest request)
+        {
+            try
+            {
+                var supplier = await _context.Supplier2.FindAsync(request.SupplierId);
+                if (supplier == null)
+                {
+                    return Json(new { success = false, message = "Supplier not found." });
+                }
+
+                // Get the business owner or staff name
+                var userName = User.Identity.Name;
+
+                // Construct email body with proper formatting
+                string emailBody = $@"
+                    <html>
+                    <body style='font-family: Arial, sans-serif; line-height: 1.6;'>
+                        <div style='max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px;'>
+                            <h2 style='color: #333;'>Message from {userName}</h2>
+                            <p style='margin-bottom: 20px;'>You have received a message regarding your product supply:</p>
+                            <div style='background-color: #f9f9f9; padding: 15px; border-left: 4px solid #007bff; margin-bottom: 20px;'>
+                                {request.Message.Replace(Environment.NewLine, "<br />")}
+                            </div>
+                            <p style='color: #777; font-size: 14px;'>This message was sent from the business dashboard.</p>
+                        </div>
+                    </body>
+                    </html>";
+
+                try
+                {
+                    // Send the email
+                    await _emailService.SendEmail(supplier.Email, request.Subject, emailBody, true);
+                    
+                    // Log the activity
+                    _logger.LogInformation($"Message sent to supplier {supplier.SupplierName} (ID: {request.SupplierId}) by {userName}");
+                    
+                    return Json(new { 
+                        success = true, 
+                        message = $"Message sent to {supplier.SupplierName} successfully." 
+                    });
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"Failed to send email to supplier {supplier.SupplierName}");
+                    return Json(new { 
+                        success = false, 
+                        message = $"Failed to send message to {supplier.SupplierName}. Please try again." 
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error sending message to supplier");
+                return Json(new { 
+                    success = false, 
+                    message = "An error occurred while sending the message. Please try again." 
+                });
+            }
+        }
+
+        // Class to hold supplier message request data
+        public class SupplierMessageRequest
+        {
+            public int SupplierId { get; set; }
+            public string Subject { get; set; }
+            public string Message { get; set; }
         }
     }
 }

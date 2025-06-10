@@ -12,6 +12,22 @@
     <!-- Decorative Background Pattern -->
     <div class="dashboard-bg-pattern"></div>
     
+    <!-- Notification area for success and error messages -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+            <i class="fas fa-check-circle me-2"></i> @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i> @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    
     <!-- Header Row with Enhanced Welcome Banner -->
     <div class="welcome-banner mb-4">
         <div class="d-flex justify-content-between align-items-center flex-sm-row flex-column gap-4">
@@ -202,6 +218,8 @@
                                 </div>
                             </div>
                         </a>
+                        @if(User.IsInRole("BusinessOwner"))
+                        {
                         <a asp-controller="Staffs" asp-action="Index" class="list-group-item list-group-item-action py-3 px-3 quick-action-item">
                             <div class="d-flex align-items-center">
                                 <div class="flex-shrink-0 me-3 quick-action-icon">
@@ -213,6 +231,7 @@
                                 </div>
                             </div>
                         </a>
+                        }
                     </div>
                 </div>
             </div>
@@ -256,7 +275,7 @@
                 <!-- Row 1: Leads Overview and Calendar side by side -->
                 @if (userRole == "BusinessOwner" || staffAccessLevel.HasFlag(StaffAccessLevel.Leads))
                 {
-                    <div class="col-lg-6 mb-4">
+                    <div class="col-lg-6 mb-4" data-access-level="Leads">
                         <div class="card shadow h-65">
                             <div class="card-header py-3 d-flex justify-content-between align-items-center">
                                 <h6 class="m-0 font-weight-bold text-primary">Leads Overview</h6>
@@ -350,6 +369,8 @@
                     </div>
                 </div>
 
+                @if (User.IsInRole("BusinessOwner") || staffAccessLevel.HasFlag(StaffAccessLevel.PublishedProducts))
+                {
                 <!-- Product Requests Section -->
                 <div class="col-lg-12 mb-4">
                     <div class="card shadow h-100">
@@ -392,12 +413,13 @@
                         </div>
                     </div>
                 </div>
-
+                }
+                
                 <!-- Row 3: Full-width Inventory Overview -->
                 @if (userRole == "BusinessOwner" || staffAccessLevel.HasFlag(StaffAccessLevel.Inventory))
                 {
                     <!-- Inventory Overview - Full Width -->
-                    <div class="col-lg-12 mb-4">
+                    <div class="col-lg-12 mb-4" data-access-level="Inventory">
                         <div class="card shadow">
                             <div class="card-header py-3 d-flex justify-content-between align-items-center">
                                 <div class="d-flex align-items-center">
@@ -484,8 +506,9 @@
                 <h5 class="modal-title" id="messageModalLabel">Message Supplier</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id="sendMessageForm" asp-controller="Dashboard" asp-action="SendMessageToSupplier" method="post">
+            <form id="sendMessageForm" method="post" action="/Dashboard/SendMessageToSupplier">
                 <div class="modal-body">
+                    @Html.AntiForgeryToken()
                     <p><strong>Name:</strong> <span id="supplierName"></span></p>
                     <p><strong>Email:</strong> <span id="supplierEmail"></span></p>
 
@@ -502,7 +525,7 @@
                     <input type="hidden" name="supplierId" id="supplierId">
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">Send Message</button>
+                    <button type="button" id="sendMessageBtn" class="btn btn-primary">Send Message</button>
                 </div>
             </form>
         </div>
@@ -948,8 +971,8 @@
 
         // SignalR real-time updates for product requests
         document.addEventListener('DOMContentLoaded', function () {
-            loadProductRequests();
-
+            
+            
             // Setup SignalR connection
             const connection = new signalR.HubConnectionBuilder()
                 .withUrl("/realtimehub")
@@ -960,25 +983,30 @@
             }).catch(function (err) {
                 console.error(err.toString());
             });
-
-            connection.on("ReceiveProductRequest", function (messageId, productId, productName, quantity, customerName, message, createdAt) {
-                // Reload all product requests
+            @if(User.IsInRole("BusinessOwner")|| staffAccessLevel.HasFlag(StaffAccessLevel.PublishedProducts))
+            {
+                <text>
                 loadProductRequests();
+                connection.on("ReceiveProductRequest", function (messageId, productId, productName, quantity, customerName, message, createdAt) {
+                    // Reload all product requests
+                    loadProductRequests();
 
-                // Show persistent toast notification
-                const toastId = `toast-${Date.now()}`;
-                const toast = `
-                <div id="${toastId}" class="toast align-items-center text-white bg-primary border-0 show" role="alert" aria-live="assertive" aria-atomic="true" style="position: fixed; top: 1rem; right: 1rem; z-index: 1055; min-width: 250px;">
-                    <div class="d-flex">
-                        <div class="toast-body">
-                            <strong>New Product Request</strong>: ${quantity} x ${productName} from ${customerName}
+                    // Show persistent toast notification
+                    const toastId = `toast-${Date.now()}`;
+                    const toast = `
+                    <div id="${toastId}" class="toast align-items-center text-white bg-primary border-0 show" role="alert" aria-live="assertive" aria-atomic="true" style="position: fixed; top: 1rem; right: 1rem; z-index: 1055; min-width: 250px;">
+                        <div class="d-flex">
+                            <div class="toast-body">
+                                <strong>New Product Request</strong>: ${quantity} x ${productName} from ${customerName}
+                            </div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close" onclick="document.getElementById('${toastId}').remove()"></button>
                         </div>
-                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close" onclick="document.getElementById('${toastId}').remove()"></button>
-                    </div>
-                </div>`;
-                const container = document.querySelector('.toast-container') || createToastContainer();
-                container.insertAdjacentHTML('beforeend', toast);
-            });
+                    </div>`;
+                    const container = document.querySelector('.toast-container') || createToastContainer();
+                    container.insertAdjacentHTML('beforeend', toast);
+                });
+                </text>
+             }
 
             function createToastContainer() {
                 const container = document.createElement('div');
@@ -1122,7 +1150,11 @@
                     if (data.success) {
                         document.getElementById('supplierName').textContent = data.data.supplierName;
                         document.getElementById('supplierEmail').textContent = data.data.email;
-                        document.getElementById('hiddenSupplierId').value = id;
+                        document.getElementById('supplierId').value = id;
+
+                        // Reset form fields
+                        document.getElementById('subject').value = '';
+                        document.getElementById('message').value = '';
 
                         // Show the modal
                         const messageModal = new bootstrap.Modal(document.getElementById('messageModal'));
@@ -1136,6 +1168,103 @@
                     alert('Error loading supplier information');
                 });
         }
+        
+        // Handle form submission
+        document.addEventListener('DOMContentLoaded', function() {
+            const sendMessageBtn = document.getElementById('sendMessageBtn');
+            if (sendMessageBtn) {
+                sendMessageBtn.addEventListener('click', function() {
+                    // Get form data
+                    const form = document.getElementById('sendMessageForm');
+                    
+                    // Log form data for debugging
+                    console.log('Form data being submitted:');
+                    console.log('Supplier ID:', document.getElementById('supplierId').value);
+                    console.log('Subject:', document.getElementById('subject').value);
+                    console.log('Message length:', document.getElementById('message').value.length);
+                    
+                    // Basic validation
+                    if (!form.checkValidity()) {
+                        form.reportValidity();
+                        return;
+                    }
+                    
+                    // Show loading state
+                    this.disabled = true;
+                    this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Sending...';
+                    
+                    // Send AJAX request
+                    fetch('/Dashboard/SendMessageToSupplier', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                        },
+                        body: JSON.stringify({
+                            supplierId: parseInt(document.getElementById('supplierId').value),
+                            subject: document.getElementById('subject').value,
+                            message: document.getElementById('message').value
+                        })
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            if (response.status === 500) {
+                                throw new Error('Server error occurred. Please try again later.');
+                            }
+                            return response.text().then(text => {
+                                try {
+                                    // Try to parse as JSON
+                                    return JSON.parse(text);
+                                } catch (e) {
+                                    // If not JSON, create error object
+                                    console.error('Server returned non-JSON response:', text);
+                                    throw new Error('Unexpected server response');
+                                }
+                            });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        // Reset button state
+                        sendMessageBtn.disabled = false;
+                        sendMessageBtn.innerHTML = 'Send Message';
+                        
+                        // Show success message
+                        if (data.success) {
+                            // Close the modal
+                            const messageModal = bootstrap.Modal.getInstance(document.getElementById('messageModal'));
+                            messageModal.hide();
+                            
+                            Swal.fire({
+                                title: 'Success!',
+                                text: data.message || 'Message sent successfully',
+                                icon: 'success'
+                            });
+                        } else {
+                            Swal.fire({
+                                title: 'Error',
+                                text: data.message || 'Failed to send message',
+                                icon: 'error'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error sending message:', error);
+                        
+                        // Reset button state
+                        sendMessageBtn.disabled = false;
+                        sendMessageBtn.innerHTML = 'Send Message';
+                        
+                        // Show error message
+                        Swal.fire({
+                            title: 'Error',
+                            text: error.message || 'An error occurred while sending the message. Please try again.',
+                            icon: 'error'
+                        });
+                    });
+                });
+            }
+        });
 
         // Display upcoming events
         function displayUpcomingEvents(tasks) {

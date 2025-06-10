@@ -5,6 +5,7 @@
 	var accessLevelClaim = User.FindFirstValue("AccessLevel");
 	var staffAccessLevel = !string.IsNullOrEmpty(accessLevelClaim) &&
 	Enum.TryParse<StaffAccessLevel>(accessLevelClaim, out var level) ? level : StaffAccessLevel.None;
+	var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 }
 
 <!DOCTYPE html>
@@ -403,7 +404,10 @@
 
 	@await RenderSectionAsync("Styles", required: false)
 </head>
-<body class="@(User.Identity.IsAuthenticated ? "user-authenticated" : "")">
+<body class="@(User.Identity.IsAuthenticated ? "user-authenticated" : "") @(User.IsInRole("Staff") ? "staff-user" : "")"
+		  data-user-id="@User.FindFirstValue(ClaimTypes.NameIdentifier)" 
+		  data-business-id="@(User.FindFirstValue(ClaimTypes.Role) == "Staff" ? User.FindFirstValue("BOId") : User.FindFirstValue(ClaimTypes.NameIdentifier))"
+		  data-staff-id="@(User.FindFirstValue(ClaimTypes.Role) == "Staff" ? User.FindFirstValue(ClaimTypes.NameIdentifier) : null)">
 					@if (User.Identity.IsAuthenticated)
 					{
 		<!-- Side Navigation -->
@@ -485,7 +489,7 @@
 						{
 							var isInventoryActive = ViewContext.RouteData.Values["Controller"].ToString() == "Inventory1";
 							<li class="side-nav-item">
-								<a class="side-nav-link side-nav-dropdown @(isInventoryActive ? "active" : "")">
+								<a class="side-nav-link side-nav-dropdown @(isInventoryActive ? "active" : "")" data-access-level="Inventory">
 									<div class="side-nav-icon"><i class="fas fa-boxes"></i></div>
 									<span class="side-nav-text">Inventory</span>
 								</a>
@@ -541,7 +545,8 @@
 						@if (User.IsInRole("BusinessOwner") || staffAccessLevel.HasFlag(StaffAccessLevel.Leads))
 						{
 							<li class="side-nav-item">
-								<a class="side-nav-link @(ViewContext.RouteData.Values["Controller"].ToString().Equals("Leads", StringComparison.OrdinalIgnoreCase) ? "active" : "")" asp-action="Index" asp-controller="Leads">
+								<a class="side-nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Leads" ? "active" : "")" 
+								   asp-action="Index" asp-controller="Leads" data-access-level="Leads">
 									<div class="side-nav-icon"><i class="fas fa-user-tag"></i></div>
 									<span class="side-nav-text">Leads</span>
 								</a>
@@ -559,7 +564,7 @@
 									@if (User.IsInRole("BusinessOwner") || staffAccessLevel.HasFlag(StaffAccessLevel.Campaigns))
 									{
 										<li class="side-nav-item">
-											<a class="side-nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Campaigns" && ViewContext.RouteData.Values["Action"].ToString() == "Index" ? "active" : "")" asp-action="Index" asp-controller="Campaigns">
+											<a class="side-nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Campaigns" && ViewContext.RouteData.Values["Action"].ToString() == "Index" ? "active" : "")" asp-action="Index" asp-controller="Campaigns" data-access-level="Campaigns">
 												<div class="side-nav-icon"><i class="fas fa-bullhorn"></i></div>
 												<span class="side-nav-text">Campaigns</span>
 											</a>
@@ -568,7 +573,7 @@
 									@if (User.IsInRole("BusinessOwner") || staffAccessLevel.HasFlag(StaffAccessLevel.Reports))
 									{
 										<li class="side-nav-item">
-											<a class="side-nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Reports" && ViewContext.RouteData.Values["Action"].ToString() == "Index" ? "active" : "")" asp-action="Index" asp-controller="Reports">
+											<a class="side-nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Reports" && ViewContext.RouteData.Values["Action"].ToString() == "Index" ? "active" : "")" asp-action="Index" asp-controller="Reports" data-access-level="Reports">
 												<div class="side-nav-icon"><i class="fas fa-chart-bar"></i></div>
 												<span class="side-nav-text">Reports</span>
 											</a>
@@ -580,7 +585,7 @@
 						@if (User.IsInRole("BusinessOwner") || staffAccessLevel.HasFlag(StaffAccessLevel.Calendar))
 						{
 							<li class="side-nav-item">
-								<a class="side-nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Calendar" && ViewContext.RouteData.Values["Action"].ToString() == "Index" ? "active" : "")" asp-action="Index" asp-controller="Calendar">
+								<a class="side-nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Calendar" && ViewContext.RouteData.Values["Action"].ToString() == "Index" ? "active" : "")" asp-action="Index" asp-controller="Calendar" data-access-level="Calendar">
 									<div class="side-nav-icon"><i class="bi bi-calendar-event"></i></div>
 									<span class="side-nav-text">Calendar</span>
 								</a>
@@ -665,6 +670,13 @@
 								</div>
 							</div>
 						</div>
+						@if (User.IsInRole("BusinessOwner") || staffAccessLevel.HasFlag(StaffAccessLevel.PublishedProducts))
+						{
+						<div class="dropdown-divider"></div>
+						<a class="dropdown-item" href="/BusinessProfile/@userId">
+							<i class="fas fa-store me-2"></i>My Marketplace
+						</a>
+						}
 						<div class="dropdown-divider"></div>
 						<a class="dropdown-item" href="/Profile">
 							<i class="fas fa-user-circle me-2"></i>My Profile
@@ -744,8 +756,7 @@
 	<!-- ✅ Bootstrap Bundle with Popper -->
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-	<!-- ✅ SignalR -->
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+	<!-- SignalR is loaded below -->
 
 	<!-- ✅ Select2 JS -->
 	<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
@@ -1377,26 +1388,26 @@
            });
 
            // Join inventory group for this user
-           window.joinInventoryGroup = async function() {
-               @if (User.Identity.IsAuthenticated)
-               {
-                   var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                   var userRole = User.FindFirstValue(ClaimTypes.Role);
-                   var businessId = userRole == "Staff" ? User.FindFirstValue("BOId") : userId;
-                   
-                   if (!string.IsNullOrEmpty(businessId))
-		{
-			<text>
-                       try {
-                           await connection.invoke("JoinInventoryGroup", "@businessId");
-                           console.log("Joined inventory group for business ID: @businessId");
-                       } catch (err) {
-                           console.error("Error joining inventory group:", err);
-						}
-			</text>
-		}
-               }
-           }
+			window.joinInventoryGroup = async function() {
+				@if (User.Identity.IsAuthenticated)
+				{
+					var userId2 = User.FindFirstValue(ClaimTypes.NameIdentifier);
+					var userRole = User.FindFirstValue(ClaimTypes.Role);
+					var businessId = userRole == "Staff" ? User.FindFirstValue("BOId") : userId2;
+
+					if (!string.IsNullOrEmpty(businessId))
+					{
+						<text>
+							try {
+								await connection.invoke("JoinInventoryGroup", "@businessId");
+								console.log("Joined inventory group for business ID: @businessId");
+							} catch (err) {
+								console.error("Error joining inventory group:", err);
+							}
+						</text>
+					}
+				}
+			}
            
            // Start the connection
            async function startConnection() {
@@ -1426,6 +1437,12 @@
 	@if (User.Identity.IsAuthenticated)
 	{
 		<script src="~/js/account-status-checker.js"></script>
+		
+		<!-- Staff Access Level Handler - Only loaded for staff users -->
+		@if (User.IsInRole("Staff"))
+		{
+			<script src="~/js/staff-access.js"></script>
+		}
 		
 		<!-- Notifications and Messages Handler -->
 		<script>

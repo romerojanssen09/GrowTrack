@@ -9,8 +9,10 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.Authorization;
 using BCrypt.Net;
 
+
 namespace Project_Creation.Controllers
 {
+    [Authorize]
     public class StaffsController : Controller
     {
         private readonly AuthDbContext _context;
@@ -413,10 +415,11 @@ namespace Project_Creation.Controllers
                     
                     try
                     {
-                        // Try sending SignalR notification to specific group first
-                        await _hubContext
-                            .Clients.Group($"staff_{id}")
-                            .SendAsync("AccessLevelChanged", id.ToString(), previousAccessLevels, addedAccessLevelNames, removedAccessLevelNames);
+                        // Send SignalR notification to the staff group
+                        // Make sure to convert the ID to string to match client-side expectations
+                        string staffIdString = id.ToString();
+                        await _hubContext.Clients.Group($"staff_{staffIdString}")
+                            .SendAsync("AccessLevelChanged", staffIdString, previousAccessLevels, addedAccessLevelNames, removedAccessLevelNames);
                         
                         _logger.LogInformation($"SignalR notification sent to staff_{id} group");
 

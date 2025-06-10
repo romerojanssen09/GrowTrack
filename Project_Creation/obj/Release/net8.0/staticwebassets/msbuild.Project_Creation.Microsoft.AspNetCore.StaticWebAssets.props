@@ -228,8 +228,8 @@
       <RelatedAsset></RelatedAsset>
       <AssetTraitName></AssetTraitName>
       <AssetTraitValue></AssetTraitValue>
-      <Fingerprint>unoeo6jene</Fingerprint>
-      <Integrity>WhTmiJcsZmUpHAn9H462KcphDLtHpkcE4H020OiJ9GY=</Integrity>
+      <Fingerprint>wevx05a1re</Fingerprint>
+      <Integrity>uM46eqUGdjvjQh69EQs7lCJwZOgFjRWKDqbPFrlMwkM=</Integrity>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\js\navbar.js'))</OriginalItemSpec>
@@ -251,6 +251,24 @@
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\js\site.js'))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\js\staff-access.js'))">
+      <SourceType>Package</SourceType>
+      <SourceId>Project_Creation</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/Project_Creation</BasePath>
+      <RelativePath>js/staff-access.js</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <Fingerprint>qkdqnp2qxe</Fingerprint>
+      <Integrity>OuLjPIqrRGVRnyhD+YVUUq7V/MCT2+UPG3n6FcoQkHk=</Integrity>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\js\staff-access.js'))</OriginalItemSpec>
     </StaticWebAsset>
     <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\js\table-responsive.js'))">
       <SourceType>Package</SourceType>
@@ -1313,132 +1331,6 @@
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\lib\microsoft\signalr\dist\browser\signalr.min.js'))</OriginalItemSpec>
-    </StaticWebAsset>
-    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\1\barcodes\barcode_BAT-ELE-29713_20250603124729.png'))">
-      <SourceType>Package</SourceType>
-      <SourceId>Project_Creation</SourceId>
-      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
-      <BasePath>_content/Project_Creation</BasePath>
-      <RelativePath>uploads/1/barcodes/barcode_BAT-ELE-29713_20250603124729.png</RelativePath>
-      <AssetKind>All</AssetKind>
-      <AssetMode>All</AssetMode>
-      <AssetRole>Primary</AssetRole>
-      <RelatedAsset></RelatedAsset>
-      <AssetTraitName></AssetTraitName>
-      <AssetTraitValue></AssetTraitValue>
-      <Fingerprint>xc5qevzgfr</Fingerprint>
-      <Integrity>X4iOAT1oeKG9wozpSTrizm1kl7wRdt9uBjwVhGM8bRc=</Integrity>
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\1\barcodes\barcode_BAT-ELE-29713_20250603124729.png'))</OriginalItemSpec>
-    </StaticWebAsset>
-    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\1\barcodes\barcode_BAT-ELE-29833_20250603133258.png'))">
-      <SourceType>Package</SourceType>
-      <SourceId>Project_Creation</SourceId>
-      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
-      <BasePath>_content/Project_Creation</BasePath>
-      <RelativePath>uploads/1/barcodes/barcode_BAT-ELE-29833_20250603133258.png</RelativePath>
-      <AssetKind>All</AssetKind>
-      <AssetMode>All</AssetMode>
-      <AssetRole>Primary</AssetRole>
-      <RelatedAsset></RelatedAsset>
-      <AssetTraitName></AssetTraitName>
-      <AssetTraitValue></AssetTraitValue>
-      <Fingerprint>w25o8appit</Fingerprint>
-      <Integrity>SJAE9ammuX2nZozNWGbqkyD96lTAAbcrzy0YeZgETR0=</Integrity>
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\1\barcodes\barcode_BAT-ELE-29833_20250603133258.png'))</OriginalItemSpec>
-    </StaticWebAsset>
-    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\1\barcodes\barcode_BAT-ELE-67048_20250603051849.png'))">
-      <SourceType>Package</SourceType>
-      <SourceId>Project_Creation</SourceId>
-      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
-      <BasePath>_content/Project_Creation</BasePath>
-      <RelativePath>uploads/1/barcodes/barcode_BAT-ELE-67048_20250603051849.png</RelativePath>
-      <AssetKind>All</AssetKind>
-      <AssetMode>All</AssetMode>
-      <AssetRole>Primary</AssetRole>
-      <RelatedAsset></RelatedAsset>
-      <AssetTraitName></AssetTraitName>
-      <AssetTraitValue></AssetTraitValue>
-      <Fingerprint>8uq40k8iul</Fingerprint>
-      <Integrity>4DBTdnVrWMxvrYY7ezL/D94w+tk0DarfhBs3q83Tc9g=</Integrity>
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\1\barcodes\barcode_BAT-ELE-67048_20250603051849.png'))</OriginalItemSpec>
-    </StaticWebAsset>
-    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\1\barcodes\barcode_BAT-ELE-74283_20250603121233.png'))">
-      <SourceType>Package</SourceType>
-      <SourceId>Project_Creation</SourceId>
-      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
-      <BasePath>_content/Project_Creation</BasePath>
-      <RelativePath>uploads/1/barcodes/barcode_BAT-ELE-74283_20250603121233.png</RelativePath>
-      <AssetKind>All</AssetKind>
-      <AssetMode>All</AssetMode>
-      <AssetRole>Primary</AssetRole>
-      <RelatedAsset></RelatedAsset>
-      <AssetTraitName></AssetTraitName>
-      <AssetTraitValue></AssetTraitValue>
-      <Fingerprint>s0ydjqpkao</Fingerprint>
-      <Integrity>fBilutokmy5nuY3yngvDldGZxJxGlHE1VtMsnZgUZCc=</Integrity>
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\1\barcodes\barcode_BAT-ELE-74283_20250603121233.png'))</OriginalItemSpec>
-    </StaticWebAsset>
-    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\1\barcodes\barcode_BAT-ELE-9769_20250603082127.png'))">
-      <SourceType>Package</SourceType>
-      <SourceId>Project_Creation</SourceId>
-      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
-      <BasePath>_content/Project_Creation</BasePath>
-      <RelativePath>uploads/1/barcodes/barcode_BAT-ELE-9769_20250603082127.png</RelativePath>
-      <AssetKind>All</AssetKind>
-      <AssetMode>All</AssetMode>
-      <AssetRole>Primary</AssetRole>
-      <RelatedAsset></RelatedAsset>
-      <AssetTraitName></AssetTraitName>
-      <AssetTraitValue></AssetTraitValue>
-      <Fingerprint>kmp36c7v5b</Fingerprint>
-      <Integrity>fEoA6OTQ3dRfwuzpbi3cnwpmWX/DpNrMjhb6i2AVnys=</Integrity>
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\1\barcodes\barcode_BAT-ELE-9769_20250603082127.png'))</OriginalItemSpec>
-    </StaticWebAsset>
-    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\1\barcodes\barcode_IND-MAN-19892_20250608123043.png'))">
-      <SourceType>Package</SourceType>
-      <SourceId>Project_Creation</SourceId>
-      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
-      <BasePath>_content/Project_Creation</BasePath>
-      <RelativePath>uploads/1/barcodes/barcode_IND-MAN-19892_20250608123043.png</RelativePath>
-      <AssetKind>All</AssetKind>
-      <AssetMode>All</AssetMode>
-      <AssetRole>Primary</AssetRole>
-      <RelatedAsset></RelatedAsset>
-      <AssetTraitName></AssetTraitName>
-      <AssetTraitValue></AssetTraitValue>
-      <Fingerprint>3pvu54o9id</Fingerprint>
-      <Integrity>CY/P323yhHCcdlsl64PY8D0qP5KrG+1+ng9sno/JeoY=</Integrity>
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\1\barcodes\barcode_IND-MAN-19892_20250608123043.png'))</OriginalItemSpec>
-    </StaticWebAsset>
-    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\1\products\GrowTrackChart_c65d8683-c6a3-4376-8640-c2246833b8a7.png'))">
-      <SourceType>Package</SourceType>
-      <SourceId>Project_Creation</SourceId>
-      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
-      <BasePath>_content/Project_Creation</BasePath>
-      <RelativePath>uploads/1/products/GrowTrackChart_c65d8683-c6a3-4376-8640-c2246833b8a7.png</RelativePath>
-      <AssetKind>All</AssetKind>
-      <AssetMode>All</AssetMode>
-      <AssetRole>Primary</AssetRole>
-      <RelatedAsset></RelatedAsset>
-      <AssetTraitName></AssetTraitName>
-      <AssetTraitValue></AssetTraitValue>
-      <Fingerprint>g49743n5q3</Fingerprint>
-      <Integrity>8ElTUXGCKctaUZ9P1lOKsXTvTRT5wwqCUdZBfHul07o=</Integrity>
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\1\products\GrowTrackChart_c65d8683-c6a3-4376-8640-c2246833b8a7.png'))</OriginalItemSpec>
     </StaticWebAsset>
   </ItemGroup>
 </Project>

@@ -57,6 +57,10 @@
       "PackagePath": "staticwebassets\\js\\site.js"
     },
     {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\js\\staff-access.js",
+      "PackagePath": "staticwebassets\\js\\staff-access.js"
+    },
+    {
       "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\js\\table-responsive.js",
       "PackagePath": "staticwebassets\\js\\table-responsive.js"
     },
@@ -291,6 +295,10 @@
     {
       "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\lib\\microsoft\\signalr\\dist\\browser\\signalr.min.js",
       "PackagePath": "staticwebassets\\lib\\microsoft\\signalr\\dist\\browser\\signalr.min.js"
+    },
+    {
+      "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\backgrounds\\0c437ccb-bdfc-463c-8925-406da6fc5c27.jpg",
+      "PackagePath": "staticwebassets\\uploads\\1\\backgrounds\\0c437ccb-bdfc-463c-8925-406da6fc5c27.jpg"
     },
     {
       "Id": "C:\\Users\\chell\\source\\repos\\New folder\\Project_Creation\\Project_Creation\\wwwroot\\uploads\\1\\barcodes\\barcode_BAT-ELE-29713_20250603124729.png",

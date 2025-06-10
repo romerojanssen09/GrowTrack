@@ -22,9 +22,6 @@
         <div class="card-header py-3 d-flex justify-content-between align-items-center">
             <h6 class="m-0 font-weight-bold text-primary">Pending Business Owner Accounts</h6>
             <div class="d-flex">
-                <button id="verifySelectedBtn" class="btn btn-success me-3" disabled>
-                    <i class="bi bi-check-circle me-2"></i>Verify Selected (<span id="selectedCount">0</span>)
-                </button>
                 <div class="input-group" style="width: 300px;">
                     <input type="text" class="form-control search-input" placeholder="Search..." aria-label="Search">
                     <div class="input-group-append">
@@ -38,12 +35,6 @@
                 <table class="table table-hover" id="pendingUsersTable">
                     <thead class="table-light">
                         <tr>
-                            <th>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="selectAll">
-                                    <label class="form-check-label" for="selectAll"></label>
-                                </div>
-                            </th>
                             <th>Business Name</th>
                             <th>Owner Name</th>
                             <th>Email</th>
@@ -113,25 +104,7 @@
     </div>
 </div>
 
-<!-- Modal for bulk verification confirmation -->
-<div class="modal fade" id="bulkVerifyModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header bg-success text-white">
-                <h5 class="modal-title"><i class="bi bi-check-circle"></i> Bulk Verification</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p>Are you sure you want to verify <span id="verifyCount" class="fw-bold">0</span> selected business owner accounts?</p>
-                <p>Notification emails will be sent to all verified users.</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-success" id="confirmBulkVerify">Confirm Verification</button>
-            </div>
-        </div>
-    </div>
-</div>
+
 
 <!-- Modal for rejecting user -->
 <div class="modal fade" id="rejectUserModal" tabindex="-1" role="dialog" aria-hidden="true">
@@ -188,92 +161,6 @@
                 var value = $(this).val().toLowerCase();
                 $("#pendingUsersTable tbody tr").filter(function() {
                     $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
-                });
-            });
-
-            // Multi-select functionality
-            $('#selectAll').change(function() {
-                var isChecked = $(this).prop('checked');
-                $('.user-checkbox').prop('checked', isChecked);
-                updateSelectedCount();
-            });
-
-            $(document).on('change', '.user-checkbox', function() {
-                updateSelectedCount();
-            });
-
-            function updateSelectedCount() {
-                var count = $('.user-checkbox:checked').length;
-                $('#selectedCount').text(count);
-                $('#verifyCount').text(count);
-
-                if (count > 0) {
-                    $('#verifySelectedBtn').prop('disabled', false);
-                } else {
-                    $('#verifySelectedBtn').prop('disabled', true);
-                }
-            }
-
-            // Verify selected users button
-            $('#verifySelectedBtn').click(function() {
-                $('#bulkVerifyModal').modal('show');
-            });
-
-            // Confirm bulk verification
-            $('#confirmBulkVerify').click(function() {
-                var selectedIds = [];
-                $('.user-checkbox:checked').each(function() {
-                    selectedIds.push(parseInt($(this).val()));
-                });
-
-                if (selectedIds.length === 0) {
-                    return;
-                }
-
-                // Close modal and show loading
-                $('#bulkVerifyModal').modal('hide');
-                showLoading();
-
-                // Use the new bulk verification endpoint
-                $.ajax({
-                    url: '/Admin/BulkVerifyUsers',
-                    type: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify(selectedIds),
-                    headers: {
-                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
-                    },
-                    success: function(response) {
-                        hideLoading();
-
-                        if (response.success) {
-                            Swal.fire({
-                                title: 'Verification Complete!',
-                                text: `Successfully verified ${response.successCount} out of ${response.processedCount} accounts. Notification emails have been sent.`,
-                                icon: 'success',
-                                confirmButtonColor: '#28a745'
-                            }).then(() => {
-                                location.reload();
-                            });
-                        } else {
-                            Swal.fire({
-                                title: 'Error!',
-                                text: response.message || 'Failed to verify users.',
-                                icon: 'error',
-                                confirmButtonColor: '#dc3545'
-                            });
-                        }
-                    },
-                    error: function(xhr) {
-                        hideLoading();
-
-                        Swal.fire({
-                            title: 'Error!',
-                            text: 'An error occurred while processing your request.',
-                            icon: 'error',
-                            confirmButtonColor: '#dc3545'
-                        });
-                    }
                 });
             });
 
@@ -546,12 +433,5 @@
         margin: 0;
     }
 
-    #verifySelectedBtn:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-    }
 
-    #verifySelectedBtn {
-        transition: all 0.3s ease;
-    }
 </style>

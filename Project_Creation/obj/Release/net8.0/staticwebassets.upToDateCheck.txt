@@ -12,6 +12,7 @@ wwwroot\js\dashboard.js
 wwwroot\js\inventory-movements.js
 wwwroot\js\navbar.js
 wwwroot\js\site.js
+wwwroot\js\staff-access.js
 wwwroot\js\table-responsive.js
 wwwroot\lib\bootstrap\dist\css\bootstrap.css
 wwwroot\lib\bootstrap\dist\css\bootstrap.css.map
@@ -71,10 +72,3 @@ wwwroot\lib\jquery-validation-unobtrusive\jquery.validate.unobtrusive.js
 wwwroot\lib\jquery-validation-unobtrusive\jquery.validate.unobtrusive.min.js
 wwwroot\lib\jquery-validation-unobtrusive\LICENSE.txt
 wwwroot\lib\microsoft\signalr\dist\browser\signalr.min.js
-wwwroot\uploads\1\barcodes\barcode_BAT-ELE-29713_20250603124729.png
-wwwroot\uploads\1\barcodes\barcode_BAT-ELE-29833_20250603133258.png
-wwwroot\uploads\1\barcodes\barcode_BAT-ELE-67048_20250603051849.png
-wwwroot\uploads\1\barcodes\barcode_BAT-ELE-74283_20250603121233.png
-wwwroot\uploads\1\barcodes\barcode_BAT-ELE-9769_20250603082127.png
-wwwroot\uploads\1\barcodes\barcode_IND-MAN-19892_20250608123043.png
-wwwroot\uploads\1\products\GrowTrackChart_c65d8683-c6a3-4376-8640-c2246833b8a7.png
